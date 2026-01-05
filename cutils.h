@@ -147,7 +147,7 @@ extern "C"
 	#define FAHRENHEIT_TO_CELSIUS_L(fahrenheit_val_long_double) (((long double)(fahrenheit_val_long_double) - (long double)(32.0L)) * (long double)(5.0L / 9.0L))   /* Fahrenheit to Celsius (in long double). */
 #endif
 
-/* Encoding utils: */
+/* Function to solve encoding in the Windows terminal: */
 static void enable_vt_and_utf8()
 {
 	#if defined(_WIN32) || defined(_WIN64) /* For Windows. */
