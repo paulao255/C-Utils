@@ -51,10 +51,10 @@ extern "C"
 #endif
 
 /* C Utils version variables: */
-#define C_UTILS_FULL_VERSION  160.0L           /* C Utils full version variable (1.6.0).           */
+#define C_UTILS_FULL_VERSION  161.0L           /* C Utils full version variable (1.6.1).           */
 #define C_UTILS_MAJOR_VERSION   1.0L           /* C Utils major version variable (1).              */
 #define C_UTILS_MINOR_VERSION   6.0L           /* C Utils minor version variable (6).              */
-#define C_UTILS_PATCH_VERSION   0.0L           /* C Utils patch version variable (0).              */
+#define C_UTILS_PATCH_VERSION   1.0L           /* C Utils patch version variable (1).              */
 
 /* Terminal colors: */
 #define BASE_TERMINAL          "\033[m"        /* Reset terminal text.                             */
@@ -210,7 +210,7 @@ static char verify_os()
 		return 2;
 	#elif defined(__ANDROID__)             /* For Android. */
 		return 3
-	#elif defined(__APPLE__)               /* For macOS. */
+	#elif defined(__APPLE__)               /* For Apple. */
 		return 4;
 	#elif defined(__DJGPP__)               /* For MS-DOS. */
 		return 5;
@@ -317,7 +317,7 @@ static void url_openner(const char *url)
 
 		else
 		{
-			char command[16384] = ""; /* Command variable. */
+			char command[8192] = ""; /* Command variable. */
 
 			#if defined(_WIN32) || defined(_WIN64) /* For Windows. */
 				snprintf(command, sizeof(command), "start %s", url);
@@ -338,15 +338,15 @@ static void easter_egg_function()
 	/* Basic commands: */
 	puts("Congratulations!!! You just discovered a new easter egg! (please don't say it to anywhone ok!)");
 	puts("This is the link to our github account! If you want to see our projects, codes, etc...");
-	puts("Link: https://github.com/paulao255");
+	puts("Link: https://github.com/paulao255/");
 
 	/* Command to open the link on browser: */
 	#if defined(_WIN32) || defined(_WIN64) /* For Windows. */
-	  system("start https://github.com/paulao255");
+	  system("start https://github.com/paulao255/");
 	#elif defined(__linux__) || defined(__ANDROID__) /* For Linux and Android. */
-	  system("xdg-open https://github.com/paulao255");
+	  system("xdg-open https://github.com/paulao255/");
 	#elif defined(__APPLE__) /* For macOS. */
-	  system("open https://github.com/paulao255");
+	  system("open https://github.com/paulao255/");
 	#endif
 
 	/* Pause APP: */
