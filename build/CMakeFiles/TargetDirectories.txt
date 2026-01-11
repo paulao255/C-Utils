@@ -1,0 +1,2 @@
+/home/paulo/Documents/Apps/C-Utils/build/CMakeFiles/edit_cache.dir
+/home/paulo/Documents/Apps/C-Utils/build/CMakeFiles/rebuild_cache.dir
