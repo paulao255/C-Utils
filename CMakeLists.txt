@@ -1,10 +1,21 @@
 cmake_minimum_required(VERSION 4.2.1)
-project(C-Utils VERSION 1.7.0)
+project(C-Utils VERSION 1.7.0 LANGUAGES C)
+
+# ===== Interface Library =====
 add_library(C-Utils INTERFACE)
-target_include_directories(C-Utils INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/C-Utils $<INSTALL_INTERFACE:include/C-Utils>)
+
+# ===== Include Path =====
+target_include_directories(C-Utils INTERFACE $<INSTALL_INTERFACE:include> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/C-Utils>)
+
+# ===== Export the package =====
 include(CMakePackageConfigHelpers)
 export(PACKAGE C-Utils)
-install(TARGETS cutils EXPORT C-UtilsTargets ARCHIVE DESTINATION lib LIBRARY DESTINATION lib RUNTIME DESTINATION bin)
+
+# ===== Install Headers =====
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/C-Utils/ DESTINATION include/C-Utils)
+# ===== Install the Interface Library & Export =====
+install(TARGETS C-Utils EXPORT C-UtilsTargets INCLUDES DESTINATION include)
 install(EXPORT C-UtilsTargets FILE C-UtilsTargets.cmake NAMESPACE C-Utils:: DESTINATION lib/cmake/C-Utils)
+
+# ===== Install Config File =====
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/cmake/C-UtilsConfig.cmake DESTINATION lib/cmake/C-Utils)
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ DESTINATION include)
