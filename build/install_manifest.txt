@@ -1,3 +1,0 @@
-/usr/local/include/C-Utils/cutils.h
-/usr/local/lib/cmake/C-Utils/C-UtilsTargets.cmake
-/usr/local/lib/cmake/C-Utils/C-UtilsConfig.cmake
