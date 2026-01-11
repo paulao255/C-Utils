@@ -51,10 +51,10 @@ extern "C"
 #endif
 
 /* C Utils version variables: */
-#define C_UTILS_FULL_VERSION  161.0L           /* C Utils full version variable (1.6.1).           */
+#define C_UTILS_FULL_VERSION  170.0L           /* C Utils full version variable (1.7.0).           */
 #define C_UTILS_MAJOR_VERSION   1.0L           /* C Utils major version variable (1).              */
-#define C_UTILS_MINOR_VERSION   6.0L           /* C Utils minor version variable (6).              */
-#define C_UTILS_PATCH_VERSION   1.0L           /* C Utils patch version variable (1).              */
+#define C_UTILS_MINOR_VERSION   7.0L           /* C Utils minor version variable (7).              */
+#define C_UTILS_PATCH_VERSION   0.0L           /* C Utils patch version variable (0).              */
 
 /* Terminal colors: */
 #define BASE_TERMINAL          "\033[m"        /* Reset terminal text.                             */

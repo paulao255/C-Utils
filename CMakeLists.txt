@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 4.2.1)
+project(C-Utils VERSION 1.7.0)
+add_library(C-Utils INTERFACE)
+target_include_directories(C-Utils INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/C-Utils $<INSTALL_INTERFACE:include/C-Utils>)
+include(CMakePackageConfigHelpers)
+export(PACKAGE C-Utils)
