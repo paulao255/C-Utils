@@ -1,7 +1,7 @@
 # cutils.h
-C-Utils is a repository with header(s) to make C/C++ more easy/fast to create projects and big applications, it have the most common features, like `CLEAR_TERMINAL()`, `petc()`, etc... works in C89 Standard or +, and have Linux, Windows and macOS support (It probably works on Android and MS-DOS too).
+C-Utils is a repository with header(s) to make C/C++ more easy/fast to create projects and big applications, it have the most common features, like `CLEAR_TERMINAL()`, `petc()`, etc... works in **C89 Standard** or +, and have **Linux**, **Windows** and **macOS** support (It probably works on Android and MS-DOS too).
 
-To include C-Utils into your C/C++ project, you need to use CMake by adding these lines on CMakeLists.txt:
+To include C-Utils into your C/C++ project, you need to use **CMake** by adding these lines on `CMakeLists.txt`:
 ```CMakeLists.txt
 # CMake example:
 cmake_minimum_required(VERSION 3.14)                                                               # 3.14 or +.
@@ -16,7 +16,7 @@ add_executable(Executable.exe ../src/Main.c)                                    
 target_link_libraries(Executable.exe PRIVATE C-Utils::C-Utils)                                     # Link to Executable.
 ```
 
-And the code structure need to be like this to work:
+And the **project structure** need to be like this to work:
 ```Directory.txt
 .
 ├─ .gitignore
