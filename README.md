@@ -29,6 +29,6 @@ And the **project structure** need to be like this to work:
 └─ README.md
 ```
 
-You will **build your project with C-Utils** by going to `./build` directory and typing `cmake ..` to create the main executable.
+You will **build your project with C-Utils** by going to `./build` directory and typing `cmake ..` to create the **main executable**.
 
 ### Created by: @paulao255
