@@ -13,7 +13,7 @@
 	#endif
 #endif
 
-#if !defined(_WIN32) || !defined(_WIN64) /* For anything else Windows. */
+#if !defined(_WIN32) || !defined(_WIN64)
 	#ifndef _POSIX_C_SOURCE
 		#define _POSIX_C_SOURCE 199309L
 	#endif
@@ -23,19 +23,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#if defined(_WIN32) || defined(_WIN64) /* For Windows. */
+#if defined(_WIN32) || defined(_WIN64)
 	#define WIN32_LEAN_AND_MEAN
 	#include <windows.h>
 	#include <direct.h>
 	#define MKDIR(dir) _mkdir(dir)
-#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__) /* For Linux, Android and Apple. */
+#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
 	#include <unistd.h>
 	#include <time.h>
 	#include <errno.h>
 	#include <sys/stat.h>
 	#include <sys/types.h>
 	#define MKDIR(dir) mkdir(dir, 0755)
-#elif defined(__DJGPP__) /* For MS-DOS. */
+#elif defined(__DJGPP__)
 	#include <unistd.h>
 	#include <time.h>
 	#include <errno.h>
@@ -51,10 +51,10 @@ extern "C"
 #endif
 
 /* C Utils version variables: */
-#define C_UTILS_FULL_VERSION  171.0L           /* C Utils full version variable (1.7.1).           */
+#define C_UTILS_FULL_VERSION  180.0L           /* C Utils full version variable (1.8.0).           */
 #define C_UTILS_MAJOR_VERSION   1.0L           /* C Utils major version variable (1).              */
-#define C_UTILS_MINOR_VERSION   7.0L           /* C Utils minor version variable (7).              */
-#define C_UTILS_PATCH_VERSION   1.0L           /* C Utils patch version variable (1).              */
+#define C_UTILS_MINOR_VERSION   8.0L           /* C Utils minor version variable (8).              */
+#define C_UTILS_PATCH_VERSION   0.0L           /* C Utils patch version variable (0).              */
 
 /* Terminal colors: */
 #define BASE_TERMINAL          "\033[m"        /* Reset terminal text.                             */
@@ -150,9 +150,9 @@ extern "C"
 #endif
 
 /* Function to solve encoding in the Windows terminal: */
-static void enable_vt_and_utf8()
+static void enable_vt_and_utf8(void)
 {
-	#if defined(_WIN32) || defined(_WIN64) /* For Windows. */
+	#if defined(_WIN32) || defined(_WIN64)
 		HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
 
 		if(hOut == INVALID_HANDLE_VALUE)
@@ -181,14 +181,16 @@ static void enable_vt_and_utf8()
 			DWORD err = GetLastError();
 			(void)err;
 		}
+	#else
+		return;
 	#endif
 }
 
 /* Clear terminal function: */
-#define CLEAR_TERMINAL() (fputs("\033[2J\033[3J\033[H", stdout))
+#define CLEAR_TERMINAL(void) (fputs("\033[2J\033[3J\033[H", stdout))
 
 /* Press enter to continue function: */
-static void petc()
+static void petc(void)
 {
 	int characters = 0; /* Variable to store characters. */
 	while((characters = getchar()) != EOF && characters != '\n');
@@ -197,14 +199,14 @@ static void petc()
 }
 
 /* Alternative press enter to continue function (without pausing, just saying to press "ENTER"): */
-static void apetc()
+static void apetc(void)
 {
 	fputs("Press \"ENTER\" to continue...", stdout);
 	getchar();
 }
 
 /* Char verify OS function: */
-static char verify_os()
+static char verify_os(void)
 {
 	#if defined(_WIN32) || defined(_WIN64) /* For Windows. */
 		return 1;
@@ -212,11 +214,11 @@ static char verify_os()
 		return 2;
 	#elif defined(__ANDROID__)             /* For Android. */
 		return 3
-	#elif defined(__APPLE__)               /* For Apple. */
+	#elif defined(__APPLE__)               /* For Apple/macOS. */
 		return 4;
 	#elif defined(__DJGPP__)               /* For MS-DOS. */
 		return 5;
-	#else                                  /* For another OS. */
+	#else                                  /* For another unknown OS. */
 		return 0;
 	#endif
 }
@@ -224,94 +226,111 @@ static char verify_os()
 /* Seconds sleep function: */
 static void ssleep(unsigned int time)
 {
-	if(time == 0u)
-	{
+	#ifndef __DJGPP__
+		if(time == 0UL)
+		{
+			return;
+		}
+
+		else
+		{
+			#if defined(_WIN32) || defined(_WIN64)
+				Sleep((DWORD)time * (DWORD)1000UL);
+			#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
+				struct timespec req;
+				struct timespec rem;
+				int res;
+
+				req.tv_sec = (time_t)time;
+				req.tv_nsec = 0L;
+
+				while((res = nanosleep(&req, &rem)) == -1)
+				{
+					if(errno == EINTR)
+					{
+						req = rem;
+					}
+
+					else
+					{
+						break;
+					}
+				}
+			#else
+				return;
+			#endif
+		}
+	#else
 		return;
-	}
-
-	#ifndef __DJGPP__ /* For any OS else MS-DOS. */
-		#if defined(_WIN32) || defined(_WIN64) /* For Windows. */
-			Sleep((DWORD)time * (DWORD)1000UL);
-		#else /* For Linux, Android and Apple. */
-			struct timespec req;
-			struct timespec rem;
-			int res;
-
-			req.tv_sec = (time_t)time;
-			req.tv_nsec = 0L;
-
-			while((res = nanosleep(&req, &rem)) == -1)
-			{
-				if(errno == EINTR)
-				{
-					req = rem;
-				}
-
-				else
-				{
-					break;
-				}
-			}
-		#endif
 	#endif
 }
 
 /* Milliseconds sleep function: */
 static void mssleep(unsigned int time)
 {
-	if(time == 0UL)
-	{
+	#ifndef __DJGPP__
+		if(time == 0UL)
+		{
+			return;
+		}
+
+		else
+		{
+			#if defined(_WIN32) || defined(_WIN64)
+				Sleep((DWORD)time);
+			#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
+				struct timespec req;
+				struct timespec rem;
+				int res;
+
+				req.tv_sec = (time_t)(time / 1000);
+				req.tv_nsec = (long)((time % 1000) * 1000000L);
+
+				while((res = nanosleep(&req, &rem)) == -1)
+				{
+					if(errno == EINTR)
+					{
+						req = rem;
+					}
+
+					else
+					{
+						break;
+					}
+				}
+			#else
+				return;
+			#endif
+		}
+	#else
 		return;
-	}
-
-	#ifndef __DJGPP__ /* For any OS else MS-DOS. */
-		#if defined(_WIN32) || defined(_WIN64) /* For Windows. */
-			Sleep((DWORD)time);
-		#else /* For Linux, Android and Apple. */
-			struct timespec req;
-			struct timespec rem;
-			int res;
-
-			req.tv_sec = (time_t)(time / 1000);
-			req.tv_nsec = (long)((time % 1000) * 1000000L);
-
-			while((res = nanosleep(&req, &rem)) == -1)
-			{
-				if(errno == EINTR)
-				{
-					req = rem;
-				}
-
-				else
-				{
-					break;
-				}
-			}
-		#endif
 	#endif
 }
 
 /* Read "READ-ME" function: */
-static void rrmf()
+static void rrmf(void)
 {
-	#if defined(_WIN32) || defined(_WIN64) /* For Windows. */
+	#if defined(_WIN32) || defined(_WIN64)
 		puts("When you enter just press \"space\" to advance 1 page, \"enter\" to go down 1 line and \"Ctrl-C\" to quit \"READ-ME\"!");
 		petc();
 		system("more /C /P README.md");
 		petc_a();
-	#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__) /* For Linux, Android and Apple. */
+	#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
 		puts("When you enter press \"q\" to quit, \"enter\" to go down to the next line, \"space\" to go down next page, and type \"/ + text\" to search for text!");
 		petc();
 		system("more -cp README.md");
-	#elif defined(__DJGPP__) /* For MS-DOS. */
+	#elif defined(__DJGPP__)
 		system("TYPE README.MD");
+		petc();
+	#else
+		return;
 	#endif
 }
 
 /* Open URL function: */
 static void url_openner(const char *url)
 {
-	#ifndef __DJGPP__ /* For any OS else MS-DOS. */
+	#ifndef __DJGPP__
 		if(url == NULL)
 		{
 			return;
@@ -321,37 +340,38 @@ static void url_openner(const char *url)
 		{
 			char command[8192] = ""; /* Command variable. */
 
-			#if defined(_WIN32) || defined(_WIN64) /* For Windows. */
+			#if defined(_WIN32) || defined(_WIN64)
 				snprintf(command, sizeof(command), "start %s", url);
-			#elif defined(__linux__) || defined(__ANDROID__) /* For Linux and Android. */
+			#elif defined(__linux__) || defined(__ANDROID__)
 				snprintf(command, sizeof(command), "xdg-open %s", url);
 			#elif defined(__APPLE__) /* For Apple. */
 				snprintf(command, sizeof(command), "open %s", url);
+			#else
+				return;
 			#endif
 
 			system(command);
 		}
+	#else
+		return;
 	#endif
 }
 
 /* Easter egg function: */
-static void easter_egg_function()
+static void easter_egg_function(void)
 {
-	/* Basic commands: */
 	puts("Congratulations!!! You just discovered a new easter egg! (please don't say it to anywhone ok!)");
 	puts("This is the link to our github account! If you want to see our projects, codes, etc...");
 	puts("Link: https://github.com/paulao255/");
 
-	/* Command to open the link on browser: */
-	#if defined(_WIN32) || defined(_WIN64) /* For Windows. */
+	#if defined(_WIN32) || defined(_WIN64)
 	  system("start https://github.com/paulao255/");
-	#elif defined(__linux__) || defined(__ANDROID__) /* For Linux and Android. */
+	#elif defined(__linux__) || defined(__ANDROID__)
 	  system("xdg-open https://github.com/paulao255/");
-	#elif defined(__APPLE__) /* For macOS. */
+	#elif defined(__APPLE__)
 	  system("open https://github.com/paulao255/");
 	#endif
 
-	/* Pause APP: */
 	petc();
 }
 
