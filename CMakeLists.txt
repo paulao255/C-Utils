@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(C-Utils LANGUAGES C)
+project(C-Utils LANGUAGES C CXX)
 add_library(C-Utils INTERFACE)
 target_include_directories(C-Utils INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
 add_library(C-Utils::C-Utils ALIAS C-Utils)
