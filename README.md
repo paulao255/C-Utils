@@ -3,7 +3,6 @@
 
 To include **C-Utils** into your C/C++ project, you need to use **CMake** by adding these lines on `CMakeLists.txt`:
 ```CMakeLists.txt
-# CMake example:
 cmake_minimum_required(VERSION 3.14)
 project(Example-C-Project LANGUAGES C VERSION 1.0.0)
 set(CMAKE_C_STANDARD 90)
