@@ -51,10 +51,10 @@ extern "C"
 #endif
 
 /* C Utils version variables: */
-#define C_UTILS_FULL_VERSION  170.0L           /* C Utils full version variable (1.7.0).           */
+#define C_UTILS_FULL_VERSION  171.0L           /* C Utils full version variable (1.7.1).           */
 #define C_UTILS_MAJOR_VERSION   1.0L           /* C Utils major version variable (1).              */
 #define C_UTILS_MINOR_VERSION   7.0L           /* C Utils minor version variable (7).              */
-#define C_UTILS_PATCH_VERSION   0.0L           /* C Utils patch version variable (0).              */
+#define C_UTILS_PATCH_VERSION   1.0L           /* C Utils patch version variable (1).              */
 
 /* Terminal colors: */
 #define BASE_TERMINAL          "\033[m"        /* Reset terminal text.                             */
@@ -88,7 +88,6 @@ extern "C"
 
 /* Math utils: */
 #ifdef IMPORT_MATH_UTILS
-
 	/* Functions to calculate the circumference: */
 	#define CIRCUMFER_F(pi_val_float) ((float)(2.0f) * (float)(pi_val_) * (float)(radius_val_))                                                 /* Float version.       */
 	#define CIRCUMFER_D(pi_val_double) ((double)(2.0) * (double)(pi_val_) * (double)(radius_val_))                                              /* Double version.      */
@@ -145,6 +144,9 @@ extern "C"
 	#define FAHRENHEIT_TO_CELSIUS_F(fahrenheit_val_float)       (((float)(fahrenheit_val_float) - (float)(32.0f)) * (float)(5.0f / 9.0f))                           /* Fahrenheit to Celsius (in float).       */
 	#define FAHRENHEIT_TO_CELSIUS_D(fahrenheit_val_double)      (((double)(fahrenheit_val_double) - (double)(32.0)) * (double)(5.0 / 9.0))                          /* Fahrenheit to Celsius (in double).      */
 	#define FAHRENHEIT_TO_CELSIUS_L(fahrenheit_val_long_double) (((long double)(fahrenheit_val_long_double) - (long double)(32.0L)) * (long double)(5.0L / 9.0L))   /* Fahrenheit to Celsius (in long double). */
+
+	/* Undefine math utils: */
+	#undef IMPORT_MATH_UTILS
 #endif
 
 /* Function to solve encoding in the Windows terminal: */
