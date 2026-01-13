@@ -3,20 +3,14 @@
 #define _C_UTILS_H_
 
 /* Defines: */
-#if defined(_MSVC_LANG)
-	#if _MSVC_LANG < 201103L
-		#define __USE_MINGW_ANSI_STDIO 1
-	#endif
-#elif defined(__cplusplus)
-	#if __cplusplus < 201103L
-		#define __USE_MINGW_ANSI_STDIO 1
-	#endif
+#if defined(_MSVC_LANG) && _MSVC_LANG < 201103L
+	#define __USE_MINGW_ANSI_STDIO 1
+#elif defined(__cplusplus) && __cplusplus < 201103L
+	#define __USE_MINGW_ANSI_STDIO 1
 #endif
 
-#if !defined(_WIN32) || !defined(_WIN64)
-	#ifndef _POSIX_C_SOURCE
-		#define _POSIX_C_SOURCE 199309L
-	#endif
+#if (!defined(_WIN32) || !defined(_WIN64)) && !defined(_POSIX_C_SOURCE)
+	#define _POSIX_C_SOURCE 199309L
 #endif
 
 /* Importations: */
@@ -51,9 +45,9 @@ extern "C"
 #endif
 
 /* C Utils version variables: */
-#define C_UTILS_FULL_VERSION  180.0L           /* C Utils full version variable (1.8.0).           */
-#define C_UTILS_MAJOR_VERSION   1.0L           /* C Utils major version variable (1).              */
-#define C_UTILS_MINOR_VERSION   8.0L           /* C Utils minor version variable (8).              */
+#define C_UTILS_FULL_VERSION  200.0L           /* C Utils full version variable (2.0.0).           */
+#define C_UTILS_MAJOR_VERSION   2.0L           /* C Utils major version variable (2).              */
+#define C_UTILS_MINOR_VERSION   0.0L           /* C Utils minor version variable (0).              */
 #define C_UTILS_PATCH_VERSION   0.0L           /* C Utils patch version variable (0).              */
 
 /* Terminal colors: */
@@ -88,62 +82,171 @@ extern "C"
 
 /* Math utils: */
 #ifdef IMPORT_MATH_UTILS
-	/* Functions to calculate the circumference: */
-	#define CIRCUMFER_F(pi_val_float) ((float)(2.0f) * (float)(pi_val_) * (float)(radius_val_))                                                 /* Float version.       */
-	#define CIRCUMFER_D(pi_val_double) ((double)(2.0) * (double)(pi_val_) * (double)(radius_val_))                                              /* Double version.      */
-	#define CIRCUMFER_L(pi_val_long_double, radius_val_long_double) ((long double)(2.0L) * (long double)(pi_val_) * (long double)(radius_val_)) /* Long double version. */
+	/* Math Utils functions prototypes: */
+	float circumfer_f(float pi_val, float radius_val);                        /* Function to calculate a circumference using a float value.              */
+	float circle_area_f(float pi_val, float radius_val);                      /* Function to calculate the area of a circle using a float value.         */
+	float sphere_volume_f(float pi_val, float radius_val);                    /* Function to calculate the volume of a sphere using a float value.       */
+	double circumfer_d(double pi_val, double radius_val);                     /* Function to calculate a circumference using a double value.             */
+	double circle_area_d(double pi_val, double radius_val);                   /* Function to calculate the area of a circle using a double value.        */
+	double sphere_volume_d(double pi_val, double radius_val);                 /* Function to calculate the volume of a sphere using a double value.      */
+	long double circumfer_ld(long double pi_val, long double radius_val);     /* Function to calculate a circumference using a long double value.        */
+	long double circle_area_ld(long double pi_val, long double radius_val);   /* Function to calculate the area of a circle using a long double value.   */
+	long double sphere_volume_ld(long double pi_val, long double radius_val); /* Function to calculate the volume of a sphere using a long double value. */
 
-	/* Functions to calculate the area of a circle: */
-	float circle_area_f(float pi_val_float, float radius_val_float)                                 /* Float version.       */
+	float circumfer_f(float pi_val, float radius_val)
 	{
-		return pi_val_float * (radius_val_float * radius_val_float);
+		return 2.0f * pi_val * radius_val;
 	}
 
-	double circle_area_d(double pi_val_double, double radius_val_double)                            /* Double version.      */
+	float circle_area_f(float pi_val, float radius_val)
 	{
-		return pi_val_double * (radius_val_double * radius_val_double);
+		return pi_val * (radius_val * radius_val);
 	}
 
-	long double circle_area_l(long double pi_val_long_double, long double radius_val_long_double)   /* Long double version. */
+	float sphere_volume_f(float pi_val, float radius_val)
 	{
-		return pi_val_long_double * (radius_val_long_double * radius_val_long_double);
+		return (4.0f / 3.0f) * pi_val * (radius_val * radius_val * radius_val);
 	}
 
-	/* Functions to calculate the volume of a sphere: */
-	float sphere_volume_f(float pi_val_float, float radius_val_float)                               /* Float version.       */
+	double circumfer_d(double pi_val, double radius_val)
 	{
-		return (4.0f / 3.0f) * pi_val_float * (radius_val_float * radius_val_float * radius_val_float);
+		return 2.0 * pi_val * radius_val;
 	}
 
-	double sphere_volume_d(double pi_val_double, double radius_val_double)                          /* Double version.      */
+	double circle_area_d(double pi_val, double radius_val)
 	{
-		return (4.0 / 3.0) * pi_val_double * (radius_val_double * radius_val_double * radius_val_double);
+		return pi_val * (radius_val * radius_val);
 	}
 
-	long double sphere_volume_l(long double pi_val_long_double, long double radius_val_long_double) /* Long double version. */
+	double sphere_volume_d(double pi_val, double radius_val)
 	{
-		return (4.0L / 3.0L) * pi_val_long_double * (radius_val_long_double * radius_val_long_double * radius_val_long_double);
+		return (4.0 / 3.0) * pi_val * (radius_val * radius_val * radius_val);
+	}
+
+	long double circumfer_ld(long double pi_val, long double radius_val)
+	{
+		return 2.0L * pi_val * radius_val;
+	}
+
+	long double circle_area_ld(long double pi_val, long double radius_val)
+	{
+		return pi_val * (radius_val * radius_val);
+	}
+
+	long double sphere_volume_ld(long double pi_val, long double radius_val)
+	{
+		return (4.0L / 3.0L) * pi_val * (radius_val * radius_val * radius_val);
 	}
 
 	/* Temperature convertion functions: */
-	#define KELVIN_TO_CELSIUS_F(kelvin_val_float)               ((float)(kelvin_val_float) - (float)(273.15f))                                                      /* Kelvin to Celsius (in float).           */
-	#define KELVIN_TO_CELSIUS_D(kelvin_val_double)              ((double)(kelvin_val_double) - (double)(273.15))                                                    /* Kelvin to Celsius (in double).          */
-	#define KELVIN_TO_CELSIUS_L(kelvin_val_long_double)         ((long double)(kelvin_val_long_double) - (long double)(273.15L))                                    /* Kelvin to Celsius (in long double).     */
-	#define KELVIN_TO_FAHRENHEIT_F(kelvin_val_float)            ((float)(kelvin_val_float) * (float)(9.0f / 5.0f) - (float)(459.67f))                               /* Kelvin to Fahrenheit (in float).        */
-	#define KELVIN_TO_FAHRENHEIT_D(kelvin_val_double)           ((double)(kelvin_val_double) * (double)(9.0 / 5.0) - (double)(459.67))                              /* Kelvin to Fahrenheit (in double).       */
-	#define KELVIN_TO_FAHRENHEIT_L(kelvin_val_long_double)      ((long double)(kelvin_val_long_double) * (long double)(9.0L / 5.0L) - (long double)(459.67L))       /* Kelvin to Fahrenheit (in long double).  */
-	#define CELSIUS_TO_KELVIN_F(celsius_val_float)              ((float)(celsius_val_float) + (float)(273.15f))                                                     /* Celsius to Kelvin (in float).           */
-	#define CELSIUS_TO_KELVIN_D(celsius_val_double)             ((double)(celsius_val_double) + (double)(273.15))                                                   /* Celsius to Kelvin (in double).          */
-	#define CELSIUS_TO_KELVIN_L(celsius_val_long_double)        ((long double)(celsius_val_long_double) + (long double)(273.15L))                                   /* Celsius to Kelvin (in long double).     */
-	#define CELSIUS_TO_FAHRENHEIT_F(celsius_val_float)          ((float)(celsius_val_float) * (float)(9.0f / 5.0f) + (float)(32.0f))                                /* Celsius to Fahrenheit (in float).       */
-	#define CELSIUS_TO_FAHRENHEIT_D(celsius_val_double)         ((double)(celsius_val_double) * (double)(9.0 / 5.0) + (double)(32.0))                               /* Celsius to Fahrenheit (in double).      */
-	#define CELSIUS_TO_FAHRENHEIT_L(celsius_val_long_double)    ((long double)(celsius_val_long_double) * (long double)(9.0L / 5.0L) + (long double)(32.0L))        /* Celsius to Fahrenheit (in long double). */
-	#define FAHRENHEIT_TO_KELVIN_F(fahrenheit_val_float)        (((float)(fahrenheit_val_float) + (float)(459.67f)) * (float)(5.0f / 9.0f))                         /* Fahrenheit to Kelvin (in float).        */
-	#define FAHRENHEIT_TO_KELVIN_D(fahrenheit_val_double)       (((double)(fahrenheit_val_double) + (double)(459.67)) * (double)(5.0 / 9.0))                        /* Fahrenheit to Kelvin (in double).       */
-	#define FAHRENHEIT_TO_KELVIN_L(fahrenheit_val_long_double)  (((long double)(fahrenheit_val_long_double) + (long double)(459.67L)) * (long double)(5.0L / 9.0L)) /* Fahrenheit to Kelvin (in long double).  */
-	#define FAHRENHEIT_TO_CELSIUS_F(fahrenheit_val_float)       (((float)(fahrenheit_val_float) - (float)(32.0f)) * (float)(5.0f / 9.0f))                           /* Fahrenheit to Celsius (in float).       */
-	#define FAHRENHEIT_TO_CELSIUS_D(fahrenheit_val_double)      (((double)(fahrenheit_val_double) - (double)(32.0)) * (double)(5.0 / 9.0))                          /* Fahrenheit to Celsius (in double).      */
-	#define FAHRENHEIT_TO_CELSIUS_L(fahrenheit_val_long_double) (((long double)(fahrenheit_val_long_double) - (long double)(32.0L)) * (long double)(5.0L / 9.0L))   /* Fahrenheit to Celsius (in long double). */
+	float kelvin_to_celsius_f(float kelvin_val);                      /* Function to convert Kelvin to Celsius using a float value.           */
+	float kelvin_to_fahrenheit_f(float kelvin_val);                   /* Function to convert Kelvin to Fahrenheit using a float value.        */
+	float celsius_to_kelvin_f(float celsius_val);                     /* Function to convert Celsius to Kelvin using a float value.           */
+	float celsius_to_fahrenheit_f(float celsius_val);                 /* Function to convert Celsius to Fahrenheit using a float value.       */
+	float fahrenheit_to_kelvin_f(float fahrenheit_val);               /* Function to convert Fahrenheit to Kelvin using a float value.        */
+	float fahrenheit_to_celsius_f(float fahrenheit_val);              /* Function to convert Fahrenheit to Celsius using a float value.       */
+	double kelvin_to_celsius_d(double kelvin_val);                    /* Function to convert Kelvin to Celsius using a double value.          */
+	double kelvin_to_fahrenheit_d(double kelvin_val);                 /* Function to convert Kelvin to Fahrenheit using a double value.       */
+	double celsius_to_kelvin_d(double celsius_val);                   /* Function to convert Celsius to Kelvin using a double value.          */
+	double celsius_to_fahrenheit_d(double celsius_val);               /* Function to convert Celsius to Fahrenheit using a double value.      */
+	double fahrenheit_to_kelvin_d(double fahrenheit_val);             /* Function to convert Fahrenheit to Kelvin using a double value.       */
+	double fahrenheit_to_celsius_d(double fahrenheit_val);            /* Function to convert Fahrenheit to Celsius using a double value.      */
+	long double kelvin_to_celsius_ld(long double kelvin_val);         /* Function to convert Kelvin to Celsius using a long double value.     */
+	long double kelvin_to_fahrenheit_ld(long double kelvin_val);      /* Function to convert Kelvin to Fahrenheit using a long double value.  */
+	long double celsius_to_kelvin_ld(long double celsius_val);        /* Function to convert Celsius to Kelvin using a long double value.     */
+	long double celsius_to_fahrenheit_ld(long double celsius_val);    /* Function to convert Celsius to Fahrenheit using a long double value. */
+	long double fahrenheit_to_kelvin_ld(long double fahrenheit_val);  /* Function to convert Fahrenheit to Kelvin using a long double value.  */
+	long double fahrenheit_to_celsius_ld(long double fahrenheit_val); /* Function to convert Fahrenheit to Celsius using a long double value. */
+
+	float kelvin_to_celsius_f(float kelvin_val)
+	{
+		return kelvin_val - 273.15f;
+	}
+
+	float kelvin_to_fahrenheit_f(float kelvin_val)
+	{
+		return kelvin_val * (9.0f / 5.0f) - 459.67f;
+	}
+
+	float celsius_to_kelvin_f(float celsius_val)
+	{
+		return celsius_val + 273.15f;
+	}
+
+	float celsius_to_fahrenheit_f(float celsius_val)
+	{
+		return celsius_val * (9.0f / 5.0f) + 32.0f;
+	}
+
+	float fahrenheit_to_kelvin_f(float fahrenheit_val)
+	{
+		return (fahrenheit_val + 459.67f) * (5.0f / 9.0f);
+	}
+
+	float fahrenheit_to_celsius_f(float fahrenheit_val)
+	{
+		return (fahrenheit_val - 32.0f) * (5.0f / 9.0f);
+	}
+
+	double kelvin_to_celsius_d(double kelvin_val)
+	{
+		return kelvin_val - 273.15;
+	}
+
+	double kelvin_to_fahrenheit_d(double kelvin_val)
+	{
+		return kelvin_val * (9.0 / 5.0) - 459.67;
+	}
+
+	double celsius_to_kelvin_d(double celsius_val)
+	{
+		return celsius_val + 273.15;
+	}
+
+	double celsius_to_fahrenheit_d(double celsius_val)
+	{
+		return celsius_val * (9.0 / 5.0) + 32.0;
+	}
+
+	double fahrenheit_to_kelvin_d(double fahrenheit_val)
+	{
+		return (fahrenheit_val + 459.67) * (5.0 / 9.0);
+	}
+
+	double fahrenheit_to_celsius_d(double fahrenheit_val)
+	{
+		return (fahrenheit_val - 32.0) * (5.0 / 9.0);
+	}
+
+	long double kelvin_to_celsius_ld(long double kelvin_val)
+	{
+		return kelvin_val - 273.15L;
+	}
+
+	long double kelvin_to_fahrenheit_ld(long double kelvin_val)
+	{
+		return kelvin_val * (9.0L / 5.0L) - 459.67L;
+	}
+
+	long double celsius_to_kelvin_ld(long double celsius_val)
+	{
+		return celsius_val + 273.15L;
+	}
+
+	long double celsius_to_fahrenheit_ld(long double celsius_val)
+	{
+		return celsius_val * (9.0L / 5.0L) + 32.0L;
+	}
+
+	long double fahrenheit_to_kelvin_ld(long double fahrenheit_val)
+	{
+		return (fahrenheit_val + 459.67L) * (5.0L / 9.0L);
+	}
+
+	long double fahrenheit_to_celsius_ld(long double fahrenheit_val)
+	{
+		return (fahrenheit_val - 32.0L) * (5.0L / 9.0L);
+	}
 
 	/* Undefine math utils: */
 	#undef IMPORT_MATH_UTILS
@@ -187,7 +290,10 @@ static void enable_vt_and_utf8(void)
 }
 
 /* Clear terminal function: */
-#define CLEAR_TERMINAL(void) (fputs("\033[2J\033[3J\033[H", stdout))
+static void clear_terminal(void)
+{
+	fputs("\033[2J\033[3J\033[H", stdout);
+}
 
 /* Press enter to continue function: */
 static void petc(void)
@@ -331,21 +437,39 @@ static void rrmf(void)
 static void url_openner(const char *url)
 {
 	#ifndef __DJGPP__
-		if(url == NULL)
+		if(!url)
 		{
 			return;
 		}
 
 		else
 		{
-			char command[8192] = ""; /* Command variable. */
+			char command[16384] = ""; /* Command variable. */
 
 			#if defined(_WIN32) || defined(_WIN64)
-				snprintf(command, sizeof(command), "start %s", url);
+				#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
+					snprintf(command, sizeof(command), "start %s", url);
+				#elif defined(__cplusplus) && __cplusplus >= 201103L
+					snprintf(command, sizeof(command), "start %s", url);
+				#else
+					sprintf(command, "start %s", url);
+				#endif
 			#elif defined(__linux__) || defined(__ANDROID__)
-				snprintf(command, sizeof(command), "xdg-open %s", url);
+				#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
+					snprintf(command, sizeof(command), "xdg-open %s", url);
+				#elif defined(__cplusplus) && __cplusplus >= 201103L
+					snprintf(command, sizeof(command), "xdg-open %s", url);
+				#else
+					sprintf(command, "xdg-open %s", url);
+				#endif
 			#elif defined(__APPLE__) /* For Apple. */
-				snprintf(command, sizeof(command), "open %s", url);
+				#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
+					snprintf(command, sizeof(command), "open %s", url);
+				#elif defined(__cplusplus) && __cplusplus >= 201103L
+					snprintf(command, sizeof(command), "open %s", url);
+				#else
+					sprintf(command, "open %s", url);
+				#endif
 			#else
 				return;
 			#endif
