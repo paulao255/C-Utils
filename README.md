@@ -5,10 +5,11 @@
 To include **C-Utils** into your C/C++ project, you need to use **CMake** by adding these lines on `CMakeLists.txt`:
 
 ```CMakeLists.txt
-cmake_minimum_required(VERSION 3.14)
-project(Example-C-Project LANGUAGES C VERSION 1.0.0)
-set(CMAKE_C_STANDARD 90)
+cmake_minimum_required(VERSION 4.2.1)
+project(Example-C-Project LANGUAGES C VERSION 20260114)
+set(CMAKE_C_STANDARD 90) # 90 for C89, 99 for C99, 11 for C11, 17 for C17 and 23 for C23.
 set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_C_EXTENSIONS OFF)
 set(CMAKE_C_FLAGS "-fdiagnostics-color=always -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Wsign-conversion -Wformat=2 -Wnull-dereference -Wstrict-prototypes -Wmissing-prototypes -Wcast-align -Wpointer-arith -Wundef -v -O3 -funroll-loops -flto -mtune=native -march=native")
 include(FetchContent) # Include Fetch Content.
 FetchContent_Declare(C-Utils GIT_REPOSITORY https://github.com/paulao255/C-Utils.git GIT_TAG main) # Find C-Utils repo.

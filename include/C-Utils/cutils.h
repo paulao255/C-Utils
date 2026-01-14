@@ -3,9 +3,7 @@
 #define _C_UTILS_H_
 
 /* Defines: */
-#if defined(_MSVC_LANG) && _MSVC_LANG < 201103L
-	#define __USE_MINGW_ANSI_STDIO 1
-#elif defined(__cplusplus) && __cplusplus < 201103L
+#if defined(_MSVC_LANG) && _MSVC_LANG < 201103L || defined(__cplusplus) && __cplusplus < 201103L
 	#define __USE_MINGW_ANSI_STDIO 1
 #endif
 
@@ -53,10 +51,10 @@ extern "C"
 #endif
 
 /* C Utils version variables: */
-#define C_UTILS_FULL_VERSION  210           /* C Utils full version variable (2.1.0).           */
-#define C_UTILS_MAJOR_VERSION   2           /* C Utils major version variable (2).              */
-#define C_UTILS_MINOR_VERSION   1           /* C Utils minor version variable (1).              */
-#define C_UTILS_PATCH_VERSION   0           /* C Utils patch version variable (0).              */
+#define C_UTILS_FULL_VERSION  20260114      /* C Utils full version variable (2026/01/14).      */
+#define C_UTILS_MAJOR_VERSION 2026          /* C Utils major version variable (2026).           */
+#define C_UTILS_MINOR_VERSION 01            /* C Utils minor version variable (01).             */
+#define C_UTILS_PATCH_VERSION 14            /* C Utils patch version variable (14).             */
 
 /* Terminal colors: */
 #define BASE_TERMINAL       "\033[m"        /* Reset terminal text.                             */
@@ -90,60 +88,77 @@ extern "C"
 
 /* Math utils: */
 #ifdef IMPORT_MATH_UTILS
-	/* Math Utils functions prototypes: */
-	float circumfer_f(float pi_val, float radius_val);                        /* Function to calculate a circumference using a float value.              */
-	float circle_area_f(float pi_val, float radius_val);                      /* Function to calculate the area of a circle using a float value.         */
-	float sphere_volume_f(float pi_val, float radius_val);                    /* Function to calculate the volume of a sphere using a float value.       */
-	double circumfer_d(double pi_val, double radius_val);                     /* Function to calculate a circumference using a double value.             */
-	double circle_area_d(double pi_val, double radius_val);                   /* Function to calculate the area of a circle using a double value.        */
-	double sphere_volume_d(double pi_val, double radius_val);                 /* Function to calculate the volume of a sphere using a double value.      */
-	long double circumfer_ld(long double pi_val, long double radius_val);     /* Function to calculate a circumference using a long double value.        */
-	long double circle_area_ld(long double pi_val, long double radius_val);   /* Function to calculate the area of a circle using a long double value.   */
-	long double sphere_volume_ld(long double pi_val, long double radius_val); /* Function to calculate the volume of a sphere using a long double value. */
+	/* Importations and defines: */
+	#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
+		#include <math.h>
+		#define PI_F  (acosf(-1.0f))                  /* Pi constant using float value.          */
+		#define PI_D  (acos(-1.0))                    /* Pi constant using double value.         */
+		#define PI_LD (acosl(-1.0L))                  /* Pi constant using long double value.    */
+	#elif (defined(_MSVC_LANG) && _MSVC_LANG >= 201103L) || (defined(__cplusplus) && __cplusplus >= 201103L)
+		#include <cmath>
+		#define PI_F  (std::acosf(-1.0f))             /* Pi constant using float value.          */
+		#define PI_D  (std::acos(-1.0))               /* Pi constant using double value.         */
+		#define PI_LD (std::acosl(-1.0L))             /* Pi constant using long double value.    */
+	#else
+		#define PI_F  3.14159265358979323846f         /* Pi constant using float value.          */
+		#define PI_D  3.14159265358979323846          /* Pi constant using double value.         */
+		#define PI_LD 3.14159265358979323846L         /* Pi constant using long double value.    */
+	#endif
 
-	float circumfer_f(float pi_val, float radius_val)
+	/* Math utils functions prototypes: */
+	float circumfer_f(float radius_val);                  /* Function to calculate a circumference using a float value.              */
+	float circle_area_f(float radius_val);                /* Function to calculate the area of a circle using a float value.         */
+	float sphere_volume_f(float radius_val);              /* Function to calculate the volume of a sphere using a float value.       */
+	double circumfer_d(double radius_val);                /* Function to calculate a circumference using a double value.             */
+	double circle_area_d(double radius_val);              /* Function to calculate the area of a circle using a double value.        */
+	double sphere_volume_d(double radius_val);            /* Function to calculate the volume of a sphere using a double value.      */
+	long double circumfer_ld(long double radius_val);     /* Function to calculate a circumference using a long double value.        */
+	long double circle_area_ld(long double radius_val);   /* Function to calculate the area of a circle using a long double value.   */
+	long double sphere_volume_ld(long double radius_val); /* Function to calculate the volume of a sphere using a long double value. */
+
+	float circumfer_f(float radius_val)
 	{
-		return 2.0f * pi_val * radius_val;
+		return 2.0f * PI_F * radius_val;
 	}
 
-	float circle_area_f(float pi_val, float radius_val)
+	float circle_area_f(float radius_val)
 	{
-		return pi_val * (radius_val * radius_val);
+		return PI_F * (radius_val * radius_val);
 	}
 
-	float sphere_volume_f(float pi_val, float radius_val)
+	float sphere_volume_f(float radius_val)
 	{
-		return (4.0f / 3.0f) * pi_val * (radius_val * radius_val * radius_val);
+		return (4.0f / 3.0f) * PI_F * (radius_val * radius_val * radius_val);
 	}
 
-	double circumfer_d(double pi_val, double radius_val)
+	double circumfer_d(double radius_val)
 	{
-		return 2.0 * pi_val * radius_val;
+		return 2.0 * PI_D * radius_val;
 	}
 
-	double circle_area_d(double pi_val, double radius_val)
+	double circle_area_d(double radius_val)
 	{
-		return pi_val * (radius_val * radius_val);
+		return PI_D * (radius_val * radius_val);
 	}
 
-	double sphere_volume_d(double pi_val, double radius_val)
+	double sphere_volume_d(double radius_val)
 	{
-		return (4.0 / 3.0) * pi_val * (radius_val * radius_val * radius_val);
+		return (4.0 / 3.0) * PI_D * (radius_val * radius_val * radius_val);
 	}
 
-	long double circumfer_ld(long double pi_val, long double radius_val)
+	long double circumfer_ld(long double radius_val)
 	{
-		return 2.0L * pi_val * radius_val;
+		return 2.0L * PI_LD * radius_val;
 	}
 
-	long double circle_area_ld(long double pi_val, long double radius_val)
+	long double circle_area_ld(long double radius_val)
 	{
-		return pi_val * (radius_val * radius_val);
+		return PI_LD * (radius_val * radius_val);
 	}
 
-	long double sphere_volume_ld(long double pi_val, long double radius_val)
+	long double sphere_volume_ld(long double radius_val)
 	{
-		return (4.0L / 3.0L) * pi_val * (radius_val * radius_val * radius_val);
+		return (4.0L / 3.0L) * PI_LD * (radius_val * radius_val * radius_val);
 	}
 
 	/* Undefine math utils: */
