@@ -451,7 +451,7 @@ static void mssleep(unsigned int time)
 	#endif
 }
 
-static void url_openner(const char *url)
+static void url_opener(const char *url)
 {
 	#ifndef __DJGPP__
 		if(!url)
