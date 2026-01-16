@@ -353,14 +353,14 @@ static void rrmf(void)
 	#if defined(_WIN32) || defined(_WIN64)
 		puts("When you enter just press \"space\" to advance 1 page, \"enter\" to go down 1 line and \"Ctrl-C\" to quit \"READ-ME\"!");
 		petc();
-		system("more /C /P README.md");
+		system("more /C /P ..\\README.md");
 		apetc();
 	#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
 		puts("When you enter press \"q\" to quit, \"enter\" to go down to the next line, \"space\" to go down next page, and type \"/ + text\" to search for text!");
 		petc();
-		system("more -cp README.md");
+		system("more -cp ../README.md");
 	#elif defined(__DJGPP__)
-		system("TYPE README.MD");
+		system("TYPE ..\\README.MD");
 		petc();
 	#else
 		return;
