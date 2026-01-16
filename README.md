@@ -6,7 +6,7 @@ To include **C-Utils** into your C project, you need to use **CMake** by adding 
 
 ```CMakeLists.txt
 cmake_minimum_required(VERSION 4.2.1)
-project(Example-C-Project LANGUAGES C VERSION 20260114)
+project(Example-C-Project LANGUAGES C VERSION 20260116)
 set(CMAKE_C_STANDARD 90) # 90 for C89, 99 for C99, 11 for C11, 17 for C17 and 23 for C23.
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
@@ -22,7 +22,7 @@ For **C++ Code** create a `CMakeLists.txt` like this:
 
 ```CMakeLists.txt
 cmake_minimum_required(VERSION 4.2.1)
-project(Example-Cpp-Project LANGUAGES CXX VERSION 20260114)
+project(Example-Cpp-Project LANGUAGES CXX VERSION 20260116)
 set(CMAKE_CXX_STANDARD 98) # 98 for C++98, 11 for C++11, 14 for C++14, 17 for C++17, 20 for C++20, 23 for C++23 and 26 for C++26.
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -38,10 +38,11 @@ And the **project structure** need to be like this to work:
 
 ```Directory.txt
 .
+├─ .git/
 ├─ .gitignore
 ├─ CMakeLists.txt
-├─ src
-│  └─ Main.c/cpp
+├─ src/
+│  └─ Main.c or Main.cpp
 ├─ LICENSE
 └─ README.md
 ```
