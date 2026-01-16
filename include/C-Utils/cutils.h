@@ -287,6 +287,7 @@ static void clear_terminal(void);        /* Function to clear the terminal.     
 static void petc(void);                  /* Press enter to continue function.                   */
 static void apetc(void);                 /* Alternative press enter to continue function.       */
 static void rrmf(void);                  /* Read "READ-ME" function.                            */
+static void rlf(void);                   /* Read "LICENSE" function.                            */
 static void easter_egg_function(void);   /* Easter egg function.                                */
 static void ssleep(unsigned int time);   /* Seconds sleep function.                             */
 static void mssleep(unsigned int time);  /* Milliseconds sleep function.                        */
@@ -351,17 +352,29 @@ static void apetc(void)
 static void rrmf(void)
 {
 	#if defined(_WIN32) || defined(_WIN64)
-		puts("When you enter just press \"space\" to advance 1 page, \"enter\" to go down 1 line and \"Ctrl-C\" to quit \"READ-ME\"!");
-		petc();
 		system("more /C /P .\\README.md");
-		petc();
+		apetc();
 	#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
-		puts("When you enter press \"q\" to quit, \"enter\" to go down to the next line, \"space\" to go down next page, and type \"/ + text\" to search for text!");
-		petc();
 		system("more -cp ./README.md");
-		petc();
+		apetc();
 	#elif defined(__DJGPP__)
 		system("TYPE .\\README.MD");
+		petc();
+	#else
+		return;
+	#endif
+}
+
+static void rlf(void)
+{
+	#if defined(_WIN32) || defined(_WIN64)
+		system("more /C /P .\\LICENSE");
+		apetc();
+	#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
+		system("more -cp ./LICENSE");
+		apetc();
+	#elif defined(__DJGPP__)
+		system("TYPE .\\LICENSE");
 		petc();
 	#else
 		return;
