@@ -353,10 +353,10 @@ static void rrmf(void)
 {
 	#if defined(_WIN32) || defined(_WIN64)
 		system("more /C /P .\\README.md");
-		apetc();
+		petc();
 	#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
 		system("more -cp ./README.md");
-		apetc();
+		petc();
 	#elif defined(__DJGPP__)
 		system("TYPE .\\README.MD");
 		petc();
