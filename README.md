@@ -1,8 +1,18 @@
 # C-Utils
 
-**C-Utils** is a repository with header(s) to make C/C++ more easy/fast to create projects and big applications, it have the most common features, like `clear_terminal()`, `petc()`, etc... works in **C89/C++98 Standard** or **+**, and have **Linux**, **Windows** and **macOS** support (It probably works on **Android** and **MS-DOS** too).
+**C-Utils** is a repository with header(s) to make C/C++ more easy/fast to create projects and big applications, it have the most common features, like `clear_terminal()`, `petc()`, etc... works in **C89/C++98 Standard** or **+**.
 
-To include **C-Utils** into your C project, you need to use **CMake** by adding these lines on `CMakeLists.txt`:
+Compatible with:
+
+- [x] Windows.
+- [x] Linux.
+- [] Mac OS (Not tested yet, i if you can test it, send an e-mail to **contactpaulao\@gmail.com**).
+- [] Android (Not tested yet, i if you can test it, send an e-mail to **contactpaulao\@gmail.com**).
+- [] iOS (Not tested yet, i if you can test it, send an e-mail to **contactpaulao\@gmail.com**).
+
+## Dependencies
+
+To include **C-Utils** into your **C project**, you need to use **CMake** and **Ninja** by adding these lines on `CMakeLists.txt`:
 
 ```CMakeLists.txt
 cmake_minimum_required(VERSION 4.2.1)
@@ -14,11 +24,11 @@ set(CMAKE_C_FLAGS "-fdiagnostics-color=always -Wall -Wextra -Wpedantic -Wshadow 
 include(FetchContent) # Include Fetch Content.
 FetchContent_Declare(C-Utils GIT_REPOSITORY https://github.com/paulao255/C-Utils.git GIT_TAG main) # Find C-Utils repo.
 FetchContent_MakeAvailable(C-Utils) # Clone C-Utils repo.
-add_executable(Executable.exe ../src/Main.c)
-target_link_libraries(Executable.exe PRIVATE C-Utils::C-Utils) # Link C-Utils to executable.
+add_executable(Executable ../src/Main.c)
+target_link_libraries(Executable PRIVATE C-Utils::C-Utils) # Link C-Utils to executable.
 ```
 
-For **C++ Code** create a `CMakeLists.txt` like this:
+For a **C++ project** you need to create a `CMakeLists.txt` like this:
 
 ```CMakeLists.txt
 cmake_minimum_required(VERSION 4.2.1)
@@ -30,11 +40,11 @@ set(CMAKE_CXX_FLAGS "-fdiagnostics-color=always -Wall -Wextra -Wpedantic -Wshado
 include(FetchContent) # Include Fetch Content.
 FetchContent_Declare(C-Utils GIT_REPOSITORY https://github.com/paulao255/C-Utils.git GIT_TAG main) # Find C-Utils repo.
 FetchContent_MakeAvailable(C-Utils) # Clone C-Utils repo.
-add_executable(Executable.exe ../src/Main.cpp)
-target_link_libraries(Executable.exe PRIVATE C-Utils::C-Utils) # Link C-Utils to executable.
+add_executable(Executable ../src/Main.cpp)
+target_link_libraries(Executable PRIVATE C-Utils::C-Utils) # Link C-Utils to executable.
 ```
 
-And the **project structure** need to be like this to work:
+The **project structure** need to be like this to work:
 
 ```Directory.txt
 .
@@ -47,11 +57,39 @@ And the **project structure** need to be like this to work:
 └─ README.md
 ```
 
+And the **dependencies for C-Utils** and **C/C++ general projects** is:
+
+- `GCC` (or `Mingw GCC` for **Windows**).
+- `CMake` to **build the project**.
+- `Ninja` (or `Mingw Ninja` for **Windows**) to help `CMake` to **make the executable file**.
+
+### Build process
+
 **Build/Compile process**:
 
 1. Create a directory in `.` named `./build`.
 2. Change actual directory to `./build`.
-3. Type `cmake ..` in `./build` directory to make the `./build/Makefile`.
-4. Type `make` in `./build` to run `./build/Makefile` and create the compiled file named `./build/Executable.exe`.
+3. Type `cmake .. -G Ninja` in `./build` directory to make the `./build/build.ninja`.
+4. Type `ninja` in `./build` to run `./build/build.ninja` and create the compiled file named `./build/Executable.exe`.
 
-Created by: @paulao255.
+#### Dependencies install process
+
+**Windows**:
+
+1. Press `Windows + R`, type `cmd` and press `Ctrl + Shift + Enter`, then open it in administrator mode.
+2. Type into **cmd** `winget install --id="Kitware.CMake" && winget install --id="MSYS2.MSYS2"`.
+3. Now after install **CMake** and **MSYS2** press `Windows + R` and type `mingw64` or `mingw32` for 32 bits, then press `Ctrl + Shift + Enter` to open it as an administrator.
+4. Now on Mingw Shell type `pacman -Syyu && pacman -S mingw-w64-x86_64-gcc && pacman -S mingw-w64-x86_64-ninja`.
+5. Now you just need to **build** the project.
+
+**Linux**:
+
+1. Install `GCC`, `CMake`, `Ninja` with the **Package Manager of the Distribution**.
+2. **Build** the project.
+
+**macOS**:
+
+1. Install a **[MacPort](https://www.macports.org/install.php)** for your **current macOS** distro.
+2. Enter in **terminal** and type `sudo port selfupdate && sudo port install cmake gcc ninja`.
+
+**Created by: @paulao255**.

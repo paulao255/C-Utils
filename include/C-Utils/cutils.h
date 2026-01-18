@@ -51,10 +51,10 @@ extern "C"
 #endif
 
 /* C Utils version variables: */
-#define C_UTILS_FULL_VERSION  20260116      /* C Utils full version variable (2026/01/16).      */
+#define C_UTILS_FULL_VERSION  20260117      /* C Utils full version variable (2026/01/17).      */
 #define C_UTILS_MAJOR_VERSION 2026          /* C Utils major version variable (2026).           */
 #define C_UTILS_MINOR_VERSION 01            /* C Utils minor version variable (01).             */
-#define C_UTILS_PATCH_VERSION 16            /* C Utils patch version variable (16).             */
+#define C_UTILS_PATCH_VERSION 17            /* C Utils patch version variable (17).             */
 
 /* Terminal colors: */
 #define BASE_TERMINAL       "\033[m"        /* Reset terminal text.                             */
@@ -369,10 +369,10 @@ static void rlf(void)
 {
 	#if defined(_WIN32) || defined(_WIN64)
 		system("more /C /P .\\LICENSE");
-		apetc();
+		petc();
 	#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
 		system("more -cp ./LICENSE");
-		apetc();
+		petc();
 	#elif defined(__DJGPP__)
 		system("TYPE .\\LICENSE");
 		petc();
