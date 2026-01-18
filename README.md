@@ -6,9 +6,9 @@ Compatible with:
 
 - [x] Windows.
 - [x] Linux.
-- [] Mac OS (Not tested yet, i if you can test it, send an e-mail to **contactpaulao\@gmail.com**).
-- [] Android (Not tested yet, i if you can test it, send an e-mail to **contactpaulao\@gmail.com**).
-- [] iOS (Not tested yet, i if you can test it, send an e-mail to **contactpaulao\@gmail.com**).
+- [ ] Mac OS (Not tested yet, i if you can test it, send an e-mail to **contactpaulao\@gmail.com**).
+- [ ] Android (Not tested yet, i if you can test it, send an e-mail to **contactpaulao\@gmail.com**).
+- [ ] iOS (Not tested yet, i if you can test it, send an e-mail to **contactpaulao\@gmail.com**).
 
 ## Dependencies
 
