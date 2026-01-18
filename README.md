@@ -4,13 +4,13 @@
 
 Compatible with:
 
-- [X] Windows.
-- [X] Linux.
-- [ ] Mac OS (Not tested yet, i if you can test it, send an e-mail to **contactpaulao\@gmail.com**).
-- [x] Android (Not tested yet, i if you can test it, send an e-mail to **contactpaulao\@gmail.com**).
-- [ ] iOS (Not tested yet, i if you can test it, send an e-mail to **contactpaulao\@gmail.com**).
+- [x] Windows.
+- [x] Linux.
+- [ ] Mac OS (not tested yet, i if you can test it, send an e-mail to **contactpaulao\@gmail.com**).
+- [ ] Android (not tested yet, i if you can test it, send an e-mail to **contactpaulao\@gmail.com**).
+- [ ] iOS (not tested yet, i if you can test it, send an e-mail to **contactpaulao\@gmail.com**).
 
-To include **C-Utils** into your **C project**, you need to use **CMake** and **Ninja** by adding these lines on `CMakeLists.txt`:
+To include **C-Utils** into your **C project**, you need to use `CMake` and `Ninja` by adding these lines on `CMakeLists.txt`:
 
 ```CMakeLists.txt
 cmake_minimum_required(VERSION 4.2.1)
