@@ -83,8 +83,6 @@ The **project structure** need to be like this to work:
 
 #### Build process
 
-**Build/Compile process**:
-
 1. Create a directory in `.` named `./build`.
 2. Change actual directory to `./build`.
 3. Type `cmake .. -G Ninja` in `./build` directory to make the `./build/build.ninja`.
