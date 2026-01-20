@@ -14,7 +14,7 @@ To include **C-Utils** into your **C project**, you need to use `CMake` and `Nin
 
 ```CMakeLists.txt
 cmake_minimum_required(VERSION 4.2.1)
-project(Example-C-Project LANGUAGES C VERSION 20260116)
+project(Example-C-Project LANGUAGES C VERSION 20260119)
 set(CMAKE_C_STANDARD 90) # 90 for C89, 99 for C99, 11 for C11, 17 for C17 and 23 for C23.
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
@@ -24,13 +24,14 @@ FetchContent_Declare(C-Utils GIT_REPOSITORY https://github.com/paulao255/C-Utils
 FetchContent_MakeAvailable(C-Utils) # Clone C-Utils repo.
 add_executable(Executable ../src/Main.c)
 target_link_libraries(Executable PRIVATE C-Utils::C-Utils) # Link C-Utils to executable.
+set_target_properties(Executable PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin) # Put the executable into "./build/bin" directory.
 ```
 
 For a **C++ project** you need to create a `CMakeLists.txt` like this:
 
 ```CMakeLists.txt
 cmake_minimum_required(VERSION 4.2.1)
-project(Example-Cpp-Project LANGUAGES CXX VERSION 20260116)
+project(Example-Cpp-Project LANGUAGES CXX VERSION 20260119)
 set(CMAKE_CXX_STANDARD 98) # 98 for C++98, 11 for C++11, 14 for C++14, 17 for C++17, 20 for C++20, 23 for C++23 and 26 for C++26.
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -40,6 +41,7 @@ FetchContent_Declare(C-Utils GIT_REPOSITORY https://github.com/paulao255/C-Utils
 FetchContent_MakeAvailable(C-Utils) # Clone C-Utils repo.
 add_executable(Executable ../src/Main.cpp)
 target_link_libraries(Executable PRIVATE C-Utils::C-Utils) # Link C-Utils to executable.
+set_target_properties(Executable PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin) # Put the executable into "./build/bin" directory.
 ```
 
 The **project structure** need to be like this to work:
@@ -83,10 +85,10 @@ The **project structure** need to be like this to work:
 
 #### Build process
 
-1. Create a directory in `.` named `./build`.
-2. Change actual directory to `./build`.
-3. Type `cmake .. -G Ninja` in `./build` directory to make the `./build/build.ninja`.
-4. Type `ninja` in `./build` to run `./build/build.ninja` and create the compiled file named `./build/Executable.exe`.
+1. Create a directory named `./build` with terminal.
+2. Enter into the `./build` directory.
+3. Type `cmake .. -G Ninja` in `./build` directory to make the `./build/build.ninja` file.
+4. Type `ninja` in `./build` to run `./build/build.ninja` and create the compiled file named `./build/bin/Executable.exe`.
 
 ##### Credits
 
