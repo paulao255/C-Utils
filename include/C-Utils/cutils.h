@@ -287,7 +287,7 @@ static void rlf(void);                                          /* Read "LICENSE
 static void easter_egg_function(void);                          /* Easter egg function.                                */
 static void ssleep(unsigned int time);                          /* Seconds sleep function.                             */
 static void mssleep(unsigned int time);                         /* Milliseconds sleep function.                        */
-static void url_opener(const char *url);                        /* URL opener function.                                */
+static int url_opener(const char *url);                        /* URL opener function.                                */
 static int make_directory(const char *path, unsigned int mode); /* Function to create a directory.                     */
 static const char *verify_os(void);                             /* Function to verify the operating system.            */
 
@@ -477,12 +477,12 @@ static void mssleep(unsigned int time)
 	#endif
 }
 
-static void url_opener(const char *url)
+static int url_opener(const char *url)
 {
 	#ifndef __DJGPP__
 		if(!url)
 		{
-			return;
+			return -2;
 		}
 
 		else
@@ -514,13 +514,15 @@ static void url_opener(const char *url)
 					sprintf(command, "open %s", url);
 				#endif
 			#else
-				return;
+				return -3;
 			#endif
 
 			system(command);
+
+			return 0;
 		}
 	#else
-		return;
+		return -1;
 	#endif
 }
 
