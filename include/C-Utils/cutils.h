@@ -19,14 +19,12 @@
 	#define WIN32_LEAN_AND_MEAN
 	#include <windows.h>
 	#include <direct.h>
-	#define MKDIR(dir) _mkdir(dir)
 #elif defined(__linux__) || defined(__ANDROID__)
 	#include <unistd.h>
 	#include <time.h>
 	#include <errno.h>
 	#include <sys/stat.h>
 	#include <sys/types.h>
-	#define MKDIR(dir) mkdir(dir, 0755)
 #elif defined(__APPLE__)
 	#include <TargetConditionals.h>
 	#include <unistd.h>
@@ -34,14 +32,12 @@
 	#include <errno.h>
 	#include <sys/stat.h>
 	#include <sys/types.h>
-	#define MKDIR(dir) mkdir(dir, 0755)
 #elif defined(__DJGPP__)
 	#include <unistd.h>
 	#include <time.h>
 	#include <errno.h>
 	#include <sys/stat.h>
 	#include <sys/types.h>
-	#define MKDIR(dir) mkdir(dir)
 #endif
 
 
@@ -282,17 +278,18 @@ extern "C"
 #endif
 
 /* Main functions prototype: */
-static void enable_vt_and_utf8(void);    /* Function to solve encoding in the Windows terminal. */
-static void clear_terminal(void);        /* Function to clear the terminal.                     */
-static void petc(void);                  /* Press enter to continue function.                   */
-static void apetc(void);                 /* Alternative press enter to continue function.       */
-static void rrmf(void);                  /* Read "READ-ME" function.                            */
-static void rlf(void);                   /* Read "LICENSE" function.                            */
-static void easter_egg_function(void);   /* Easter egg function.                                */
-static void ssleep(unsigned int time);   /* Seconds sleep function.                             */
-static void mssleep(unsigned int time);  /* Milliseconds sleep function.                        */
-static void url_opener(const char *url); /* URL opener function.                                */
-static const char *verify_os(void);      /* Function to verify the operating system.            */
+static void enable_vt_and_utf8(void);                           /* Function to solve encoding in the Windows terminal. */
+static void clear_terminal(void);                               /* Function to clear the terminal.                     */
+static void petc(void);                                         /* Press enter to continue function.                   */
+static void apetc(void);                                        /* Alternative press enter to continue function.       */
+static void rrmf(void);                                         /* Read "READ-ME" function.                            */
+static void rlf(void);                                          /* Read "LICENSE" function.                            */
+static void easter_egg_function(void);                          /* Easter egg function.                                */
+static void ssleep(unsigned int time);                          /* Seconds sleep function.                             */
+static void mssleep(unsigned int time);                         /* Milliseconds sleep function.                        */
+static void url_opener(const char *url);                        /* URL opener function.                                */
+static int make_directory(const char *path, unsigned int mode); /* Function to create a directory.                     */
+static const char *verify_os(void);                             /* Function to verify the operating system.            */
 
 static void enable_vt_and_utf8(void)
 {
@@ -525,6 +522,69 @@ static void url_opener(const char *url)
 	#else
 		return;
 	#endif
+}
+
+static int make_directory(const char *path, unsigned int mode)
+{
+	if(!path)
+	{
+		return -1;
+	}
+
+	else
+	{
+		#if defined(_WIN32) || defined(_WIN64)
+			if(_mkdir(path) == 0)
+			{
+				return 0;
+			}
+
+			else
+			{
+				return -3;
+			}
+		#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
+			if(mode == NULL)
+			{
+				mode = 0700;
+
+				if(mkdir(path, mode) == 0)
+				{
+					return 0;
+				}
+
+				else
+				{
+					return -3;
+				}
+			}
+
+			else
+			{
+				if(mkdir(path, mode) == 0)
+				{
+					return 0;
+				}
+
+				else
+				{
+					return -3;
+				}
+			}
+		#elif defined(__DJGPP__)
+			if(mkdir(path) == 0)
+			{
+				return 0;
+			}
+
+			else
+			{
+				return -3;
+			}
+		#else
+			return -2;
+		#endif
+	}
 }
 
 static const char *verify_os(void)
