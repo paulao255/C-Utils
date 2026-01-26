@@ -550,7 +550,7 @@ static int make_directory(const char *path, unsigned int mode)
 			{
 				mode = 0700;
 
-				if(mkdir(path, mode) == 0)
+				if(mkdir(path, (mode_t)mode) == 0)
 				{
 					return 0;
 				}
@@ -563,7 +563,7 @@ static int make_directory(const char *path, unsigned int mode)
 
 			else
 			{
-				if(mkdir(path, mode) == 0)
+				if(mkdir(path, (mode_t)mode) == 0)
 				{
 					return 0;
 				}
