@@ -546,7 +546,7 @@ static int make_directory(const char *path, unsigned int mode)
 				return -3;
 			}
 		#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
-			if(mode == NULL)
+			if(!mode)
 			{
 				mode = 0700;
 
