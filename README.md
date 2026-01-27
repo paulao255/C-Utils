@@ -13,8 +13,8 @@ Compatible with:
 To include **C-Utils** into your **C project**, you need to use `CMake` and `Ninja` by adding these lines on `CMakeLists.txt`:
 
 ```CMakeLists.txt
-cmake_minimum_required(VERSION 4.2.1)
-project(Example-C-Project LANGUAGES C VERSION 20260119)
+cmake_minimum_required(VERSION 4.2.2)
+project(Example-C-Project LANGUAGES C VERSION 20260127)
 set(CMAKE_C_STANDARD 90) # 90 for C89, 99 for C99, 11 for C11, 17 for C17 and 23 for C23.
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
@@ -30,8 +30,8 @@ set_target_properties(Executable PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BIN
 For a **C++ project** you need to create a `CMakeLists.txt` like this:
 
 ```CMakeLists.txt
-cmake_minimum_required(VERSION 4.2.1)
-project(Example-Cpp-Project LANGUAGES CXX VERSION 20260119)
+cmake_minimum_required(VERSION 4.2.2)
+project(Example-Cpp-Project LANGUAGES CXX VERSION 20260127)
 set(CMAKE_CXX_STANDARD 98) # 98 for C++98, 11 for C++11, 14 for C++14, 17 for C++17, 20 for C++20, 23 for C++23 and 26 for C++26.
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -82,13 +82,14 @@ The **project structure** need to be like this to work:
 
 1. Install a **[MacPort](https://www.macports.org/install.php)** for your **current macOS** distro.
 2. Enter in **terminal** and type `sudo port selfupdate && sudo port install cmake gcc ninja`.
+3. **Build** the project.
 
 #### Build process
 
-1. Create a directory named `./build` with terminal.
-2. Enter into the `./build` directory.
-3. Type `cmake .. -G Ninja` in `./build` directory to make the `./build/build.ninja` file.
-4. Type `ninja` in `./build` to run `./build/build.ninja` and create the compiled file named `./build/bin/Executable.exe`.
+1. Create a directory named `build` with in the working project with terminal.
+2. Enter into the `build` directory.
+3. Type `cmake .. -G Ninja` to make the `build.ninja` file.
+4. Type `ninja` to run `build.ninja` and create the executable file into `bin` directory.
 
 ##### Credits
 
