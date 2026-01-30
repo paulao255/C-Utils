@@ -273,7 +273,16 @@ extern "C"
 	#undef IMPORT_TEMPERATURE_CONVERSION_UTILS
 #endif
 
-/* Main functions prototype: */
+/* Main struct prototypes: */
+static struct tm current_time(void);                            /* Current time struct.                                */
+
+static struct tm current_time(void)
+{
+	time_t now = time(NULL);
+	return *localtime(&now);
+}
+
+/* Main functions prototypes: */
 static void clear_terminal(void);                               /* Function to clear the terminal.                     */
 static void petc(void);                                         /* Press enter to continue function.                   */
 static void apetc(void);                                        /* Alternative press enter to continue function.       */
