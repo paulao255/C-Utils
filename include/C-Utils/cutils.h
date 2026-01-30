@@ -14,6 +14,7 @@
 /* Importations: */
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
 
 #if defined(_WIN32) || defined(_WIN64)
 	#define WIN32_LEAN_AND_MEAN
@@ -22,20 +23,17 @@
 #elif defined(__linux__) || defined(__ANDROID__)
 	#include <unistd.h>
 	#include <time.h>
-	#include <errno.h>
 	#include <sys/stat.h>
 	#include <sys/types.h>
 #elif defined(__APPLE__)
 	#include <TargetConditionals.h>
 	#include <unistd.h>
 	#include <time.h>
-	#include <errno.h>
 	#include <sys/stat.h>
 	#include <sys/types.h>
 #elif defined(__DJGPP__)
 	#include <unistd.h>
 	#include <time.h>
-	#include <errno.h>
 	#include <sys/stat.h>
 	#include <sys/types.h>
 #endif
@@ -47,10 +45,10 @@ extern "C"
 #endif
 
 /* C Utils version variables: */
-#define C_UTILS_FULL_VERSION  20260127      /* C Utils full version variable (2026/01/27).      */
+#define C_UTILS_FULL_VERSION  20260130      /* C Utils full version variable (2026/01/30).      */
 #define C_UTILS_MAJOR_VERSION 2026          /* C Utils major version variable (2026).           */
-#define C_UTILS_MINOR_VERSION 01            /* C Utils minor version variable (01).             */
-#define C_UTILS_PATCH_VERSION 27            /* C Utils patch version variable (27).             */
+#define C_UTILS_MINOR_VERSION 1             /* C Utils minor version variable (01).             */
+#define C_UTILS_PATCH_VERSION 30            /* C Utils patch version variable (30).             */
 
 /* Terminal colors: */
 #define BASE_TERMINAL       "\033[m"        /* Reset terminal text.                             */
@@ -530,7 +528,7 @@ static int make_directory(const char *path, unsigned int mode)
 {
 	if(!path)
 	{
-		return -1;
+		return 1;
 	}
 
 	else
@@ -543,7 +541,8 @@ static int make_directory(const char *path, unsigned int mode)
 
 			else
 			{
-				return -3;
+				perror("Error");
+				return 1;
 			}
 		#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
 			if(!mode)
@@ -557,7 +556,8 @@ static int make_directory(const char *path, unsigned int mode)
 
 				else
 				{
-					return -3;
+					perror("Error");
+					return 1;
 				}
 			}
 
@@ -570,7 +570,8 @@ static int make_directory(const char *path, unsigned int mode)
 
 				else
 				{
-					return -3;
+					perror("Error");
+					return 1;
 				}
 			}
 		#elif defined(__DJGPP__)
@@ -581,10 +582,11 @@ static int make_directory(const char *path, unsigned int mode)
 
 			else
 			{
-				return -3;
+				perror("Error");
+				return 1;
 			}
 		#else
-			return -2;
+			return 1;
 		#endif
 	}
 }
