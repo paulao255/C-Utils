@@ -14,6 +14,7 @@
 /* Importations: */
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include <errno.h>
 
 #if defined(_WIN32) || defined(_WIN64)
@@ -24,14 +25,12 @@
 #elif defined(__linux__) || defined(__ANDROID__)
 	#include <termios.h>
 	#include <unistd.h>
-	#include <time.h>
 	#include <sys/stat.h>
 	#include <sys/types.h>
 #elif defined(__APPLE__)
 	#include <TargetConditionals.h>
 	#include <termios.h>
 	#include <unistd.h>
-	#include <time.h>
 	#include <sys/stat.h>
 	#include <sys/types.h>
 #endif
