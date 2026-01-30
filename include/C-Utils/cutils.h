@@ -561,6 +561,52 @@ static int mssleep(unsigned int time)
 
 static int validate_date(const int year, const int month, const int day)
 {
+	struct tm current_date = current_time();
+
+	if(year < 1)
+	{
+		return 1;
+	}
+
+	else
+	{
+		if(month < 1 || month > 12)
+		{
+			return 1;
+		}
+
+		else
+		{
+			int days_in_month[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+
+			if((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0))
+			{
+				days_in_month[1] = 29;
+			}
+
+			if(day < 1 || day > days_in_month[month - 1])
+			{
+				return 1;
+			}
+
+			else
+			{
+				if(year > current_date.tm_year + 1900 || (year == current_date.tm_year + 1900 && month > current_date.tm_mon + 1) || (year == current_date.tm_year + 1900 && month == current_date.tm_mon + 1 && day > current_date.tm_mday))
+				{
+					return 1;
+				}
+
+				else
+				{
+					return 0;
+				}
+			}
+		}
+	}
+}
+
+static int validate_date_future(const int year, const int month, const int day)
+{
 	if(year < 1)
 	{
 		return 1;
