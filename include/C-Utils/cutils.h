@@ -20,18 +20,16 @@
 	#define WIN32_LEAN_AND_MEAN
 	#include <windows.h>
 	#include <direct.h>
+	#include <conio.h>
 #elif defined(__linux__) || defined(__ANDROID__)
+	#include <termios.h>
 	#include <unistd.h>
 	#include <time.h>
 	#include <sys/stat.h>
 	#include <sys/types.h>
 #elif defined(__APPLE__)
 	#include <TargetConditionals.h>
-	#include <unistd.h>
-	#include <time.h>
-	#include <sys/stat.h>
-	#include <sys/types.h>
-#elif defined(__DJGPP__)
+	#include <termios.h>
 	#include <unistd.h>
 	#include <time.h>
 	#include <sys/stat.h>
@@ -276,54 +274,20 @@ extern "C"
 #endif
 
 /* Main functions prototype: */
-static void enable_vt_and_utf8(void);                           /* Function to solve encoding in the Windows terminal. */
 static void clear_terminal(void);                               /* Function to clear the terminal.                     */
 static void petc(void);                                         /* Press enter to continue function.                   */
 static void apetc(void);                                        /* Alternative press enter to continue function.       */
-static void rrmf(void);                                         /* Read "READ-ME" function.                            */
-static void rlf(void);                                          /* Read "LICENSE" function.                            */
 static void easter_egg_function(void);                          /* Easter egg function.                                */
-static void ssleep(unsigned int time);                          /* Seconds sleep function.                             */
-static void mssleep(unsigned int time);                         /* Milliseconds sleep function.                        */
-static int url_opener(const char *url);                        /* URL opener function.                                */
+static int enable_vt_and_utf8(void);                            /* Function to solve encoding in the Windows terminal. */
+static int paktc(void);                                         /* Press any key to continue function.                 */
+static int rlf(void);                                           /* Read "LICENSE" function.                            */
+static int rrmf(void);                                          /* Read "READ-ME" function.                            */
+static int url_opener(const char *url);                         /* URL opener function.                                */
+static int ssleep(unsigned int time);                           /* Seconds sleep function.                             */
+static int mssleep(unsigned int time);                          /* Milliseconds sleep function.                        */
+static int validate_date(int year, int month, int day);         /* Validate date function.                             */
 static int make_directory(const char *path, unsigned int mode); /* Function to create a directory.                     */
 static const char *verify_os(void);                             /* Function to verify the operating system.            */
-
-static void enable_vt_and_utf8(void)
-{
-	#if defined(_WIN32) || defined(_WIN64)
-		HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
-
-		if(hOut == INVALID_HANDLE_VALUE)
-		{
-			return;
-		}
-
-		DWORD mode = 0u;
-
-		if(!GetConsoleMode(hOut, &mode))
-		{
-			return;
-		}
-
-		mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
-
-		if(!SetConsoleMode(hOut, mode))
-		{
-			DWORD err = GetLastError();
-			(void)err;
-			return;
-		}
-	
-		if(!SetConsoleOutputCP(CP_UTF8))
-		{
-			DWORD err = GetLastError();
-			(void)err;
-		}
-	#else
-		return;
-	#endif
-}
 
 static void clear_terminal(void)
 {
@@ -344,41 +308,9 @@ static void apetc(void)
 	getchar();
 }
 
-static void rrmf(void)
-{
-	#if defined(_WIN32) || defined(_WIN64)
-		system("more /C /P .\\README.md");
-		petc();
-	#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
-		system("more -cp ./README.md");
-		petc();
-	#elif defined(__DJGPP__)
-		system("TYPE .\\README.MD");
-		petc();
-	#else
-		return;
-	#endif
-}
-
-static void rlf(void)
-{
-	#if defined(_WIN32) || defined(_WIN64)
-		system("more /C /P .\\LICENSE");
-		petc();
-	#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
-		system("more -cp ./LICENSE");
-		petc();
-	#elif defined(__DJGPP__)
-		system("TYPE .\\LICENSE");
-		petc();
-	#else
-		return;
-	#endif
-}
-
 static void easter_egg_function(void)
 {
-	puts("Congratulations!!! You just discovered a new easter egg! (please don't say it to anywhone ok!)");
+	puts("Congratulations!!! You just discovered a new easter egg! (please don't say it to anyone ok!)");
 	puts("This is the link to our github account! If you want to see our projects, codes, etc...");
 	puts("Link: https://github.com/paulao255/");
 
@@ -390,138 +322,269 @@ static void easter_egg_function(void)
 	  system("open https://github.com/paulao255/");
 	#endif
 
-	petc();
+	paktc();
 }
 
-static void ssleep(unsigned int time)
+static int enable_vt_and_utf8(void)
 {
-	#ifndef __DJGPP__
-		if(time == 0UL)
+	#if defined(_WIN32) || defined(_WIN64)
+		HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+
+		if(hOut == INVALID_HANDLE_VALUE)
 		{
-			return;
+			return 1;
 		}
 
-		else
+		DWORD mode = 0u;
+
+		if(!GetConsoleMode(hOut, &mode))
 		{
-			#if defined(_WIN32) || defined(_WIN64)
-				Sleep((DWORD)time * (DWORD)1000UL);
-			#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
-				struct timespec req;
-				struct timespec rem;
-				int res;
-
-				req.tv_sec = (time_t)time;
-				req.tv_nsec = 0L;
-
-				while((res = nanosleep(&req, &rem)) == -1)
-				{
-					if(errno == EINTR)
-					{
-						req = rem;
-					}
-
-					else
-					{
-						break;
-					}
-				}
-			#else
-				return;
-			#endif
+			return 1;
 		}
+
+		mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+
+		if(!SetConsoleMode(hOut, mode))
+		{
+			DWORD err = GetLastError();
+			(void)err;
+			return 1;
+		}
+	
+		if(!SetConsoleOutputCP(CP_UTF8))
+		{
+			DWORD err = GetLastError();
+			(void)err;
+		}
+
+		return 0;
 	#else
-		return;
+		return 1;
 	#endif
 }
 
-static void mssleep(unsigned int time)
+static int paktc(void)
 {
-	#ifndef __DJGPP__
-		if(time == 0UL)
-		{
-			return;
-		}
+	#if defined(_WIN32) || defined(_WIN64)
+		fflush(stdout);
+		_getch();
 
-		else
-		{
-			#if defined(_WIN32) || defined(_WIN64)
-				Sleep((DWORD)time);
-			#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
-				struct timespec req;
-				struct timespec rem;
-				int res;
+		return 0;
+	#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
+		fflush(stdout);
 
-				req.tv_sec = (time_t)(time / 1000);
-				req.tv_nsec = (long)((time % 1000) * 1000000L);
+		struct termios old_terminal, new_terminal;
+		
+		tcgetattr(STDIN_FILENO, &old_terminal);
 
-				while((res = nanosleep(&req, &rem)) == -1)
-				{
-					if(errno == EINTR)
-					{
-						req = rem;
-					}
+		new_terminal = old_terminal;
+		new_terminal.c_lflag &= ~(ICANON | ECHO);
 
-					else
-					{
-						break;
-					}
-				}
-			#else
-				return;
-			#endif
-		}
+		tcsetattr(STDIN_FILENO, TCSANOW, &new_terminal);
+		getchar();
+		tcsetattr(STDIN_FILENO, TCSANOW, &old_terminal);
+
+		return 0;
 	#else
-		return;
+		return 1;
+	#endif
+}
+
+static int rrmf(void)
+{
+	#if defined(_WIN32) || defined(_WIN64)
+		system("more /C /P .\\README.md");
+		paktc();
+
+		return 0;
+	#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
+		system("more -cp ./README.md");
+		paktc();
+
+		return 0;
+	#else
+		return 1;
+	#endif
+}
+
+static int rlf(void)
+{
+	#if defined(_WIN32) || defined(_WIN64)
+		system("more /C /P .\\LICENSE");
+		paktc();
+
+		return 0;
+	#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
+		system("more -cp ./LICENSE");
+		paktc();
+
+		return 0;
+	#else
+		return 1;
 	#endif
 }
 
 static int url_opener(const char *url)
 {
-	#ifndef __DJGPP__
-		if(!url)
+	if(!url)
+	{
+		return 1;
+	}
+
+	else
+	{
+		char command[16384] = "";
+
+		#if defined(_WIN32) || defined(_WIN64)
+			#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
+				snprintf(command, sizeof(command), "start %s", url);
+			#elif defined(__cplusplus) && __cplusplus >= 201103L
+				snprintf(command, sizeof(command), "start %s", url);
+			#else
+				sprintf(command, "start %s", url);
+			#endif
+		#elif defined(__linux__) || defined(__ANDROID__)
+			#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
+				snprintf(command, sizeof(command), "xdg-open %s", url);
+			#elif defined(__cplusplus) && __cplusplus >= 201103L
+				snprintf(command, sizeof(command), "xdg-open %s", url);
+			#else
+				sprintf(command, "xdg-open %s", url);
+			#endif
+		#elif defined(__APPLE__)
+			#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
+				snprintf(command, sizeof(command), "open %s", url);
+			#elif defined(__cplusplus) && __cplusplus >= 201103L
+				snprintf(command, sizeof(command), "open %s", url);
+			#else
+				sprintf(command, "open %s", url);
+			#endif
+		#else
+			return 1;
+		#endif
+
+		system(command);
+
+		return 0;
+	}
+}
+
+static int ssleep(unsigned int time)
+{
+	if(time == 0UL)
+	{
+		return 1;
+	}
+
+	else
+	{
+		#if defined(_WIN32) || defined(_WIN64)
+			Sleep((DWORD)time * (DWORD)1000UL);
+
+			return 0;
+		#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
+			struct timespec req;
+			struct timespec rem;
+			int res;
+
+			req.tv_sec = (time_t)time;
+			req.tv_nsec = 0L;
+
+			while((res = nanosleep(&req, &rem)) == -1)
+			{
+				if(errno == EINTR)
+				{
+					req = rem;
+				}
+
+				else
+				{
+					break;
+				}
+			}
+
+			return 0;
+		#else
+			return 1;
+		#endif
+	}
+}
+
+static int mssleep(unsigned int time)
+{
+	if(time == 0UL)
+	{
+		return 1;
+	}
+
+	else
+	{
+		#if defined(_WIN32) || defined(_WIN64)
+			Sleep((DWORD)time);
+
+			return 0;
+		#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
+			struct timespec req;
+			struct timespec rem;
+			int res;
+
+			req.tv_sec = (time_t)(time / 1000);
+			req.tv_nsec = (long)((time % 1000) * 1000000L);
+
+			while((res = nanosleep(&req, &rem)) == -1)
+			{
+				if(errno == EINTR)
+				{
+					req = rem;
+				}
+
+				else
+				{
+					break;
+				}
+			}
+
+			return 0;
+		#else
+			return 1;
+		#endif
+	}
+}
+
+static int validate_date(const int year, const int month, const int day)
+{
+	if(year < 1)
+	{
+		return 1;
+	}
+
+	else
+	{
+		if(month < 1 || month > 12)
 		{
-			return -2;
+			return 1;
 		}
 
 		else
 		{
-			char command[16384] = "";
+			int days_in_month[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
-			#if defined(_WIN32) || defined(_WIN64)
-				#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
-					snprintf(command, sizeof(command), "start %s", url);
-				#elif defined(__cplusplus) && __cplusplus >= 201103L
-					snprintf(command, sizeof(command), "start %s", url);
-				#else
-					sprintf(command, "start %s", url);
-				#endif
-			#elif defined(__linux__) || defined(__ANDROID__)
-				#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
-					snprintf(command, sizeof(command), "xdg-open %s", url);
-				#elif defined(__cplusplus) && __cplusplus >= 201103L
-					snprintf(command, sizeof(command), "xdg-open %s", url);
-				#else
-					sprintf(command, "xdg-open %s", url);
-				#endif
-			#elif defined(__APPLE__)
-				#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
-					snprintf(command, sizeof(command), "open %s", url);
-				#elif defined(__cplusplus) && __cplusplus >= 201103L
-					snprintf(command, sizeof(command), "open %s", url);
-				#else
-					sprintf(command, "open %s", url);
-				#endif
-			#else
-				return -3;
-			#endif
+			if((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0))
+			{
+				days_in_month[1] = 29;
+			}
 
-			system(command);
+			if(day < 1 || day > days_in_month[month - 1])
+			{
+				return 1;
+			}
 
-			return 0;
+			else
+			{
+				return 0;
+			}
 		}
-	#else
-		return -1;
-	#endif
+	}
 }
 
 static int make_directory(const char *path, unsigned int mode)
@@ -574,17 +637,6 @@ static int make_directory(const char *path, unsigned int mode)
 					return 1;
 				}
 			}
-		#elif defined(__DJGPP__)
-			if(mkdir(path) == 0)
-			{
-				return 0;
-			}
-
-			else
-			{
-				perror("Error");
-				return 1;
-			}
 		#else
 			return 1;
 		#endif
@@ -611,8 +663,6 @@ static const char *verify_os(void)
 		#else
 			return "Apple (unknown OS)";
 		#endif
-	#elif defined(__DJGPP__)
-		return "MS-DOS";
 	#else
 		return "Unknown OS";
 	#endif
