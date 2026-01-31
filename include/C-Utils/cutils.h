@@ -277,7 +277,7 @@ static struct tm current_time(void);                                            
 
 static struct tm current_time(void)
 {
-	return *localtime((long int) time(NULL));
+	return *localtime((const long int *) time(NULL));
 }
 
 /* Main functions prototypes: */
