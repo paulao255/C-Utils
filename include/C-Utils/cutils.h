@@ -667,6 +667,7 @@ static int make_directory(const char *path, unsigned int mode)
 			else
 			{
 				perror("Error");
+
 				return 1;
 			}
 		#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
@@ -682,6 +683,7 @@ static int make_directory(const char *path, unsigned int mode)
 				else
 				{
 					perror("Error");
+
 					return 1;
 				}
 			}
@@ -696,6 +698,7 @@ static int make_directory(const char *path, unsigned int mode)
 				else
 				{
 					perror("Error");
+
 					return 1;
 				}
 			}
