@@ -379,14 +379,14 @@ static int paktc(void)
 
 		return 0;
 	#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
-		fflush(stdout);
-
 		struct termios old_terminal, new_terminal;
+
+		fflush(stdout);
 		
 		tcgetattr(STDIN_FILENO, &old_terminal);
 
 		new_terminal = old_terminal;
-		new_terminal.c_lflag &= ~(ICANON | ECHO);
+		new_terminal.c_lflag &= (tcflag_t) ~(ICANON | ECHO);
 
 		tcsetattr(STDIN_FILENO, TCSANOW, &new_terminal);
 		getchar();
