@@ -273,7 +273,7 @@ extern "C"
 #endif
 
 /* Main struct prototypes: */
-static struct tm current_time(void);                            /* Current time struct.                                */
+static struct tm current_time(void);                                             /* Current time struct.                                */
 
 static struct tm current_time(void)
 {
@@ -282,24 +282,32 @@ static struct tm current_time(void)
 }
 
 /* Main functions prototypes: */
-static void clear_terminal(void);                               /* Function to clear the terminal.                     */
-static void petc(void);                                         /* Press enter to continue function.                   */
-static void apetc(void);                                        /* Alternative press enter to continue function.       */
-static void easter_egg_function(void);                          /* Easter egg function.                                */
-static int enable_vt_and_utf8(void);                            /* Function to solve encoding in the Windows terminal. */
-static int paktc(void);                                         /* Press any key to continue function.                 */
-static int rlf(void);                                           /* Read "LICENSE" function.                            */
-static int rrmf(void);                                          /* Read "READ-ME" function.                            */
-static int url_opener(const char *url);                         /* URL opener function.                                */
-static int ssleep(unsigned int time);                           /* Seconds sleep function.                             */
-static int mssleep(unsigned int time);                          /* Milliseconds sleep function.                        */
-static int validate_date(int year, int month, int day);         /* Validate date function.                             */
-static int make_directory(const char *path, unsigned int mode); /* Function to create a directory.                     */
-static const char *verify_os(void);                             /* Function to verify the operating system.            */
+static void clear_stdout(void);                                                /* Function to clear the terminal.                     */
+static void clear_stdin(void);                                                   /* Function to clear the standard input.               */
+static void petc(void);                                                          /* Press enter to continue function.                   */
+static void apetc(void);                                                         /* Alternative press enter to continue function.       */
+static void easter_egg_function(void);                                           /* Easter egg function.                                */
+static int enable_vt_and_utf8(void);                                             /* Function to solve encoding in the Windows terminal. */
+static int paktc(void);                                                          /* Press any key to continue function.                 */
+static int rlf(void);                                                            /* Read "LICENSE" function.                            */
+static int rrmf(void);                                                           /* Read "READ-ME" function.                            */
+static int url_opener(const char *url);                                          /* URL opener function.                                */
+static int ssleep(unsigned int time);                                            /* Seconds sleep function.                             */
+static int mssleep(unsigned int time);                                           /* Milliseconds sleep function.                        */
+static int validate_date(int year, int month, int day);                          /* Validate date function.                             */
+static int validate_date_future(const int year, const int month, const int day); /* Validate all time date function.                    */
+static int make_directory(const char *path, unsigned int mode);                  /* Function to create a directory.                     */
+static const char *verify_os(void);                                              /* Function to verify the operating system.            */
 
-static void clear_terminal(void)
+static void clear_stdout(void)
 {
 	fputs("\033[2J\033[3J\033[H", stdout);
+}
+
+static void clear_stdin(void)
+{
+	int characters = 0;
+	while((characters = getchar()) != EOF && characters != '\n');
 }
 
 static void petc(void)
