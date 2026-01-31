@@ -42,10 +42,10 @@ extern "C"
 #endif
 
 /* C Utils version variables: */
-#define C_UTILS_FULL_VERSION  20260130      /* C Utils full version variable (2026/01/30).      */
+#define C_UTILS_FULL_VERSION  20260131      /* C Utils full version variable (2026/01/31).      */
 #define C_UTILS_MAJOR_VERSION 2026          /* C Utils major version variable (2026).           */
 #define C_UTILS_MINOR_VERSION 1             /* C Utils minor version variable (01).             */
-#define C_UTILS_PATCH_VERSION 30            /* C Utils patch version variable (30).             */
+#define C_UTILS_PATCH_VERSION 31            /* C Utils patch version variable (31).             */
 
 /* Terminal colors: */
 #define BASE_TERMINAL       "\033[m"        /* Reset terminal text.                             */
@@ -282,7 +282,7 @@ static struct tm current_time(void)
 }
 
 /* Main functions prototypes: */
-static void clear_stdout(void);                                                /* Function to clear the terminal.                     */
+static void clear_stdout(void);                                                  /* Function to clear the terminal.                     */
 static void clear_stdin(void);                                                   /* Function to clear the standard input.               */
 static void petc(void);                                                          /* Press enter to continue function.                   */
 static void apetc(void);                                                         /* Alternative press enter to continue function.       */
