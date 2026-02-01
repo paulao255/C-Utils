@@ -3,12 +3,12 @@
 #define _C_UTILS_H_
 
 /* Defines: */
-#if defined(_MSVC_LANG) && _MSVC_LANG < 201103L || defined(__cplusplus) && __cplusplus < 201103L
+#if (!defined(__USE_MINGW_ANSI_STDIO)) && ((defined(_MSVC_LANG) && _MSVC_LANG < 201103L) || (defined(__cplusplus) && __cplusplus < 201103L))
 	#define __USE_MINGW_ANSI_STDIO 1
 #endif
 
 #if (!defined(_WIN32) || !defined(_WIN64)) && !defined(_POSIX_C_SOURCE)
-	#define _POSIX_C_SOURCE 199309L
+	#define _POSIX_C_SOURCE 200112L
 #endif
 
 /* Importations: */
