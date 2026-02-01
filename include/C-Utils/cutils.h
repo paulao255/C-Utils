@@ -8,7 +8,7 @@
 #endif
 
 #if (!defined(_WIN32) || !defined(_WIN64)) && !defined(_POSIX_C_SOURCE)
-	#define _POSIX_C_SOURCE 200112L
+	#define _POSIX_C_SOURCE 199009L
 #endif
 
 /* Importations: */
