@@ -8,7 +8,16 @@
 #endif
 
 #if (!defined(_WIN32) || !defined(_WIN64)) && !defined(_POSIX_C_SOURCE)
-	#define _POSIX_C_SOURCE 199009L
+	#ifdef QRENCODE_H
+		#define _POSIX_C_SOURCE 200112L
+	#else
+		#define _POSIX_C_SOURCE 199009L
+	#endif
+#endif
+
+#if defined(_WIN32) || defined(_WIN64)
+	#undef strdup
+	#define strdup _strdup
 #endif
 
 /* Importations: */
@@ -42,10 +51,10 @@ extern "C"
 #endif
 
 /* C Utils version variables: */
-#define C_UTILS_FULL_VERSION  20260131      /* C Utils full version variable (2026/01/31).      */
+#define C_UTILS_FULL_VERSION  20260202      /* C Utils full version variable (2026/02/02).      */
 #define C_UTILS_MAJOR_VERSION 2026          /* C Utils major version variable (2026).           */
-#define C_UTILS_MINOR_VERSION 1             /* C Utils minor version variable (01).             */
-#define C_UTILS_PATCH_VERSION 31            /* C Utils patch version variable (31).             */
+#define C_UTILS_MINOR_VERSION 2             /* C Utils minor version variable (02).             */
+#define C_UTILS_PATCH_VERSION 2             /* C Utils patch version variable (02).             */
 
 /* Terminal colors: */
 #define BASE_TERMINAL       "\033[m"        /* Reset terminal text.                             */
