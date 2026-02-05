@@ -6,9 +6,7 @@ Compatible with:
 
 - [x] Windows.
 - [x] Linux.
-- [ ] Mac OS (not tested yet, if you can test it, send an e-mail to **contactpaulao\@gmail.com**).
-- [ ] Android (not tested yet, if you can test it, send an e-mail to **contactpaulao\@gmail.com**).
-- [ ] iOS (not tested yet, if you can test it, send an e-mail to **contactpaulao\@gmail.com**).
+- [x] Mac OS (not tested yet, if you can test it, send an e-mail to **contactpaulao\@gmail.com**).
 
 To include **C-Utils** into your **C project**, you need to use `CMake` and `Ninja` by adding these lines on `CMakeLists.txt`:
 
@@ -70,7 +68,7 @@ The **project structure** need to be like this to work:
 1. Press `Windows + R`, type `cmd` and press `Ctrl + Shift + Enter`, then open it in administrator mode.
 2. Type into **cmd** `winget install --id="Kitware.CMake" && winget install --id="MSYS2.MSYS2"`.
 3. Now after install **CMake** and **MSYS2** press `Windows + R` and type `mingw64` or `mingw32` for 32 bits, then press `Ctrl + Shift + Enter` to open it as an administrator.
-4. Now on Mingw Shell type `pacman -Syyu && pacman -S mingw-w64-x86_64-gcc && pacman -S mingw-w64-x86_64-ninja`.
+4. Now on **Mingw Shell** type `pacman -Syyu` it will probably say to **quit** after update soo you will press `y` to quit and enter in **Mingw Shell** again and type `pacman -S mingw-w64-x86_64-gcc mingw-w64-x86_64-ninja --needed`.
 5. Now you just need to **build** the project.
 
 **Linux**:
@@ -86,10 +84,10 @@ The **project structure** need to be like this to work:
 
 #### Build process
 
-1. Create a directory named `build` with in the working project with terminal.
-2. Enter into the `build` directory.
-3. Type `cmake .. -G Ninja` to make the `build.ninja` file.
-4. Type `ninja` to run `build.ninja` and create the executable file into `bin` directory.
+1. Create a directory named `./build` with terminal.
+2. Enter into the `./build` directory.
+3. Type `cmake .. -G Ninja` in `./build` directory to make the `./build/build.ninja` file.
+4. Type `ninja` in `./build` to run `./build/build.ninja` and create the executable in `./build/bin`.
 
 ##### Credits
 
