@@ -1,24 +1,13 @@
 /* Include guard: */
-#ifndef C_UTILS_H
-#define C_UTILS_H
-
-/* Defines: */
-#if (!defined(__USE_MINGW_ANSI_STDIO)) && ((defined(_MSVC_LANG) && _MSVC_LANG < 201103L) || (defined(__cplusplus) && __cplusplus < 201103L))
-#define __USE_MINGW_ANSI_STDIO 1
-#endif
-
-#if (!defined(_WIN32) && !defined(_WIN64)) && !defined(__cplusplus) && defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L && !defined(_POSIX_C_SOURCE)
-#define _POSIX_C_SOURCE 199309L
-#endif
-
-#if defined(_WIN32) || defined(_WIN64)
-#undef strdup
-#define strdup _strdup
-#endif
+#ifndef C_UTILS_C_UTILS_H
+#define C_UTILS_C_UTILS_H
 
 /* Importations: */
+#include "defs.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <stddef.h>
+#include <string.h>
 #include <time.h>
 #include <errno.h>
 
@@ -46,228 +35,9 @@ extern "C"
 {
 #endif
 
-/* C Utils version variables: */
-#define C_UTILS_FULL_VERSION  20260210                /* C Utils full version macro.                                             */
-#define C_UTILS_MAJOR_VERSION 2026                    /* C Utils major version macro.                                            */
-#define C_UTILS_MINOR_VERSION 2                       /* C Utils minor version macro.                                            */
-#define C_UTILS_PATCH_VERSION 10                      /* C Utils patch version macro.                                            */
-
-/* Terminal colors: */
-#define BASE_TERMINAL        "\033[m"                 /* Reset terminal text.                                                    */
-#define BOLD                 "\033[1m"                /* Bold terminal text.                                                     */
-#define BASE_TERMINAL_BOLD   "\033[m\033[1m"          /* Reset and bold terminal text.                                           */
-#define ITALIC               "\033[3m"                /* Italic terminal text.                                                   */
-#define UNDERLINE            "\033[4m"                /* Underline terminal text.                                                */
-#define BLACK_COLOR          "\033[30m"               /* Black terminal text.                                                    */
-#define RED_COLOR            "\033[31m"               /* Red terminal text.                                                      */
-#define GREEN_COLOR          "\033[32m"               /* Green terminal text.                                                    */
-#define YELLOW_COLOR         "\033[33m"               /* Yellow terminal text.                                                   */
-#define BLUE_COLOR           "\033[34m"               /* Blue terminal text.                                                     */
-#define MAGENTA_COLOR        "\033[35m"               /* Magenta terminal text.                                                  */
-#define CYAN_COLOR           "\033[36m"               /* Cyan terminal text.                                                     */
-#define WHITE_COLOR          "\033[37m"               /* White terminal text.                                                    */
-
-/* Precision variables: */
-#define MIN_RPV               0                       /* Minimum recommended precision value variable.                           */
-#define MAX_RPV              18                       /* Maximum recommended precision value variable.                           */
-
-/* Temperature limits variables: */
-#define MIN_CELSIUS_F      -273.15f                   /* Minimum Celsius temperature (in float).                                 */
-#define MIN_CELSIUS_D      -273.15                    /* Minimum Celsius temperature (in double).                                */
-#define MIN_CELSIUS_L      -273.15L                   /* Minimum Celsius temperature (in long double).                           */
-#define MIN_FAHRENHEIT_F   -459.67f                   /* Minimum Fahrenheit temperature (in float).                              */
-#define MIN_FAHRENHEIT_D   -459.67                    /* Minimum Fahrenheit temperature (in double).                             */
-#define MIN_FAHRENHEIT_L   -459.67L                   /* Minimum Fahrenheit temperature (in long double).                        */
-#define MIN_KELVIN_F          0.0f                    /* Minimum Kelvin temperature (in float).                                  */
-#define MIN_KELVIN_D          0.0                     /* Minimum Kelvin temperature (in double).                                 */
-#define MIN_KELVIN_L          0.0L                    /* Minimum Kelvin temperature (in long double).                            */
-
-/* Math utils: */
-#ifdef IMPORT_MATH_UTILS
-/* Importations and defines: */
-#define PI_F  3.14159265358979323846f                 /* Pi constant using float value.                                          */
-#define PI_D  3.14159265358979323846                  /* Pi constant using double value.                                         */
-#define PI_LD 3.14159265358979323846L                 /* Pi constant using long double value.                                    */
-
-/* Math utils functions prototypes: */
-float circumfer_f(float radius_val);                  /* Function to calculate a circumference using a float value.              */
-float circle_area_f(float radius_val);                /* Function to calculate the area of a circle using a float value.         */
-float sphere_volume_f(float radius_val);              /* Function to calculate the volume of a sphere using a float value.       */
-double circumfer_d(double radius_val);                /* Function to calculate a circumference using a double value.             */
-double circle_area_d(double radius_val);              /* Function to calculate the area of a circle using a double value.        */
-double sphere_volume_d(double radius_val);            /* Function to calculate the volume of a sphere using a double value.      */
-long double circumfer_ld(long double radius_val);     /* Function to calculate a circumference using a long double value.        */
-long double circle_area_ld(long double radius_val);   /* Function to calculate the area of a circle using a long double value.   */
-long double sphere_volume_ld(long double radius_val); /* Function to calculate the volume of a sphere using a long double value. */
-
-float circumfer_f(float radius_val)
-{
-	return 2.0f * PI_F * radius_val;
-}
-
-float circle_area_f(float radius_val)
-{
-	return PI_F * (radius_val * radius_val);
-}
-
-float sphere_volume_f(float radius_val)
-{
-	return (4.0f / 3.0f) * PI_F * (radius_val * radius_val * radius_val);
-}
-
-double circumfer_d(double radius_val)
-{
-	return 2.0 * PI_D * radius_val;
-}
-
-double circle_area_d(double radius_val)
-{
-	return PI_D * (radius_val * radius_val);
-}
-
-double sphere_volume_d(double radius_val)
-{
-	return (4.0 / 3.0) * PI_D * (radius_val * radius_val * radius_val);
-}
-
-long double circumfer_ld(long double radius_val)
-{
-	return 2.0L * PI_LD * radius_val;
-}
-
-long double circle_area_ld(long double radius_val)
-{
-	return PI_LD * (radius_val * radius_val);
-}
-
-long double sphere_volume_ld(long double radius_val)
-{
-	return (4.0L / 3.0L) * PI_LD * (radius_val * radius_val * radius_val);
-}
-
-/* Undefine math utils: */
-#undef IMPORT_MATH_UTILS
-#endif
-
-/* Temperature conversion utils: */
-#ifdef IMPORT_TEMPERATURE_CONVERSION_UTILS
-/* Temperature conversion utils functions prototypes: */
-float kelvin_to_celsius_f(float kelvin_val);                      /* Function to convert Kelvin to Celsius using a float value.           */
-float kelvin_to_fahrenheit_f(float kelvin_val);                   /* Function to convert Kelvin to Fahrenheit using a float value.        */
-float celsius_to_kelvin_f(float celsius_val);                     /* Function to convert Celsius to Kelvin using a float value.           */
-float celsius_to_fahrenheit_f(float celsius_val);                 /* Function to convert Celsius to Fahrenheit using a float value.       */
-float fahrenheit_to_kelvin_f(float fahrenheit_val);               /* Function to convert Fahrenheit to Kelvin using a float value.        */
-float fahrenheit_to_celsius_f(float fahrenheit_val);              /* Function to convert Fahrenheit to Celsius using a float value.       */
-double kelvin_to_celsius_d(double kelvin_val);                    /* Function to convert Kelvin to Celsius using a double value.          */
-double kelvin_to_fahrenheit_d(double kelvin_val);                 /* Function to convert Kelvin to Fahrenheit using a double value.       */
-double celsius_to_kelvin_d(double celsius_val);                   /* Function to convert Celsius to Kelvin using a double value.          */
-double celsius_to_fahrenheit_d(double celsius_val);               /* Function to convert Celsius to Fahrenheit using a double value.      */
-double fahrenheit_to_kelvin_d(double fahrenheit_val);             /* Function to convert Fahrenheit to Kelvin using a double value.       */
-double fahrenheit_to_celsius_d(double fahrenheit_val);            /* Function to convert Fahrenheit to Celsius using a double value.      */
-long double kelvin_to_celsius_ld(long double kelvin_val);         /* Function to convert Kelvin to Celsius using a long double value.     */
-long double kelvin_to_fahrenheit_ld(long double kelvin_val);      /* Function to convert Kelvin to Fahrenheit using a long double value.  */
-long double celsius_to_kelvin_ld(long double celsius_val);        /* Function to convert Celsius to Kelvin using a long double value.     */
-long double celsius_to_fahrenheit_ld(long double celsius_val);    /* Function to convert Celsius to Fahrenheit using a long double value. */
-long double fahrenheit_to_kelvin_ld(long double fahrenheit_val);  /* Function to convert Fahrenheit to Kelvin using a long double value.  */
-long double fahrenheit_to_celsius_ld(long double fahrenheit_val); /* Function to convert Fahrenheit to Celsius using a long double value. */
-
-float kelvin_to_celsius_f(float kelvin_val)
-{
-	return kelvin_val - 273.15f;
-}
-
-float kelvin_to_fahrenheit_f(float kelvin_val)
-{
-	return kelvin_val * (9.0f / 5.0f) - 459.67f;
-}
-
-float celsius_to_kelvin_f(float celsius_val)
-{
-	return celsius_val + 273.15f;
-}
-
-float celsius_to_fahrenheit_f(float celsius_val)
-{
-	return celsius_val * (9.0f / 5.0f) + 32.0f;
-}
-
-float fahrenheit_to_kelvin_f(float fahrenheit_val)
-{
-	return (fahrenheit_val + 459.67f) * (5.0f / 9.0f);
-}
-
-float fahrenheit_to_celsius_f(float fahrenheit_val)
-{
-	return (fahrenheit_val - 32.0f) * (5.0f / 9.0f);
-}
-
-double kelvin_to_celsius_d(double kelvin_val)
-{
-	return kelvin_val - 273.15;
-}
-
-double kelvin_to_fahrenheit_d(double kelvin_val)
-{
-	return kelvin_val * (9.0 / 5.0) - 459.67;
-}
-
-double celsius_to_kelvin_d(double celsius_val)
-{
-	return celsius_val + 273.15;
-}
-
-double celsius_to_fahrenheit_d(double celsius_val)
-{
-	return celsius_val * (9.0 / 5.0) + 32.0;
-}
-
-double fahrenheit_to_kelvin_d(double fahrenheit_val)
-{
-	return (fahrenheit_val + 459.67) * (5.0 / 9.0);
-}
-
-double fahrenheit_to_celsius_d(double fahrenheit_val)
-{
-	return (fahrenheit_val - 32.0) * (5.0 / 9.0);
-}
-
-long double kelvin_to_celsius_ld(long double kelvin_val)
-{
-	return kelvin_val - 273.15L;
-}
-
-long double kelvin_to_fahrenheit_ld(long double kelvin_val)
-{
-	return kelvin_val * (9.0L / 5.0L) - 459.67L;
-}
-
-long double celsius_to_kelvin_ld(long double celsius_val)
-{
-	return celsius_val + 273.15L;
-}
-
-long double celsius_to_fahrenheit_ld(long double celsius_val)
-{
-	return celsius_val * (9.0L / 5.0L) + 32.0L;
-}
-
-long double fahrenheit_to_kelvin_ld(long double fahrenheit_val)
-{
-	return (fahrenheit_val + 459.67L) * (5.0L / 9.0L);
-}
-
-long double fahrenheit_to_celsius_ld(long double fahrenheit_val)
-{
-	return (fahrenheit_val - 32.0L) * (5.0L / 9.0L);
-}
-
-/* Undefine temperature conversion utils: */
-#undef IMPORT_TEMPERATURE_CONVERSION_UTILS
-#endif
-
 /* Main struct prototypes: */
-static struct tm get_current_time(void);                                         /* Get current time struct.                            */
-static struct tm *current_time(void);                                            /* Current time struct.                                */
+static struct tm get_current_time(void);                                                                 /* Get current time struct.                            */
+static struct tm *current_time(void);                                                                    /* Current time struct.                                */
 
 static struct tm get_current_time(void)
 {
@@ -312,49 +82,68 @@ static struct tm *current_time(void)
 }
 
 /* Main functions prototypes: */
-static void clear_stdout(void);                                                  /* Function to clear the terminal.                     */
-static void clear_stdin(void);                                                   /* Function to clear the standard input.               */
-static void petc(void);                                                          /* Press enter to continue function.                   */
-static void apetc(void);                                                         /* Alternative press enter to continue function.       */
-static void easter_egg_function(void);                                           /* Easter egg function.                                */
-static int enable_vt_and_utf8(void);                                             /* Function to solve encoding in the Windows terminal. */
-static int paktc(void);                                                          /* Press any key to continue function.                 */
-static int rlf(void);                                                            /* Read "LICENSE" function.                            */
-static int rrmf(void);                                                           /* Read "READ-ME" function.                            */
-static int url_opener(const char *url);                                          /* URL opener function.                                */
-static int ssleep(unsigned int time);                                            /* Seconds sleep function.                             */
-static int mssleep(unsigned int time);                                           /* Milliseconds sleep function.                        */
-static int validate_date(int year, int month, int day);                          /* Validate date function.                             */
-static int validate_date_future(const int year, const int month, const int day); /* Validate all time date function.                    */
-static int make_directory(const char *path, unsigned int mode);                  /* Function to create a directory.                     */
-static const char *verify_os(void);                                              /* Function to verify the operating system.            */
+static const int clear_stdout(void);                                                                                      /* Function to clear the terminal.                     */
+static const int clear_stdin(void);                                                                                       /* Function to clear the standard input.               */
+static const int scan_enter(void);                                                                                        /* Press enter to continue function.                   */
+static const int easter_egg_function(void);                                                                               /* Easter egg function.                                */
+static const int enable_virtual_terminal_and_utf8(void);                                                                  /* Function to solve encoding in the Windows terminal. */
+static const int scan_char(void);                                                                                         /* Press any key to continue function.                 */
+static const int rlf(void);                                                                                               /* Read "LICENSE" function.                            */
+static const int rrmf(void);                                                                                              /* Read "READ-ME" function.                            */
+static const int url_opener(const char *url);                                                                             /* URL opener function.                                */
+static const int ssleep(unsigned int time);                                                                               /* Seconds sleep function.                             */
+static const int mssleep(unsigned int time);                                                                              /* Milliseconds sleep function.                        */
+static const int validate_date(const int year, const int month, const int day);                                           /* Validate date function.                             */
+static const int validate_date_future(const int year, const int month, const int day);                                    /* Validate all time date function.                    */
+static const int make_directory(const char *path, unsigned int mode);                                                     /* Function to create a directory.                     */
+static const int linear_char_search(const char *const array, size_t bytes, const char target);                            /* Linear char search function.                        */
+static const int linear_short_int_search(const short int *const array, size_t bytes, const short int target);             /* Linear short int search function.                   */
+static const int linear_int_search(const int *const array, size_t bytes, const int target);                               /* Linear int search function.                         */
+static const int linear_long_int_search(const long int *const array, size_t bytes, const long int target);                /* Linear long int search function.                    */
+#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
+static const int linear_long_long_int_search(const long long int *const array, size_t bytes, const long long int target); /* Linear long long int search function.               */
+#endif
+static const int linear_float_search(const float *const array, size_t bytes, const float target);                         /* Linear float search function.                       */
+static const int linear_double_search(const double *const array, size_t bytes, const double target);                      /* Linear double search function.                      */
+static const int linear_long_double_search(const long double *const array, size_t bytes, const long double target);       /* Linear long double search function.                 */
+static const int linear_array_search(const char **const array, size_t bytes, const char *target);                         /* Linear array search function.                       */
+static const char *verify_os(void);                                                                                       /* Function to verify the operating system.            */
 
-static void clear_stdout(void)
+static const int clear_stdout(void)
 {
-	fputs("\033[2J\033[3J\033[H", stdout);
+	fputs("\e[2J\e[3J\e[H", stdout);
+
+	return 0;
 }
 
-static void clear_stdin(void)
+static const int clear_stdin(void)
 {
-	int characters = 0;
-	while((characters = getchar()) != EOF && characters != '\n');
+	int characters = getchar();
+
+	while(characters != 10 && characters != -1)
+	{
+		characters = getchar();
+	}
+
+	return 0;
 }
 
-static void petc(void)
+static const int scan_enter(void)
 {
-	int characters = 0;
-	while((characters = getchar()) != EOF && characters != '\n');
-	fputs("Press \"ENTER\" to continue...", stdout);
-	getchar();
+	if(clear_stdin() != 0)
+	{
+		return 1;
+	}
+
+	if(getchar() == -1)
+	{
+		return 1;
+	}
+
+	return 0;
 }
 
-static void apetc(void)
-{
-	fputs("Press \"ENTER\" to continue...", stdout);
-	getchar();
-}
-
-static void easter_egg_function(void)
+static const int easter_egg_function(void)
 {
 	puts("Congratulations!!! You just discovered a new easter egg! (please don't say it to anyone ok!)");
 	puts("This is the link to our github account! If you want to see our projects, codes, etc...");
@@ -368,10 +157,17 @@ static void easter_egg_function(void)
 	system("open https://github.com/paulao255/");
 #endif
 
-	paktc();
+	fputs("Press any key to continue...", stdout);
+
+	if(scan_char() != 0)
+	{
+		return 1;
+	}
+
+	return 0;
 }
 
-static int enable_vt_and_utf8(void)
+static const int enable_virtual_terminal_and_utf8(void)
 {
 #if defined(_WIN32) || defined(_WIN64)
 	HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -394,6 +190,7 @@ static int enable_vt_and_utf8(void)
 	{
 		DWORD err = GetLastError();
 		(void)err;
+
 		return 1;
 	}
 	
@@ -401,25 +198,41 @@ static int enable_vt_and_utf8(void)
 	{
 		DWORD err = GetLastError();
 		(void)err;
-	}
 
-	return 0;
+		return 1;
+	}
 #else
 	return 1;
 #endif
+	return 0;
 }
 
-static int paktc(void)
+static const int scan_char(void)
 {
 #if defined(_WIN32) || defined(_WIN64)
-	fflush(stdout);
-	_getch();
+	if(fflush(stdout) == -1)
+	{
+		fprintf(stderr, "Error while flushing standard output...");
 
-	return 0;
+		return 1;
+	}
+
+	if(_getch() == -1)
+	{
+		fprintf(stderr, "Error on function _getch()...");
+
+		return 1;
+	}
 #elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
-	struct termios old_terminal, new_terminal;
+	struct termios old_terminal;
+	struct termios new_terminal;
 
-	fflush(stdout);
+	if(fflush(stdout) == -1)
+	{
+		fprintf(stderr, "Error while flushing standard output...");
+
+		return 1;
+	}
 		
 	tcgetattr(STDIN_FILENO, &old_terminal);
 
@@ -427,50 +240,64 @@ static int paktc(void)
 	new_terminal.c_lflag &= (tcflag_t) ~(ICANON | ECHO);
 
 	tcsetattr(STDIN_FILENO, TCSANOW, &new_terminal);
-	getchar();
-	tcsetattr(STDIN_FILENO, TCSANOW, &old_terminal);
 
-	return 0;
+	if(getchar() == -1)
+	{
+		return 1;
+	}
+
+	tcsetattr(STDIN_FILENO, TCSANOW, &old_terminal);
 #else
 	return 1;
 #endif
+	return 0;
 }
 
-static int rrmf(void)
+static const int rrmf(void)
 {
 #if defined(_WIN32) || defined(_WIN64)
 	system("more /C /P .\\README.md");
-	paktc();
 
-	return 0;
+	if(scan_char() != 0)
+	{
+		return 1;
+	}
 #elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
 	system("more -cp ./README.md");
-	paktc();
 
-	return 0;
+	if(scan_char() != 0)
+	{
+		return 1;
+	}
 #else
 	return 1;
 #endif
+	return 0;
 }
 
-static int rlf(void)
+static const int rlf(void)
 {
 #if defined(_WIN32) || defined(_WIN64)
 	system("more /C /P .\\LICENSE");
-	paktc();
 
-	return 0;
+	if(scan_char() != 0)
+	{
+		return 1;
+	}
 #elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
 	system("more -cp ./LICENSE");
-	paktc();
 
-	return 0;
+	if(scan_char() != 0)
+	{
+		return 1;
+	}
 #else
 	return 1;
 #endif
+	return 0;
 }
 
-static int url_opener(const char *url)
+static const int url_opener(const char *url)
 {
 	if(!url)
 	{
@@ -479,7 +306,7 @@ static int url_opener(const char *url)
 
 	else
 	{
-		char command[16384] = "";
+		char command[16384];
 
 #if defined(_WIN32) || defined(_WIN64)
 #if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) || (defined(__cplusplus) && __cplusplus >= 201103L)
@@ -509,7 +336,7 @@ static int url_opener(const char *url)
 	}
 }
 
-static int ssleep(unsigned int time)
+static const int ssleep(const unsigned int time)
 {
 	if(time == 0UL)
 	{
@@ -520,8 +347,6 @@ static int ssleep(unsigned int time)
 	{
 #if defined(_WIN32) || defined(_WIN64)
 		Sleep((DWORD)time * (DWORD)1000UL);
-
-		return 0;
 #elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
 		struct timespec req;
 		struct timespec rem;
@@ -542,15 +367,14 @@ static int ssleep(unsigned int time)
 				break;
 			}
 		}
-
-		return 0;
 #else
 		return 1;
 #endif
+		return 0;
 	}
 }
 
-static int mssleep(unsigned int time)
+static const int mssleep(const unsigned int time)
 {
 	if(time == 0UL)
 	{
@@ -561,15 +385,13 @@ static int mssleep(unsigned int time)
 	{
 #if defined(_WIN32) || defined(_WIN64)
 		Sleep((DWORD)time);
-
-		return 0;
 #elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
 		struct timespec req;
 		struct timespec rem;
 		int res;
 
 		req.tv_sec = (time_t)(time / 1000);
-		req.tv_nsec = (long)((time % 1000) * 1000000L);
+		req.tv_nsec = ((long int)time % 1000L) * 1000000L;
 
 		while((res = nanosleep(&req, &rem)) == -1)
 		{
@@ -591,9 +413,23 @@ static int mssleep(unsigned int time)
 	}
 }
 
-static int validate_date(const int year, const int month, const int day)
+static const int validate_date(const int year, const int month, const int day)
 {
 	struct tm *current_date = current_time();
+	int days_in_month[12] = {
+		31,
+		28,
+		31,
+		30,
+		31,
+		30,
+		31,
+		31,
+		30,
+		31,
+		30,
+		31
+	};
 
 	if(year < 1)
 	{
@@ -609,8 +445,6 @@ static int validate_date(const int year, const int month, const int day)
 
 		else
 		{
-			int days_in_month[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-
 			if((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0))
 			{
 				days_in_month[1] = 29;
@@ -637,8 +471,23 @@ static int validate_date(const int year, const int month, const int day)
 	}
 }
 
-static int validate_date_future(const int year, const int month, const int day)
+static const int validate_date_future(const int year, const int month, const int day)
 {
+	int days_in_month[12] = {
+		31,
+		28,
+		31,
+		30,
+		31,
+		30,
+		31,
+		31,
+		30,
+		31,
+		30,
+		31
+	};
+
 	if(year < 1)
 	{
 		return 1;
@@ -653,8 +502,6 @@ static int validate_date_future(const int year, const int month, const int day)
 
 		else
 		{
-			int days_in_month[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-
 			if((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0))
 			{
 				days_in_month[1] = 29;
@@ -673,7 +520,7 @@ static int validate_date_future(const int year, const int month, const int day)
 	}
 }
 
-static int make_directory(const char *path, unsigned int mode)
+static const int make_directory(const char *path, unsigned int mode)
 {
 	if(!path)
 	{
@@ -730,6 +577,160 @@ static int make_directory(const char *path, unsigned int mode)
 		return 1;
 #endif
 	}
+}
+
+static const int linear_char_search(const char *const array, const size_t bytes, const char target)
+{
+	size_t index;
+
+	if(!array)
+	{
+		return 1;
+	}
+
+	for(index = 0U; index < bytes; index++)
+	{
+		if(array[index] == target)
+		{
+			return (const int)index;
+		}
+	}
+
+	return -1;
+}
+
+static const int linear_short_int_search(const short int *const array, size_t bytes, const short int target)
+{
+	size_t index;
+	bytes = bytes / sizeof(short int);
+
+	for(index = 0U; index < bytes; index++)
+	{
+		if(array[index] == target)
+		{
+			return (const int)index;
+		}
+	}
+
+	return -1;
+}
+
+static const int linear_int_search(const int *const array, size_t bytes, const int target)
+{
+	size_t index;
+	bytes = bytes / sizeof(int);
+
+	for(index = 0U; index < bytes; index++)
+	{
+		if(array[index] == target)
+		{
+			return (const int)index;
+		}
+	}
+
+	return -1;
+}
+
+static const int linear_long_int_search(const long int *const array, size_t bytes, const long int target)
+{
+	size_t index;
+	bytes = bytes / sizeof(long int);
+
+	for(index = 0U; index < bytes; index++)
+	{
+		if(array[index] == target)
+		{
+			return (const int)index;
+		}
+	}
+
+	return -1;
+}
+
+#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
+static const int linear_long_long_int_search(const long long int *const array, size_t bytes, const long long int target)
+{
+	size_t index;
+	bytes = bytes / sizeof(long long int);
+
+	for(index = 0U; index < bytes; index++)
+	{
+		if(array[index] == target)
+		{
+			return (const int)index;
+		}
+	}
+
+	return -1;
+}
+#endif
+
+static const int linear_float_search(const float *const array, size_t bytes, const float target)
+{
+	size_t index;
+	bytes = bytes / sizeof(float);
+
+	for(index = 0U; index < bytes; index++)
+	{
+		if(array[index] == target)
+		{
+			return (const int)index;
+		}
+	}
+
+	return -1;
+}
+
+static const int linear_double_search(const double *const array, size_t bytes, const double target)
+{
+	size_t index;
+	bytes = bytes / sizeof(double);
+
+	for(index = 0U; index < bytes; index++)
+	{
+		if(array[index] == target)
+		{
+			return (const int)index;
+		}
+	}
+
+	return -1;
+}
+
+static const int linear_long_double_search(const long double *const array, size_t bytes, const long double target)
+{
+	size_t index;
+	bytes = bytes / sizeof(long double);
+
+	for(index = 0U; index < bytes; index++)
+	{
+		if(array[index] == target)
+		{
+			return (const int)index;
+		}
+	}
+
+	return -1;
+}
+
+static const int linear_array_search(const char **const array, const size_t bytes, const char *const target)
+{
+	size_t index;
+
+	if(!array || !target)
+	{
+		return -1;
+	}
+
+	for(index = 0U; index < bytes; index++)
+	{
+		if(!strcmp(array[index], target))
+		{
+			return (const int)index;
+		}
+	}
+
+	return -1;
 }
 
 static const char *verify_os(void)

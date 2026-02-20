@@ -65,29 +65,36 @@ The **project structure** need to be like this to work:
 
 **Windows**:
 
-1. Press `Windows + R`, type `cmd` and press `Ctrl + Shift + Enter`, then open it in administrator mode.
-2. Type into **cmd** `winget install --id="Kitware.CMake" && winget install --id="MSYS2.MSYS2"`.
-3. Now after install **CMake** and **MSYS2** press `Windows + R` and type `mingw64` or `mingw32` for 32 bits, then press `Ctrl + Shift + Enter` to open it as an administrator.
-4. Now on **Mingw Shell** type `pacman -Syyu` it will probably say to **quit** after update soo you will press `y` to quit and enter in **Mingw Shell** again and type `pacman -S mingw-w64-x86_64-gcc mingw-w64-x86_64-ninja --needed`.
-5. Now you just need to **build** the project.
+1. Press `Windows + R`.
+2. type `cmd` and press `Ctrl + Shift + Enter`, then open it in administrator mode.
+3. Type into **cmd** `winget install --id="Kitware.CMake" && winget install --id="MSYS2.MSYS2"`.
+4. Now after install **CMake** and **MSYS2** press `Windows + R`.
+5. Type `mingw64` or `mingw32` for 32 bits.
+6. Press `Ctrl + Shift + Enter` to open it as an administrator.
+7. Now on **Mingw Shell** type `pacman -Syyu --needed`.
+8. It will probably say to **quit** after update.
+9. Then you will press `y` to quit and enter in **Mingw Shell** again.
+10. Type `pacman -S mingw-w64-x86_64-gcc mingw-w64-x86_64-ninja --needed`.
+11. Type `pacman -S --needed mingw-w64-x86_64-make`.
+12. Now you just need to **build** the project.
 
 **Linux**:
 
-1. Install `GCC`, `CMake`, `Ninja` with the **Package Manager of the Distribution**.
+1. Install `GCC`, `CMake`, `Ninja` and `Make` with your **Package Manager**.
 2. **Build** the project.
 
 **macOS**:
 
-1. Install a **[MacPort](https://www.macports.org/install.php)** for your **current macOS** distro.
-2. Enter in **terminal** and type `sudo port selfupdate && sudo port install cmake gcc ninja`.
-3. **Build** the project.
+1. Install a **[Mac port](https://www.macports.org/install.php)**.
+2. Enter in **terminal**.
+3. Type `sudo port selfupdate && sudo port install cmake gcc ninja make`.
+4. **Build** the project.
 
 #### Build process
 
-1. Create a directory named `./build` with terminal.
-2. Enter into the `./build` directory.
-3. Type `cmake .. -G Ninja` in `./build` directory to make the `./build/build.ninja` file.
-4. Type `ninja` in `./build` to run `./build/build.ninja` and create the executable in `./build/bin`.
+- `make` or `make all` to build the executable.
+- `make clean` to remove the build.
+- `make install` to install in the binary directory.
 
 ##### Credits
 
