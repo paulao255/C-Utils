@@ -91,8 +91,8 @@ static const int scan_char(void);                                               
 static const int rlf(void);                                                                                               /* Read "LICENSE" function.                            */
 static const int rrmf(void);                                                                                              /* Read "READ-ME" function.                            */
 static const int url_opener(const char *url);                                                                             /* URL opener function.                                */
-static const int ssleep(unsigned int time);                                                                               /* Seconds sleep function.                             */
-static const int mssleep(unsigned int time);                                                                              /* Milliseconds sleep function.                        */
+static const int ssleep(const unsigned int time);                                                                         /* Seconds sleep function.                             */
+static const int mssleep(const unsigned int time);                                                                        /* Milliseconds sleep function.                        */
 static const int validate_date(const int year, const int month, const int day);                                           /* Validate date function.                             */
 static const int validate_date_future(const int year, const int month, const int day);                                    /* Validate all time date function.                    */
 static const int make_directory(const char *path, unsigned int mode);                                                     /* Function to create a directory.                     */
@@ -338,7 +338,7 @@ static const int url_opener(const char *url)
 
 static const int ssleep(const unsigned int time)
 {
-	if(time == 0UL)
+	if(time == 0U)
 	{
 		return 1;
 	}
@@ -348,24 +348,11 @@ static const int ssleep(const unsigned int time)
 #if defined(_WIN32) || defined(_WIN64)
 		Sleep((DWORD)time * (DWORD)1000UL);
 #elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
-		struct timespec req;
-		struct timespec rem;
-		int res;
-
-		req.tv_sec = (time_t)time;
-		req.tv_nsec = 0L;
-
-		while((res = nanosleep(&req, &rem)) == -1)
+		if(sleep(time) > 0)
 		{
-			if(errno == EINTR)
-			{
-				req = rem;
-			}
+			perror("sleep failed");
 
-			else
-			{
-				break;
-			}
+			return 1;
 		}
 #else
 		return 1;
@@ -376,7 +363,7 @@ static const int ssleep(const unsigned int time)
 
 static const int mssleep(const unsigned int time)
 {
-	if(time == 0UL)
+	if(time == 0U)
 	{
 		return 1;
 	}
@@ -386,30 +373,16 @@ static const int mssleep(const unsigned int time)
 #if defined(_WIN32) || defined(_WIN64)
 		Sleep((DWORD)time);
 #elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
-		struct timespec req;
-		struct timespec rem;
-		int res;
-
-		req.tv_sec = (time_t)(time / 1000);
-		req.tv_nsec = ((long int)time % 1000L) * 1000000L;
-
-		while((res = nanosleep(&req, &rem)) == -1)
+		if(usleep(time * 1000) == -1)
 		{
-			if(errno == EINTR)
-			{
-				req = rem;
-			}
+			perror("usleep failed");
 
-			else
-			{
-				break;
-			}
+			return 1;
 		}
-
-		return 0;
 #else
 		return 1;
 #endif
+		return 0;
 	}
 }
 
