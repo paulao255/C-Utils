@@ -9,6 +9,7 @@
 
 #if (!defined(_WIN32) && !defined(_WIN64)) && !defined(__cplusplus) && defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L && !defined(_POSIX_C_SOURCE)
 #define _POSIX_C_SOURCE 199309L
+#define _DEFAULT_SOURCE
 #endif
 
 #if defined(_WIN32) || defined(_WIN64)
@@ -22,10 +23,10 @@ extern "C"
 #endif
 
 /* Definitions version variables: */
-#define C_UTILS_FULL_VERSION         20260220L                 /* C Utils/defs.h full version macro.                                      */
+#define C_UTILS_FULL_VERSION         20260223L                 /* C Utils/defs.h full version macro.                                      */
 #define C_UTILS_MAJOR_VERSION        2026L                     /* C Utils/defs.h major version macro.                                     */
 #define C_UTILS_MINOR_VERSION        2L	                       /* C Utils/defs.h minor version macro.                                     */
-#define C_UTILS_PATCH_VERSION        20L                       /* C Utils/defs.h patch version macro.                                     */
+#define C_UTILS_PATCH_VERSION        23L                       /* C Utils/defs.h patch version macro.                                     */
 
 /* Terminal colors: */
 #define BASE_TERMINAL               "\e[0m"                    /* Reset terminal text macro.                                              */
