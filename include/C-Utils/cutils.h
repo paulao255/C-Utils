@@ -82,41 +82,41 @@ static struct tm *current_time(void)
 }
 
 /* Main functions prototypes: */
-static const int clear_stdout(void);                                                                                      /* Function to clear the terminal.                     */
-static const int clear_stdin(void);                                                                                       /* Function to clear the standard input.               */
-static const int scan_enter(void);                                                                                        /* Press enter to continue function.                   */
-static const int easter_egg_function(void);                                                                               /* Easter egg function.                                */
-static const int enable_virtual_terminal_and_utf8(void);                                                                  /* Function to solve encoding in the Windows terminal. */
-static const int scan_char(void);                                                                                         /* Press any key to continue function.                 */
-static const int rlf(void);                                                                                               /* Read "LICENSE" function.                            */
-static const int rrmf(void);                                                                                              /* Read "READ-ME" function.                            */
-static const int url_opener(const char *url);                                                                             /* URL opener function.                                */
-static const int ssleep(const unsigned int time);                                                                         /* Seconds sleep function.                             */
-static const int mssleep(const unsigned int time);                                                                        /* Milliseconds sleep function.                        */
-static const int validate_date(const int year, const int month, const int day);                                           /* Validate date function.                             */
-static const int validate_date_future(const int year, const int month, const int day);                                    /* Validate all time date function.                    */
-static const int make_directory(const char *path, unsigned int mode);                                                     /* Function to create a directory.                     */
-static const int linear_char_search(const char *const array, size_t bytes, const char target);                            /* Linear char search function.                        */
-static const int linear_short_int_search(const short int *const array, size_t bytes, const short int target);             /* Linear short int search function.                   */
-static const int linear_int_search(const int *const array, size_t bytes, const int target);                               /* Linear int search function.                         */
-static const int linear_long_int_search(const long int *const array, size_t bytes, const long int target);                /* Linear long int search function.                    */
+static int clear_stdout(void);                                                                                      /* Function to clear the terminal.                     */
+static int clear_stdin(void);                                                                                       /* Function to clear the standard input.               */
+static int scan_enter(void);                                                                                        /* Press enter to continue function.                   */
+static int easter_egg_function(void);                                                                               /* Easter egg function.                                */
+static int enable_virtual_terminal_and_utf8(void);                                                                  /* Function to solve encoding in the Windows terminal. */
+static int scan_char(void);                                                                                         /* Press any key to continue function.                 */
+static int rlf(void);                                                                                               /* Read "LICENSE" function.                            */
+static int rrmf(void);                                                                                              /* Read "READ-ME" function.                            */
+static int url_opener(const char *url);                                                                             /* URL opener function.                                */
+static int ssleep(const unsigned int time);                                                                         /* Seconds sleep function.                             */
+static int mssleep(const unsigned int time);                                                                        /* Milliseconds sleep function.                        */
+static int validate_date(const int year, const int month, const int day);                                           /* Validate date function.                             */
+static int validate_date_future(const int year, const int month, const int day);                                    /* Validate all time date function.                    */
+static int make_directory(const char *const path, unsigned int mode);                                               /* Function to create a directory.                     */
+static int linear_char_search(const char *const array, size_t bytes, const char target);                            /* Linear char search function.                        */
+static int linear_short_int_search(const short int *const array, size_t bytes, const short int target);             /* Linear short int search function.                   */
+static int linear_int_search(const int *const array, size_t bytes, const int target);                               /* Linear int search function.                         */
+static int linear_long_int_search(const long int *const array, size_t bytes, const long int target);                /* Linear long int search function.                    */
 #if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
-static const int linear_long_long_int_search(const long long int *const array, size_t bytes, const long long int target); /* Linear long long int search function.               */
+static int linear_long_long_int_search(const long long int *const array, size_t bytes, const long long int target); /* Linear long long int search function.               */
 #endif
-static const int linear_float_search(const float *const array, size_t bytes, const float target);                         /* Linear float search function.                       */
-static const int linear_double_search(const double *const array, size_t bytes, const double target);                      /* Linear double search function.                      */
-static const int linear_long_double_search(const long double *const array, size_t bytes, const long double target);       /* Linear long double search function.                 */
-static const int linear_array_search(const char **const array, size_t bytes, const char *target);                         /* Linear array search function.                       */
-static const char *verify_os(void);                                                                                       /* Function to verify the operating system.            */
+static int linear_float_search(const float *const array, size_t bytes, const float target);                         /* Linear float search function.                       */
+static int linear_double_search(const double *const array, size_t bytes, const double target);                      /* Linear double search function.                      */
+static int linear_long_double_search(const long double *const array, size_t bytes, const long double target);       /* Linear long double search function.                 */
+static int linear_array_search(const char **const array, size_t bytes, const char *const target);                   /* Linear array search function.                       */
+static char *verify_os(void);                                                                                       /* Function to verify the operating system.            */
 
-static const int clear_stdout(void)
+static int clear_stdout(void)
 {
 	fputs("\e[2J\e[3J\e[H", stdout);
 
 	return 0;
 }
 
-static const int clear_stdin(void)
+static int clear_stdin(void)
 {
 	int characters = getchar();
 
@@ -128,7 +128,7 @@ static const int clear_stdin(void)
 	return 0;
 }
 
-static const int scan_enter(void)
+static int scan_enter(void)
 {
 	if(clear_stdin() != 0)
 	{
@@ -143,7 +143,7 @@ static const int scan_enter(void)
 	return 0;
 }
 
-static const int easter_egg_function(void)
+static int easter_egg_function(void)
 {
 	puts("Congratulations!!! You just discovered a new easter egg! (please don't say it to anyone ok!)");
 	puts("This is the link to our github account! If you want to see our projects, codes, etc...");
@@ -167,7 +167,7 @@ static const int easter_egg_function(void)
 	return 0;
 }
 
-static const int enable_virtual_terminal_and_utf8(void)
+static int enable_virtual_terminal_and_utf8(void)
 {
 #if defined(_WIN32) || defined(_WIN64)
 	HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -207,19 +207,19 @@ static const int enable_virtual_terminal_and_utf8(void)
 	return 0;
 }
 
-static const int scan_char(void)
+static int scan_char(void)
 {
 #if defined(_WIN32) || defined(_WIN64)
 	if(fflush(stdout) == -1)
 	{
-		fprintf(stderr, "Error while flushing standard output...");
+		fputs("Error while flushing standard output...", stderr);
 
 		return 1;
 	}
 
 	if(_getch() == -1)
 	{
-		fprintf(stderr, "Error on function _getch()...");
+		fputs("Error on function _getch()...", stderr);
 
 		return 1;
 	}
@@ -229,7 +229,7 @@ static const int scan_char(void)
 
 	if(fflush(stdout) == -1)
 	{
-		fprintf(stderr, "Error while flushing standard output...");
+		fputs("Error while flushing standard output...", stderr);
 
 		return 1;
 	}
@@ -253,7 +253,7 @@ static const int scan_char(void)
 	return 0;
 }
 
-static const int rrmf(void)
+static int rrmf(void)
 {
 #if defined(_WIN32) || defined(_WIN64)
 	system("more /C /P .\\README.md");
@@ -275,7 +275,7 @@ static const int rrmf(void)
 	return 0;
 }
 
-static const int rlf(void)
+static int rlf(void)
 {
 #if defined(_WIN32) || defined(_WIN64)
 	system("more /C /P .\\LICENSE");
@@ -297,7 +297,7 @@ static const int rlf(void)
 	return 0;
 }
 
-static const int url_opener(const char *url)
+static int url_opener(const char *url)
 {
 	if(!url)
 	{
@@ -336,7 +336,7 @@ static const int url_opener(const char *url)
 	}
 }
 
-static const int ssleep(const unsigned int time)
+static int ssleep(const unsigned int time)
 {
 	if(time == 0U)
 	{
@@ -361,7 +361,7 @@ static const int ssleep(const unsigned int time)
 	}
 }
 
-static const int mssleep(const unsigned int time)
+static int mssleep(const unsigned int time)
 {
 	if(time == 0U)
 	{
@@ -386,9 +386,8 @@ static const int mssleep(const unsigned int time)
 	}
 }
 
-static const int validate_date(const int year, const int month, const int day)
+static int validate_date(const int year, const int month, const int day)
 {
-	struct tm *current_date = current_time();
 	int days_in_month[12] = {
 		31,
 		28,
@@ -403,6 +402,7 @@ static const int validate_date(const int year, const int month, const int day)
 		30,
 		31
 	};
+	struct tm *current_date = current_time();
 
 	if(year < 1)
 	{
@@ -420,10 +420,10 @@ static const int validate_date(const int year, const int month, const int day)
 		{
 			if((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0))
 			{
-				days_in_month[1] = 29;
+				*(days_in_month + 1) = 29;
 			}
 
-			if(day < 1 || day > days_in_month[month - 1])
+			if(day < 1 || day > *(days_in_month + month - 1))
 			{
 				return 1;
 			}
@@ -444,7 +444,7 @@ static const int validate_date(const int year, const int month, const int day)
 	}
 }
 
-static const int validate_date_future(const int year, const int month, const int day)
+static int validate_date_future(const int year, const int month, const int day)
 {
 	int days_in_month[12] = {
 		31,
@@ -477,10 +477,10 @@ static const int validate_date_future(const int year, const int month, const int
 		{
 			if((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0))
 			{
-				days_in_month[1] = 29;
+				*(days_in_month + 1) = 29;
 			}
 
-			if(day < 1 || day > days_in_month[month - 1])
+			if(day < 1 || day > *(days_in_month + month - 1))
 			{
 				return 1;
 			}
@@ -493,7 +493,7 @@ static const int validate_date_future(const int year, const int month, const int
 	}
 }
 
-static const int make_directory(const char *path, unsigned int mode)
+static int make_directory(const char *const path, unsigned int mode)
 {
 	if(!path)
 	{
@@ -552,7 +552,7 @@ static const int make_directory(const char *path, unsigned int mode)
 	}
 }
 
-static const int linear_char_search(const char *const array, const size_t bytes, const char target)
+static int linear_char_search(const char *const array, const size_t bytes, const char target)
 {
 	size_t index;
 
@@ -563,7 +563,7 @@ static const int linear_char_search(const char *const array, const size_t bytes,
 
 	for(index = 0U; index < bytes; index++)
 	{
-		if(array[index] == target)
+		if(*(array + index) == target)
 		{
 			return (const int)index;
 		}
@@ -572,14 +572,14 @@ static const int linear_char_search(const char *const array, const size_t bytes,
 	return -1;
 }
 
-static const int linear_short_int_search(const short int *const array, size_t bytes, const short int target)
+static int linear_short_int_search(const short int *const array, size_t bytes, const short int target)
 {
 	size_t index;
 	bytes = bytes / sizeof(short int);
 
 	for(index = 0U; index < bytes; index++)
 	{
-		if(array[index] == target)
+		if(*(array + index) == target)
 		{
 			return (const int)index;
 		}
@@ -588,14 +588,14 @@ static const int linear_short_int_search(const short int *const array, size_t by
 	return -1;
 }
 
-static const int linear_int_search(const int *const array, size_t bytes, const int target)
+static int linear_int_search(const int *const array, size_t bytes, const int target)
 {
 	size_t index;
 	bytes = bytes / sizeof(int);
 
 	for(index = 0U; index < bytes; index++)
 	{
-		if(array[index] == target)
+		if(*(array + index) == target)
 		{
 			return (const int)index;
 		}
@@ -604,14 +604,14 @@ static const int linear_int_search(const int *const array, size_t bytes, const i
 	return -1;
 }
 
-static const int linear_long_int_search(const long int *const array, size_t bytes, const long int target)
+static int linear_long_int_search(const long int *const array, size_t bytes, const long int target)
 {
 	size_t index;
 	bytes = bytes / sizeof(long int);
 
 	for(index = 0U; index < bytes; index++)
 	{
-		if(array[index] == target)
+		if(*(array + index) == target)
 		{
 			return (const int)index;
 		}
@@ -621,14 +621,14 @@ static const int linear_long_int_search(const long int *const array, size_t byte
 }
 
 #if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
-static const int linear_long_long_int_search(const long long int *const array, size_t bytes, const long long int target)
+static int linear_long_long_int_search(const long long int *const array, size_t bytes, const long long int target)
 {
 	size_t index;
 	bytes = bytes / sizeof(long long int);
 
 	for(index = 0U; index < bytes; index++)
 	{
-		if(array[index] == target)
+		if(*(array + index) == target)
 		{
 			return (const int)index;
 		}
@@ -638,14 +638,14 @@ static const int linear_long_long_int_search(const long long int *const array, s
 }
 #endif
 
-static const int linear_float_search(const float *const array, size_t bytes, const float target)
+static int linear_float_search(const float *const array, size_t bytes, const float target)
 {
 	size_t index;
 	bytes = bytes / sizeof(float);
 
 	for(index = 0U; index < bytes; index++)
 	{
-		if(array[index] == target)
+		if(*(array + index) == target)
 		{
 			return (const int)index;
 		}
@@ -654,14 +654,14 @@ static const int linear_float_search(const float *const array, size_t bytes, con
 	return -1;
 }
 
-static const int linear_double_search(const double *const array, size_t bytes, const double target)
+static int linear_double_search(const double *const array, size_t bytes, const double target)
 {
 	size_t index;
 	bytes = bytes / sizeof(double);
 
 	for(index = 0U; index < bytes; index++)
 	{
-		if(array[index] == target)
+		if(*(array + index) == target)
 		{
 			return (const int)index;
 		}
@@ -670,14 +670,14 @@ static const int linear_double_search(const double *const array, size_t bytes, c
 	return -1;
 }
 
-static const int linear_long_double_search(const long double *const array, size_t bytes, const long double target)
+static int linear_long_double_search(const long double *const array, size_t bytes, const long double target)
 {
 	size_t index;
 	bytes = bytes / sizeof(long double);
 
 	for(index = 0U; index < bytes; index++)
 	{
-		if(array[index] == target)
+		if(*(array + index) == target)
 		{
 			return (const int)index;
 		}
@@ -686,7 +686,7 @@ static const int linear_long_double_search(const long double *const array, size_
 	return -1;
 }
 
-static const int linear_array_search(const char **const array, const size_t bytes, const char *const target)
+static int linear_array_search(const char **const array, const size_t bytes, const char *const target)
 {
 	size_t index;
 
@@ -697,7 +697,7 @@ static const int linear_array_search(const char **const array, const size_t byte
 
 	for(index = 0U; index < bytes; index++)
 	{
-		if(!strcmp(array[index], target))
+		if(!strcmp(*(array + index), target))
 		{
 			return (const int)index;
 		}
@@ -706,7 +706,7 @@ static const int linear_array_search(const char **const array, const size_t byte
 	return -1;
 }
 
-static const char *verify_os(void)
+static char *verify_os(void)
 {
 #if defined(_WIN32) || defined(_WIN64)
 	return "Windows";
