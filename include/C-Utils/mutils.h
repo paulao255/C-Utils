@@ -5,67 +5,25 @@
 /* Importations: */
 #include "defs.h"
 
+
+/* Import C to C++: */
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
 /* Math utils functions prototypes: */
-static float circumfer_f(const float radius_val);                  /* Function to calculate a circumference using a float value.              */
-static float circle_area_f(const float radius_val);                /* Function to calculate the area of a circle using a float value.         */
-static float sphere_volume_f(const float radius_val);              /* Function to calculate the volume of a sphere using a float value.       */
-static double circumfer_d(const double radius_val);                /* Function to calculate a circumference using a double value.             */
-static double circle_area_d(const double radius_val);              /* Function to calculate the area of a circle using a double value.        */
-static double sphere_volume_d(const double radius_val);            /* Function to calculate the volume of a sphere using a double value.      */
-static long double circumfer_ld(const long double radius_val);     /* Function to calculate a circumference using a long double value.        */
-static long double circle_area_ld(const long double radius_val);   /* Function to calculate the area of a circle using a long double value.   */
-static long double sphere_volume_ld(const long double radius_val); /* Function to calculate the volume of a sphere using a long double value. */
+float circumfer_f(const float radius_value);                  /* Function to calculate a circumference using a float value.              */
+float circle_area_f(const float radius_value);                /* Function to calculate the area of a circle using a float value.         */
+float sphere_volume_f(const float radius_value);              /* Function to calculate the volume of a sphere using a float value.       */
+double circumfer_d(const double radius_value);                /* Function to calculate a circumference using a double value.             */
+double circle_area_d(const double radius_value);              /* Function to calculate the area of a circle using a double value.        */
+double sphere_volume_d(const double radius_value);            /* Function to calculate the volume of a sphere using a double value.      */
+long double circumfer_ld(const long double radius_value);     /* Function to calculate a circumference using a long double value.        */
+long double circle_area_ld(const long double radius_value);   /* Function to calculate the area of a circle using a long double value.   */
+long double sphere_volume_ld(const long double radius_value); /* Function to calculate the volume of a sphere using a long double value. */
 
-static float circumfer_f(const float radius_val)
-{
-	return 2.0f * PI_F * radius_val;
-}
-
-static float circle_area_f(const float radius_val)
-{
-	return PI_F * (radius_val * radius_val);
-}
-
-static float sphere_volume_f(const float radius_val)
-{
-	return (4.0f / 3.0f) * PI_F * (radius_val * radius_val * radius_val);
-}
-
-static double circumfer_d(const double radius_val)
-{
-	return 2.0 * PI_D * radius_val;
-}
-
-static double circle_area_d(const double radius_val)
-{
-	return PI_D * (radius_val * radius_val);
-}
-
-static double sphere_volume_d(const double radius_val)
-{
-	return (4.0 / 3.0) * PI_D * (radius_val * radius_val * radius_val);
-}
-
-static long double circumfer_ld(const long double radius_val)
-{
-	return 2.0L * PI_LD * radius_val;
-}
-
-static long double circle_area_ld(const long double radius_val)
-{
-	return PI_LD * (radius_val * radius_val);
-}
-
-static long double sphere_volume_ld(const long double radius_val)
-{
-	return (4.0L / 3.0L) * PI_LD * (radius_val * radius_val * radius_val);
-}
-
+/* End importation: */
 #ifdef __cplusplus
 }
 #endif
