@@ -599,7 +599,7 @@ int linear_float_search(const float *const array, size_t bytes, const float targ
 	{
 		const float difference = *(array + index) - target;
 
-		if((difference < 0.0f ? -difference : difference) < FLT_EPSILON)
+		if((difference < 0.0f ? -difference : difference) < 10 * FLT_EPSILON)
 		{
 			return (int)index;
 		}
@@ -623,7 +623,7 @@ int linear_double_search(const double *const array, size_t bytes, const double t
 	{
 		const double difference = *(array + index) - target;
 
-		if((difference < 0.0 ? -difference : difference) < DBL_EPSILON)
+		if((difference < 0.0 ? -difference : difference) < 10 * DBL_EPSILON)
 		{
 			return (int)index;
 		}
@@ -647,7 +647,7 @@ int linear_long_double_search(const long double *const array, size_t bytes, cons
 	{
 		const long double difference = *(array + index) - target;
 
-		if((difference < 0.0L ? -difference : difference) < LDBL_EPSILON)
+		if((difference < 0.0L ? -difference : difference) < 10 * LDBL_EPSILON)
 		{
 			return (int)index;
 		}
