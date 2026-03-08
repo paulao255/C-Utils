@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <string.h>
 #include <time.h>
+#include <float.h>
 
 #if defined(_WIN32) || defined(_WIN64)
 #define WIN32_LEAN_AND_MEAN
@@ -596,7 +597,9 @@ int linear_float_search(const float *const array, size_t bytes, const float targ
 
 	for(index = 0U; index < bytes; index++)
 	{
-		if(*(array + index) == target)
+		const float difference = *(array + index) - target;
+
+		if((difference < 0.0f ? -difference : difference) < FLT_EPSILON)
 		{
 			return (int)index;
 		}
@@ -618,7 +621,9 @@ int linear_double_search(const double *const array, size_t bytes, const double t
 
 	for(index = 0U; index < bytes; index++)
 	{
-		if(*(array + index) == target)
+		const double difference = *(array + index) - target;
+
+		if((difference < 0.0 ? -difference : difference) < DBL_EPSILON)
 		{
 			return (int)index;
 		}
@@ -640,7 +645,9 @@ int linear_long_double_search(const long double *const array, size_t bytes, cons
 
 	for(index = 0U; index < bytes; index++)
 	{
-		if(*(array + index) == target)
+		const long double difference = *(array + index) - target;
+
+		if((difference < 0.0L ? -difference : difference) < LDBL_EPSILON)
 		{
 			return (int)index;
 		}

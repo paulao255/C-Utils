@@ -23,6 +23,11 @@ long double circumfer_ld(const long double radius_value);     /* Function to cal
 long double circle_area_ld(const long double radius_value);   /* Function to calculate the area of a circle using a long double value.   */
 long double sphere_volume_ld(const long double radius_value); /* Function to calculate the volume of a sphere using a long double value. */
 
+#if !defined(__cplusplus) && !defined(__STDC_VERSION__)
+float fabsf(const float x);                                   /* "fabsf" to C89/90 based on C99^.                                        */
+long double fabsl(const long double x);                       /* "fabsl" to C89/90 based on C99^.                                        */
+#endif
+
 /* End importation: */
 #ifdef __cplusplus
 }

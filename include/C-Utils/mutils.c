@@ -53,6 +53,18 @@ long double sphere_volume_ld(const long double radius_value)
 	return (4.0L / 3.0L) * PI_LD * (radius_value * radius_value * radius_value);
 }
 
+#if !defined(__cplusplus) && !defined(__STDC_VERSION__)
+float fabsf(const float x)
+{
+	return x < 0.0f ? -x : x;
+}
+
+long double fabsl(const long double x)
+{
+	return x < 0.0L ? -x : x;
+}
+#endif
+
 /* End importation: */
 #ifdef __cplusplus
 }
