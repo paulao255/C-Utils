@@ -1,5 +1,6 @@
 /* Importations: */
 #include "cutils.h"
+#include "defs.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>
@@ -68,7 +69,7 @@ int clear_stdout(void)
 
 int clear_stdin(void)
 {
-	int characters = getchar();
+	short int characters = getchar();
 
 	while(characters != 10 && characters != EOF)
 	{
@@ -98,16 +99,12 @@ int easter_egg_function(void)
 	fputs("Congratulations!!! You just discovered a new easter egg! (please don't say it to anyone ok!)\n", stdout);
 	fputs("This is the link to our github account! If you want to see our projects, codes, etc...\n", stdout);
 	fputs("Link: https://github.com/paulao255/\n", stdout);
-
-#if defined(_WIN32) || defined(_WIN64)
-	system("start https://github.com/paulao255/");
-#elif defined(__linux__) || defined(__ANDROID__)
-	system("xdg-open https://github.com/paulao255/");
-#elif defined(__APPLE__)
-	system("open https://github.com/paulao255/");
-#endif
-
 	fputs("Press any key to continue...", stdout);
+
+	if(url_opener("https://github.com/paulao255/") == C_UTILS_STANDARD_FAILURE)
+	{
+		return C_UTILS_INTERNAL_FAILURE;
+	}
 
 	if(scan_char() < 0)
 	{
@@ -120,8 +117,10 @@ int easter_egg_function(void)
 int enable_virtual_terminal_and_utf8(void)
 {
 #if defined(_WIN32) || defined(_WIN64)
-	HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+	HANDLE hOut;
 	DWORD mode;
+
+	hOut = GetStdHandle(STD_OUTPUT_HANDLE);
 
 	if(hOut == INVALID_HANDLE_VALUE)
 	{
@@ -154,6 +153,7 @@ int enable_virtual_terminal_and_utf8(void)
 
 		return C_UTILS_STANDARD_FAILURE;
 	}
+
 #else
 	return C_UTILS_STANDARD_FAILURE;
 #endif
@@ -163,7 +163,7 @@ int enable_virtual_terminal_and_utf8(void)
 int scan_char(void)
 {
 #if defined(_WIN32) || defined(_WIN64)
-	int character;
+	short int character;
 
 	if(fflush(stdout) == EOF)
 	{
@@ -176,7 +176,7 @@ int scan_char(void)
 #elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
 	struct termios old_terminal;
 	struct termios new_terminal;
-	int character;
+	short int character;
 
 	if(fflush(stdout) == EOF)
 	{
@@ -217,7 +217,7 @@ int scan_char(void)
 	return C_UTILS_INTERNAL_FAILURE;
 #endif
 
-	return (unsigned char)character;
+	return character;
 }
 
 int rrmf(void)
@@ -239,6 +239,7 @@ int rrmf(void)
 #else
 	return C_UTILS_STANDARD_FAILURE;
 #endif
+
 	return C_UTILS_SUCCESS;
 }
 
@@ -261,6 +262,7 @@ int rlf(void)
 #else
 	return C_UTILS_STANDARD_FAILURE;
 #endif
+
 	return C_UTILS_SUCCESS;
 }
 
@@ -292,12 +294,12 @@ int url_opener(const char *const url)
 	sprintf(command, "open \"%s\"", url);
 #endif
 #else
-	return 1;
+	return C_UTILS_STANDARD_FAILURE;
 #endif
 
 	system(command);
 
-	return 0;
+	return C_UTILS_SUCCESS;
 }
 
 int ssleep(const unsigned int time)
@@ -309,6 +311,7 @@ int ssleep(const unsigned int time)
 
 #if defined(_WIN32) || defined(_WIN64)
 	Sleep((DWORD)time * (DWORD)1000UL);
+
 #elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
 	if(sleep(time) > 0)
 	{
@@ -317,6 +320,7 @@ int ssleep(const unsigned int time)
 
 		return C_UTILS_STANDARD_FAILURE;
 	}
+
 #else
 	return C_UTILS_STANDARD_FAILURE;
 #endif
@@ -332,6 +336,7 @@ int mssleep(const unsigned int time)
 
 #if defined(_WIN32) || defined(_WIN64)
 	Sleep((DWORD)time);
+
 #elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
 	if(usleep(time * 1000) == -1)
 	{
@@ -340,6 +345,7 @@ int mssleep(const unsigned int time)
 
 		return C_UTILS_STANDARD_FAILURE;
 	}
+
 #else
 	return C_UTILS_STANDARD_FAILURE;
 #endif

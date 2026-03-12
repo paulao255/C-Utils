@@ -47,7 +47,7 @@ extern "C"
 #define C_UTILS_STANDARD_FAILURE   -1                          /* C-Utils failure value.                                                  */
 #define C_UTILS_INTERNAL_FAILURE   -2                          /* C-Utils internal failure value.                                         */
 #define C_UTILS_INPUT_FAILURE      -3                          /* C-Utils input failure value.                                            */
-#define C_UTILS_NOT_FOUND           C_UTILS_STANDARD_FAILURE   /* C-Utils not found value.                                                */
+#define C_UTILS_NOT_FOUND          -4                          /* C-Utils not found value.                                                */
 
 /* Recommended precision value: */
 #define MIN_RPV                     0                          /* Minimum recommended precision value macro.                              */
