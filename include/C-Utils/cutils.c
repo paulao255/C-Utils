@@ -69,7 +69,7 @@ int clear_stdout(void)
 
 int clear_stdin(void)
 {
-	short int characters = getchar();
+	short int characters = (short int)getchar();
 
 	while(characters != 10 && characters != EOF)
 	{
@@ -172,7 +172,7 @@ int scan_char(void)
 		return C_UTILS_STANDARD_FAILURE;
 	}
 
-	character = _getch();
+	character = (short int)_getch();
 #elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
 	struct termios old_terminal;
 	struct termios new_terminal;
@@ -200,7 +200,7 @@ int scan_char(void)
 		return C_UTILS_STANDARD_FAILURE;
 	}
 
-	character = getchar();
+	character = (short int)getchar();
 
 	if(character == EOF)
 	{
