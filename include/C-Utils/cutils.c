@@ -73,7 +73,7 @@ int clear_stdin(void)
 
 	while(characters != 10 && characters != EOF)
 	{
-		characters = getchar();
+		characters = (short int)getchar();
 	}
 
 	return C_UTILS_SUCCESS;
