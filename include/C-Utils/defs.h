@@ -23,10 +23,10 @@ extern "C"
 #endif
 
 /* C-Utils version variables: */
-#define C_UTILS_FULL_VERSION         20260313L                 /* C Utils/defs.h full version macro.                                      */
+#define C_UTILS_FULL_VERSION         20260314L                 /* C Utils/defs.h full version macro.                                      */
 #define C_UTILS_MAJOR_VERSION        2026L                     /* C Utils/defs.h major version macro.                                     */
 #define C_UTILS_MINOR_VERSION        3L	                       /* C Utils/defs.h minor version macro.                                     */
-#define C_UTILS_PATCH_VERSION        13L                       /* C Utils/defs.h patch version macro.                                     */
+#define C_UTILS_PATCH_VERSION        14L                       /* C Utils/defs.h patch version macro.                                     */
 
 /* Terminal colors: */
 #define BASE_TERMINAL               "\033[0m"                  /* Reset terminal text macro.                                              */
@@ -52,22 +52,6 @@ extern "C"
 /* Recommended precision value: */
 #define MIN_RPV                     0                          /* Minimum recommended precision value macro.                              */
 #define MAX_RPV                    18                          /* Maximum recommended precision value macro.                              */
-
-/* Temperature limits: */
-#define MIN_CELSIUS_F            -273.15f                      /* Minimum Celsius temperature (in float).                                 */
-#define MIN_CELSIUS_D            -273.15                       /* Minimum Celsius temperature (in double).                                */
-#define MIN_CELSIUS_L            -273.15L                      /* Minimum Celsius temperature (in long double).                           */
-#define MIN_FAHRENHEIT_F         -459.67f                      /* Minimum Fahrenheit temperature (in float).                              */
-#define MIN_FAHRENHEIT_D         -459.67                       /* Minimum Fahrenheit temperature (in double).                             */
-#define MIN_FAHRENHEIT_L         -459.67L                      /* Minimum Fahrenheit temperature (in long double).                        */
-#define MIN_KELVIN_F                0.0f                       /* Minimum Kelvin temperature (in float).                                  */
-#define MIN_KELVIN_D                0.0                        /* Minimum Kelvin temperature (in double).                                 */
-#define MIN_KELVIN_L                0.0L                       /* Minimum Kelvin temperature (in long double).                            */
-
-/* Pi value: */
-#define PI_F                        3.14159265358979323846f    /* Pi macro using float value.                                             */
-#define PI_D                        3.14159265358979323846     /* Pi macro using double value.                                            */
-#define PI_LD                       3.14159265358979323846L    /* Pi macro using long double value.                                       */
 
 #ifdef __cplusplus
 }

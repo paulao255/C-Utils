@@ -12,6 +12,23 @@ extern "C"
 {
 #endif
 
+/* Pi value: */
+#ifndef M_PIf
+#define M_PIf 3.141592653589793f                              /* Pi macro using float value.                                             */
+#endif
+
+#ifndef M_PI
+#define M_PI  3.141592653589793                               /* Pi macro using double value.                                            */
+#endif
+
+#ifndef M_PIl
+#define M_PIl 3.141592653589793L                              /* Pi macro using long double value.                                       */
+#endif
+
+#ifndef M_PI
+
+#endif
+
 /* Math utils functions prototypes: */
 float circumfer_f(const float radius_value);                  /* Function to calculate a circumference using a float value.              */
 float circle_area_f(const float radius_value);                /* Function to calculate the area of a circle using a float value.         */
@@ -22,11 +39,6 @@ double sphere_volume_d(const double radius_value);            /* Function to cal
 long double circumfer_ld(const long double radius_value);     /* Function to calculate a circumference using a long double value.        */
 long double circle_area_ld(const long double radius_value);   /* Function to calculate the area of a circle using a long double value.   */
 long double sphere_volume_ld(const long double radius_value); /* Function to calculate the volume of a sphere using a long double value. */
-
-#if !defined(__cplusplus) && !defined(__STDC_VERSION__)
-float fabsf(const float x);                                   /* "fabsf" to C89/90 based on C99^.                                        */
-long double fabsl(const long double x);                       /* "fabsl" to C89/90 based on C99^.                                        */
-#endif
 
 /* End importation: */
 #ifdef __cplusplus
