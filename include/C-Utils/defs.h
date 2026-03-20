@@ -23,10 +23,10 @@ extern "C"
 #endif
 
 /* C-Utils version variables: */
-#define C_UTILS_FULL_VERSION         20260314L                 /* C Utils/defs.h full version macro.                                      */
+#define C_UTILS_FULL_VERSION         20260320L                 /* C Utils/defs.h full version macro.                                      */
 #define C_UTILS_MAJOR_VERSION        2026L                     /* C Utils/defs.h major version macro.                                     */
 #define C_UTILS_MINOR_VERSION        3L	                       /* C Utils/defs.h minor version macro.                                     */
-#define C_UTILS_PATCH_VERSION        14L                       /* C Utils/defs.h patch version macro.                                     */
+#define C_UTILS_PATCH_VERSION        20L                       /* C Utils/defs.h patch version macro.                                     */
 
 /* Terminal colors: */
 #define BASE_TERMINAL               "\033[0m"                  /* Reset terminal text macro.                                              */

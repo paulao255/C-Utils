@@ -14,19 +14,21 @@ extern "C"
 
 /* Pi value: */
 #ifndef M_PIf
+#if defined(__STDC__) && !defined(__STDC_VERSION__)
 #define M_PIf 3.141592653589793f                              /* Pi macro using float value.                                             */
+#endif
 #endif
 
 #ifndef M_PI
+#if defined(__STDC__) && !defined(__STDC_VERSION__)
 #define M_PI  3.141592653589793                               /* Pi macro using double value.                                            */
+#endif
 #endif
 
 #ifndef M_PIl
+#if defined(__STDC__) && !defined(__STDC_VERSION__)
 #define M_PIl 3.141592653589793L                              /* Pi macro using long double value.                                       */
 #endif
-
-#ifndef M_PI
-
 #endif
 
 /* Math utils functions prototypes: */
