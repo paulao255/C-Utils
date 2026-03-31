@@ -42,7 +42,7 @@ int linear_long_long_int_search(const long long int *const array, size_t bytes, 
 int linear_float_search(const float *const array, size_t bytes, const float target);                         /* Linear float search function.                       */
 int linear_double_search(const double *const array, size_t bytes, const double target);                      /* Linear double search function.                      */
 int linear_long_double_search(const long double *const array, size_t bytes, const long double target);       /* Linear long double search function.                 */
-int linear_array_search(const char **const array, size_t bytes, const char *const target);                   /* Linear array search function.                       */
+int linear_array_search(const char *const *const array, size_t bytes, const char *const target);                   /* Linear array search function.                       */
 const char *verify_os(void);                                                                                 /* Function to verify the operating system.            */
 
 /* End importation: */

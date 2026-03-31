@@ -662,7 +662,7 @@ int linear_long_double_search(const long double *const array, size_t bytes, cons
 	return C_UTILS_NOT_FOUND;
 }
 
-int linear_array_search(const char **const array, size_t bytes, const char *const target)
+int linear_array_search(const char *const *const array, size_t bytes, const char *const target)
 {
 	size_t index;
 
