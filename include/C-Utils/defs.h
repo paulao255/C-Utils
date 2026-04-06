@@ -7,14 +7,12 @@
 #define __USE_MINGW_ANSI_STDIO 1
 #endif
 
-#if (!defined(_WIN32) && !defined(_WIN64)) && !defined(__cplusplus) && defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L && !defined(_POSIX_C_SOURCE)
-#define _POSIX_C_SOURCE 199309L
-#define _DEFAULT_SOURCE
-#endif
-
 #if defined(_WIN32) || defined(_WIN64)
 #undef strdup
 #define strdup _strdup
+#elif (!defined(__cplusplus) && defined(__STDC__)) && (defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__))
+#undef _DEFAULT_SOURCE
+#define _DEFAULT_SOURCE
 #endif
 
 #ifdef __cplusplus
@@ -23,10 +21,10 @@ extern "C"
 #endif
 
 /* C-Utils version variables: */
-#define C_UTILS_FULL_VERSION         20260331L                 /* C Utils/defs.h full version macro.                                      */
+#define C_UTILS_FULL_VERSION         20260406L                 /* C Utils/defs.h full version macro.                                      */
 #define C_UTILS_MAJOR_VERSION        2026L                     /* C Utils/defs.h major version macro.                                     */
-#define C_UTILS_MINOR_VERSION        3L	                       /* C Utils/defs.h minor version macro.                                     */
-#define C_UTILS_PATCH_VERSION        31L                       /* C Utils/defs.h patch version macro.                                     */
+#define C_UTILS_MINOR_VERSION        4L	                       /* C Utils/defs.h minor version macro.                                     */
+#define C_UTILS_PATCH_VERSION        6L                        /* C Utils/defs.h patch version macro.                                     */
 
 /* Terminal colors: */
 #define BASE_TERMINAL               "\033[0m"                  /* Reset terminal text macro.                                              */

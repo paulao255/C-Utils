@@ -35,7 +35,7 @@ extern "C"
 struct tm get_current_time(void)
 {
 	struct tm result;
-	time_t now = time(NULL);
+	const time_t now = time(NULL);
 
 #if defined(_WIN32) || defined(_WIN64)
 	localtime_s(&result, &now);
@@ -49,7 +49,7 @@ struct tm get_current_time(void)
 struct tm *current_time(void)
 {
 	static struct tm result;
-	time_t now = time(NULL);
+	const time_t now = time(NULL);
 
 #if defined(_WIN32) || defined(_WIN64)
 	localtime_s(&result, &now);
@@ -160,7 +160,7 @@ int enable_virtual_terminal_and_utf8(void)
 	return C_UTILS_SUCCESS;
 }
 
-int scan_char(void)
+short int scan_char(void)
 {
 #if defined(_WIN32) || defined(_WIN64)
 	short int character;
