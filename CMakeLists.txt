@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 4.2.3)
-project(C-Utils LANGUAGES C CXX VERSION 20260314)
+cmake_minimum_required(VERSION 4.3.1)
+project(C-Utils LANGUAGES C CXX VERSION 20260408)
 add_library(C-Utils INTERFACE)
 target_include_directories(
   C-Utils
