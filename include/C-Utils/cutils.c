@@ -5,12 +5,13 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <string.h>
-#include <time.h>
+#include <limits.h>
 #include <float.h>
-
+#include <time.h>
 #if defined(_WIN32) || defined(_WIN64)
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <shellapi.h>
 #include <direct.h>
 #include <conio.h>
 #elif defined(__linux__) || defined(__ANDROID__)
@@ -18,13 +19,16 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #elif defined(__APPLE__)
 #include <TargetConditionals.h>
 #include <termios.h>
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #endif
+
 
 /* Import C to C++: */
 #ifdef __cplusplus
@@ -32,7 +36,7 @@ extern "C"
 {
 #endif
 
-struct tm get_current_time(void)
+struct tm c_utils_get_current_time(void)
 {
 	struct tm result;
 	const time_t now = time(NULL);
@@ -46,7 +50,7 @@ struct tm get_current_time(void)
 	return result;
 }
 
-struct tm *current_time(void)
+struct tm *c_utils_current_time(void)
 {
 	static struct tm result;
 	const time_t now = time(NULL);
@@ -60,28 +64,28 @@ struct tm *current_time(void)
 	return &result;
 }
 
-int clear_stdout(void)
+int c_utils_clear_stdout(void)
 {
 	fputs("\033[2J\033[3J\033[H", stdout);
 
 	return C_UTILS_SUCCESS;
 }
 
-int clear_stdin(void)
+int c_utils_clear_stdin(void)
 {
-	short int characters = (short int)getchar();
+	int characters = getchar();
 
-	while(characters != 10 && characters != EOF)
+	while(characters != '\n' && characters != EOF)
 	{
-		characters = (short int)getchar();
+		characters = getchar();
 	}
 
 	return C_UTILS_SUCCESS;
 }
 
-int scan_enter(void)
+int c_utils_scan_enter(void)
 {
-	if(clear_stdin() < 0)
+	if(c_utils_clear_stdin() < 0)
 	{
 		return C_UTILS_INTERNAL_FAILURE;
 	}
@@ -94,27 +98,7 @@ int scan_enter(void)
 	return C_UTILS_SUCCESS;
 }
 
-int easter_egg_function(void)
-{
-	fputs("Congratulations!!! You just discovered a new easter egg! (please don't say it to anyone ok!)\n", stdout);
-	fputs("This is the link to our github account! If you want to see our projects, codes, etc...\n", stdout);
-	fputs("Link: https://github.com/paulao255/\n", stdout);
-	fputs("Press any key to continue...", stdout);
-
-	if(url_opener("https://github.com/paulao255/") == C_UTILS_STANDARD_FAILURE)
-	{
-		return C_UTILS_INTERNAL_FAILURE;
-	}
-
-	if(scan_char() < 0)
-	{
-		return C_UTILS_INTERNAL_FAILURE;
-	}
-
-	return C_UTILS_SUCCESS;
-}
-
-int enable_virtual_terminal_and_utf8(void)
+int c_utils_enable_virtual_terminal_and_utf8(void)
 {
 #if defined(_WIN32) || defined(_WIN64)
 	HANDLE hOut;
@@ -160,10 +144,10 @@ int enable_virtual_terminal_and_utf8(void)
 	return C_UTILS_SUCCESS;
 }
 
-short int scan_char(void)
+int c_utils_scan_char(void)
 {
 #if defined(_WIN32) || defined(_WIN64)
-	short int character;
+	int character;
 
 	if(fflush(stdout) == EOF)
 	{
@@ -172,11 +156,11 @@ short int scan_char(void)
 		return C_UTILS_STANDARD_FAILURE;
 	}
 
-	character = (short int)_getch();
+	character = _getch();
 #elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
 	struct termios old_terminal;
 	struct termios new_terminal;
-	short int character;
+	int character;
 
 	if(fflush(stdout) == EOF)
 	{
@@ -185,8 +169,10 @@ short int scan_char(void)
 		return C_UTILS_STANDARD_FAILURE;
 	}
 		
-	if(tcgetattr(STDIN_FILENO, &old_terminal) == EOF)
+	if(tcgetattr(STDIN_FILENO, &old_terminal) == -1)
 	{
+		perror("\"tcgetattr\" error");
+
 		return C_UTILS_STANDARD_FAILURE;
 	}
 
@@ -195,21 +181,26 @@ short int scan_char(void)
 	*(new_terminal.c_cc + VMIN) = 1;
 	*(new_terminal.c_cc + VTIME) = 0;
 
-	if(tcsetattr(STDIN_FILENO, TCSANOW, &new_terminal) == EOF)
+	if(tcsetattr(STDIN_FILENO, TCSANOW, &new_terminal) == -1)
 	{
+		perror("\"tcsetattr\" error");
+
 		return C_UTILS_STANDARD_FAILURE;
 	}
 
-	character = (short int)getchar();
+	character = getchar();
 
 	if(character == EOF)
 	{
-		tcsetattr(STDIN_FILENO, TCSANOW, &old_terminal);
+		if(tcsetattr(STDIN_FILENO, TCSANOW, &old_terminal) == -1)
+		{
+			return C_UTILS_STANDARD_FAILURE;
+		}
 
 		return C_UTILS_STANDARD_FAILURE;
 	}
 
-	if(tcsetattr(STDIN_FILENO, TCSANOW, &old_terminal))
+	if(tcsetattr(STDIN_FILENO, TCSANOW, &old_terminal) == -1)
 	{
 		return C_UTILS_STANDARD_FAILURE;
 	}
@@ -220,19 +211,29 @@ short int scan_char(void)
 	return character;
 }
 
-int rrmf(void)
+int c_utils_rrmf(void)
 {
 #if defined(_WIN32) || defined(_WIN64)
-	system("more /C /P .\\README.md");
+	if(system("more /C /P .\\README.md") == -1)
+	{
+		perror("\"system\" error");
 
-	if(scan_char() < 0)
+		return C_UTILS_STANDARD_FAILURE;
+	}
+
+	if(c_utils_scan_char() < 0)
 	{
 		return C_UTILS_INTERNAL_FAILURE;
 	}
 #elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
-	system("more -cp ./README.md");
+	if(system("more -cp ./README.md") == -1)
+	{
+		perror("\"system\" error");
 
-	if(scan_char() < 0)
+		return C_UTILS_STANDARD_FAILURE;
+	}
+
+	if(c_utils_scan_char() < 0)
 	{
 		return C_UTILS_INTERNAL_FAILURE;
 	}
@@ -243,19 +244,29 @@ int rrmf(void)
 	return C_UTILS_SUCCESS;
 }
 
-int rlf(void)
+int c_utils_rlf(void)
 {
 #if defined(_WIN32) || defined(_WIN64)
-	system("more /C /P .\\LICENSE");
+	if(system("more /C /P .\\LICENSE") == -1)
+	{
+		perror("\"system\" error");
 
-	if(scan_char() < 0)
+		return C_UTILS_STANDARD_FAILURE;
+	}
+
+	if(c_utils_scan_char() < 0)
 	{
 		return C_UTILS_INTERNAL_FAILURE;
 	}
 #elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
-	system("more -cp ./LICENSE");
+	if(system("more -cp ./LICENSE") == -1)
+	{
+		perror("\"system\" error");
 
-	if(scan_char() < 0)
+		return C_UTILS_STANDARD_FAILURE;
+	}
+
+	if(c_utils_scan_char() < 0)
 	{
 		return C_UTILS_INTERNAL_FAILURE;
 	}
@@ -266,43 +277,53 @@ int rlf(void)
 	return C_UTILS_SUCCESS;
 }
 
-int url_opener(const char *const url)
+int c_utils_url_opener(const char *const url)
 {
-	char command[16384];
-
 	if(!url)
 	{
 		return C_UTILS_INPUT_FAILURE;
 	}
-
+	
+	else
+	{
 #if defined(_WIN32) || defined(_WIN64)
-#if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) || (defined(__cplusplus) && __cplusplus >= 201103L)
-	snprintf(command, sizeof(command), "start \"%s\"", url);
-#else
-	sprintf(command, "start \"%s\"", url);
-#endif
-#elif defined(__linux__) || defined(__ANDROID__)
-#if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) || (defined(__cplusplus) && __cplusplus >= 201103L)
-	snprintf(command, sizeof(command), "xdg-open \"%s\"", url);
-#else
-	sprintf(command, "xdg-open \"%s\"", url);
-#endif
+		ShellExecuteA(NULL, "open", url, NULL, NULL, SW_SHOWNORMAL);
+#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
+		pid_t pid = fork();
+
+		if(pid == -1)
+		{
+			perror("\"fork\" error");
+
+			return C_UTILS_STANDARD_FAILURE;
+		}
+
+		if(pid == 0)
+		{
+#if defined(__linux__) || defined(__ANDROID__)
+			char *arguments[3];
+			*arguments = "xdg-open";
+			*(arguments + 1) = (char *)url;
+			*(arguments + 2) = NULL;
+			execv("/usr/bin/xdg-open", arguments);
 #elif defined(__APPLE__)
-#if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) || (defined(__cplusplus) && __cplusplus >= 201103L)
-	snprintf(command, sizeof(command), "open \"%s\"", url);
-#else
-	sprintf(command, "open \"%s\"", url);
+			char *arguments[3];
+			*arguments = "open";
+			*(arguments + 1) = (char *)url;
+			*(arguments + 2) = NULL;
+			execv("/usr/bin/open", arguments);
 #endif
-#else
-	return C_UTILS_STANDARD_FAILURE;
+			_exit(1);
+		}
+
+		waitpid(pid, NULL, 0);
+
 #endif
-
-	system(command);
-
-	return C_UTILS_SUCCESS;
+		return C_UTILS_SUCCESS;
+	}
 }
 
-int ssleep(const unsigned int time)
+int c_utils_ssleep(const unsigned int time)
 {
 	if(time == 0U)
 	{
@@ -327,7 +348,7 @@ int ssleep(const unsigned int time)
 	return C_UTILS_SUCCESS;
 }
 
-int mssleep(const unsigned int time)
+int c_utils_mssleep(const unsigned int time)
 {
 	if(time == 0U)
 	{
@@ -338,6 +359,11 @@ int mssleep(const unsigned int time)
 	Sleep((DWORD)time);
 
 #elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
+	if(time > UINT_MAX / 1000)
+	{
+		return C_UTILS_INPUT_FAILURE;
+	}
+
 	if(usleep(time * 1000) == -1)
 	{
 		fputs("Sleep failed...\n", stderr);
@@ -352,7 +378,7 @@ int mssleep(const unsigned int time)
 	return C_UTILS_SUCCESS;
 }
 
-int validate_date(const int year, const int month, const int day)
+int c_utils_validate_date(const int year, const int month, const int day)
 {
 	if(year < 1)
 	{
@@ -380,9 +406,9 @@ int validate_date(const int year, const int month, const int day)
 			30,
 			31
 		};
-		struct tm current_date = get_current_time();
+		struct tm current_date = c_utils_get_current_time();
 
-		if(year == current_date.tm_year + 1900 && ((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)))
+		if((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0))
 		{
 			*(days_in_month + 1) = 29;
 		}
@@ -401,7 +427,7 @@ int validate_date(const int year, const int month, const int day)
 	}
 }
 
-int validate_date_future(const int year, const int month, const int day)
+int c_utils_validate_date_future(const int year, const int month, const int day)
 {
 	if(year < 1)
 	{
@@ -444,7 +470,7 @@ int validate_date_future(const int year, const int month, const int day)
 	}
 }
 
-int make_directory(const char *const path, unsigned int mode)
+int c_utils_make_directory(const char *const path, unsigned int mode)
 {
 	if(!path)
 	{
@@ -480,7 +506,7 @@ int make_directory(const char *const path, unsigned int mode)
 	}
 }
 
-int linear_char_search(const char *const array, const size_t bytes, const char target)
+int c_utils_linear_char_search(const char *const array, const size_t count, const char target)
 {
 	size_t index;
 
@@ -489,7 +515,7 @@ int linear_char_search(const char *const array, const size_t bytes, const char t
 		return C_UTILS_INPUT_FAILURE;
 	}
 
-	for(index = 0U; index < bytes; index++)
+	for(index = 0U; index < count; index++)
 	{
 		if(*(array + index) == target)
 		{
@@ -500,7 +526,7 @@ int linear_char_search(const char *const array, const size_t bytes, const char t
 	return C_UTILS_NOT_FOUND;
 }
 
-int linear_short_int_search(const short int *const array, size_t bytes, const short int target)
+int c_utils_linear_short_int_search(const short int *const array, const size_t count, const short int target)
 {
 	size_t index;
 
@@ -509,9 +535,7 @@ int linear_short_int_search(const short int *const array, size_t bytes, const sh
 		return C_UTILS_INPUT_FAILURE;
 	}
 
-	bytes = bytes / sizeof(short int);
-
-	for(index = 0U; index < bytes; index++)
+	for(index = 0U; index < count; index++)
 	{
 		if(*(array + index) == target)
 		{
@@ -522,7 +546,7 @@ int linear_short_int_search(const short int *const array, size_t bytes, const sh
 	return C_UTILS_NOT_FOUND;
 }
 
-int linear_int_search(const int *const array, size_t bytes, const int target)
+int c_utils_linear_int_search(const int *const array, const size_t count, const int target)
 {
 	size_t index;
 
@@ -531,9 +555,7 @@ int linear_int_search(const int *const array, size_t bytes, const int target)
 		return C_UTILS_INPUT_FAILURE;
 	}
 
-	bytes = bytes / sizeof(int);
-
-	for(index = 0U; index < bytes; index++)
+	for(index = 0U; index < count; index++)
 	{
 		if(*(array + index) == target)
 		{
@@ -544,7 +566,7 @@ int linear_int_search(const int *const array, size_t bytes, const int target)
 	return C_UTILS_NOT_FOUND;
 }
 
-int linear_long_int_search(const long int *const array, size_t bytes, const long int target)
+int c_utils_linear_long_int_search(const long int *const array, const size_t count, const long int target)
 {
 	size_t index;
 
@@ -553,9 +575,7 @@ int linear_long_int_search(const long int *const array, size_t bytes, const long
 		return C_UTILS_INPUT_FAILURE;
 	}
 
-	bytes = bytes / sizeof(long int);
-
-	for(index = 0U; index < bytes; index++)
+	for(index = 0U; index < count; index++)
 	{
 		if(*(array + index) == target)
 		{
@@ -567,7 +587,7 @@ int linear_long_int_search(const long int *const array, size_t bytes, const long
 }
 
 #if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
-int linear_long_long_int_search(const long long int *const array, size_t bytes, const long long int target)
+int c_utils_linear_long_long_int_search(const long long int *const array, const size_t count, const long long int target)
 {
 	size_t index;
 
@@ -576,9 +596,7 @@ int linear_long_long_int_search(const long long int *const array, size_t bytes, 
 		return C_UTILS_INPUT_FAILURE;
 	}
 
-	bytes = bytes / sizeof(long long int);
-
-	for(index = 0U; index < bytes; index++)
+	for(index = 0U; index < count; index++)
 	{
 		if(*(array + index) == target)
 		{
@@ -590,7 +608,7 @@ int linear_long_long_int_search(const long long int *const array, size_t bytes, 
 }
 #endif
 
-int linear_float_search(const float *const array, size_t bytes, const float target)
+int c_utils_linear_float_search(const float *const array, const size_t count, const float target)
 {
 	size_t index;
 
@@ -599,9 +617,7 @@ int linear_float_search(const float *const array, size_t bytes, const float targ
 		return C_UTILS_INPUT_FAILURE;
 	}
 
-	bytes = bytes / sizeof(float);
-
-	for(index = 0U; index < bytes; index++)
+	for(index = 0U; index < count; index++)
 	{
 		const float difference = *(array + index) - target;
 
@@ -614,7 +630,7 @@ int linear_float_search(const float *const array, size_t bytes, const float targ
 	return C_UTILS_NOT_FOUND;
 }
 
-int linear_double_search(const double *const array, size_t bytes, const double target)
+int c_utils_linear_double_search(const double *const array, const size_t count, const double target)
 {
 	size_t index;
 
@@ -623,9 +639,7 @@ int linear_double_search(const double *const array, size_t bytes, const double t
 		return C_UTILS_INPUT_FAILURE;
 	}
 
-	bytes = bytes / sizeof(double);
-
-	for(index = 0U; index < bytes; index++)
+	for(index = 0U; index < count; index++)
 	{
 		const double difference = *(array + index) - target;
 
@@ -638,7 +652,7 @@ int linear_double_search(const double *const array, size_t bytes, const double t
 	return C_UTILS_NOT_FOUND;
 }
 
-int linear_long_double_search(const long double *const array, size_t bytes, const long double target)
+int c_utils_linear_long_double_search(const long double *const array, const size_t count, const long double target)
 {
 	size_t index;
 
@@ -647,9 +661,7 @@ int linear_long_double_search(const long double *const array, size_t bytes, cons
 		return C_UTILS_INPUT_FAILURE;
 	}
 
-	bytes = bytes / sizeof(long double);
-
-	for(index = 0U; index < bytes; index++)
+	for(index = 0U; index < count; index++)
 	{
 		const long double difference = *(array + index) - target;
 
@@ -662,7 +674,7 @@ int linear_long_double_search(const long double *const array, size_t bytes, cons
 	return C_UTILS_NOT_FOUND;
 }
 
-int linear_array_search(const char *const *const array, size_t bytes, const char *const target)
+int c_utils_linear_array_search(const char *const *const array, const size_t count, const char *const target)
 {
 	size_t index;
 
@@ -671,9 +683,7 @@ int linear_array_search(const char *const *const array, size_t bytes, const char
 		return C_UTILS_INPUT_FAILURE;
 	}
 
-	bytes = bytes / sizeof(char *);
-
-	for(index = 0U; index < bytes; index++)
+	for(index = 0U; index < count; index++)
 	{
 		if(!strcmp(*(array + index), target))
 		{
@@ -684,7 +694,7 @@ int linear_array_search(const char *const *const array, size_t bytes, const char
 	return C_UTILS_NOT_FOUND;
 }
 
-const char *verify_os(void)
+const char *c_utils_verify_os(void)
 {
 #if defined(_WIN32) || defined(_WIN64)
 	return "Windows";
