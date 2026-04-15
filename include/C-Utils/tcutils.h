@@ -12,17 +12,6 @@ extern "C"
 {
 #endif
 
-/* Temperature limits: */
-#define C_UTILS_MIN_CELSIUS_F            -273.15f                                 /* Minimum Celsius temperature (in float).                              */
-#define C_UTILS_MIN_CELSIUS_D            -273.15                                  /* Minimum Celsius temperature (in double).                             */
-#define C_UTILS_MIN_CELSIUS_L            -273.15L                                 /* Minimum Celsius temperature (in long double).                        */
-#define C_UTILS_MIN_FAHRENHEIT_F         -459.67f                                 /* Minimum Fahrenheit temperature (in float).                           */
-#define C_UTILS_MIN_FAHRENHEIT_D         -459.67                                  /* Minimum Fahrenheit temperature (in double).                          */
-#define C_UTILS_MIN_FAHRENHEIT_L         -459.67L                                 /* Minimum Fahrenheit temperature (in long double).                     */
-#define C_UTILS_MIN_KELVIN_F                0.0f                                  /* Minimum Kelvin temperature (in float).                               */
-#define C_UTILS_MIN_KELVIN_D                0.0                                   /* Minimum Kelvin temperature (in double).                              */
-#define C_UTILS_MIN_KELVIN_L                0.0L                                  /* Minimum Kelvin temperature (in long double).                         */
-
 /* Temperature conversion functions prototypes: */
 float c_utils_kelvin_to_celsius_f(const float kelvin_value);                      /* Function to convert Kelvin to Celsius using a float value.           */
 float c_utils_kelvin_to_fahrenheit_f(const float kelvin_value);                   /* Function to convert Kelvin to Fahrenheit using a float value.        */

@@ -12,16 +12,6 @@ extern "C"
 {
 #endif
 
-/* Pi values: */
-#if defined(__STDC__) && !defined(__STDC_VERSION__)
-#undef M_PIf                                                          /* Undefine M_PIf.                                                         */
-#undef M_PI                                                           /* Undefine M_PI.                                                          */
-#undef M_PIl                                                          /* Undefine M_PIl.                                                         */
-#define M_PIf 3.141592653589793f                                      /* Pi macro using float value.                                             */
-#define M_PI  3.141592653589793                                       /* Pi macro using double value.                                            */
-#define M_PIl 3.141592653589793L                                      /* Pi macro using long double value.                                       */
-#endif
-
 /* Math utils functions prototypes: */
 float c_utils_circumfer_f(const float radius_value);                  /* Function to calculate a circumference using a float value.              */
 float c_utils_circle_area_f(const float radius_value);                /* Function to calculate the area of a circle using a float value.         */
