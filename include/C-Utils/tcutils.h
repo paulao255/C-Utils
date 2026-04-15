@@ -8,6 +8,17 @@ extern "C"
 {
 #endif
 
+/* Temperature limits: */
+extern const float C_UTILS_MINIMUM_CELSIUSf         ;                             /* Minimum Celsius temperature constant (in float).          */
+extern const float C_UTILS_MINIMUM_FAHRENHEITf      ;                             /* Minimum Fahrenheit temperature constant (in float).       */
+extern const float C_UTILS_MINIMUM_KELVINf          ;                             /* Minimum Kelvin temperature constant (in float).           */
+extern const double C_UTILS_MINIMUM_CELSIUS         ;                             /* Minimum Celsius temperature constant (in double).         */
+extern const double C_UTILS_MINIMUM_FAHRENHEIT      ;                             /* Minimum Fahrenheit temperature constant (in double).      */
+extern const double C_UTILS_MINIMUM_KELVIN          ;                             /* Minimum Kelvin temperature constant (in double).          */
+extern const long double C_UTILS_MINIMUM_CELSIUSl   ;                             /* Minimum Celsius temperature constant (in long double).    */
+extern const long double C_UTILS_MINIMUM_FAHRENHEITl;                             /* Minimum Fahrenheit temperature constant (in long double). */
+extern const long double C_UTILS_MINIMUM_KELVINl    ;                             /* Minimum Kelvin temperature constant (in long double).     */
+
 /* Temperature conversion functions prototypes: */
 float c_utils_kelvin_to_celsius_f(const float kelvin_value);                      /* Function to convert Kelvin to Celsius using a float value.           */
 float c_utils_kelvin_to_fahrenheit_f(const float kelvin_value);                   /* Function to convert Kelvin to Fahrenheit using a float value.        */

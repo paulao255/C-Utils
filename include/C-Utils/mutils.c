@@ -8,7 +8,7 @@ extern "C"
 {
 #endif
 
-/* Constants: */
+/* Pi constants: */
 const float       C_UTILS_M_PIf = 3.141592653589793f; /* Pi const using float value.       */
 const double      C_UTILS_M_PI  = 3.141592653589793 ; /* Pi const using double value.      */
 const long double C_UTILS_M_PIl = 3.141592653589793L; /* Pi const using long double value. */

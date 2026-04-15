@@ -8,6 +8,11 @@ extern "C"
 {
 #endif
 
+/* Pi constants: */
+extern const float       C_UTILS_M_PIf;                               /* Pi const using float value.                                             */
+extern const double      C_UTILS_M_PI ;                               /* Pi const using double value.                                            */
+extern const long double C_UTILS_M_PIl;                               /* Pi const using long double value.                                       */
+
 /* Math utils functions prototypes: */
 float c_utils_circumfer_f(const float radius_value);                  /* Function to calculate a circumference using a float value.              */
 float c_utils_circle_area_f(const float radius_value);                /* Function to calculate the area of a circle using a float value.         */
