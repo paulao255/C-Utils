@@ -1,6 +1,6 @@
 /* Importations: */
-#include "cutils.h"
 #include "defs.h"
+#include "cutils.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>

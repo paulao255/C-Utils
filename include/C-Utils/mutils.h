@@ -2,10 +2,6 @@
 #ifndef C_UTILS_M_UTILS_H
 #define C_UTILS_M_UTILS_H
 
-/* Importations: */
-#include "defs.h"
-
-
 /* Import C to C++: */
 #ifdef __cplusplus
 extern "C"

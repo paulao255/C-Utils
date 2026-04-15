@@ -3,7 +3,6 @@
 #define C_UTILS_C_UTILS_H
 
 /* Importations: */
-#include "defs.h"
 #include <time.h>
 
 
