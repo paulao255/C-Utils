@@ -144,10 +144,10 @@ int c_utils_enable_virtual_terminal_and_utf8(void)
 	return C_UTILS_SUCCESS;
 }
 
-int c_utils_scan_char(void)
+int c_utils_scan_character(void)
 {
-#if defined(_WIN32) || defined(_WIN64)
 	int character;
+#if defined(_WIN32) || defined(_WIN64)
 
 	if(fflush(stdout) == EOF)
 	{
@@ -160,7 +160,8 @@ int c_utils_scan_char(void)
 #elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
 	struct termios old_terminal;
 	struct termios new_terminal;
-	int character;
+	char keyword;
+	ssize_t result;
 
 	if(fflush(stdout) == EOF)
 	{
@@ -188,9 +189,9 @@ int c_utils_scan_char(void)
 		return C_UTILS_STANDARD_FAILURE;
 	}
 
-	character = getchar();
+	result = read(STDIN_FILENO, &keyword, 1U);
 
-	if(character == EOF)
+	if(result == 0)
 	{
 		if(tcsetattr(STDIN_FILENO, TCSANOW, &old_terminal) == -1)
 		{
@@ -199,6 +200,20 @@ int c_utils_scan_char(void)
 
 		return C_UTILS_STANDARD_FAILURE;
 	}
+
+	else if(result < 0)
+	{
+		perror("\"read\" error");
+
+		if(tcsetattr(STDIN_FILENO, TCSANOW, &old_terminal) == -1)
+		{
+			return C_UTILS_STANDARD_FAILURE;
+		}
+
+		return C_UTILS_STANDARD_FAILURE;
+	}
+
+	character = (int)keyword;
 
 	if(tcsetattr(STDIN_FILENO, TCSANOW, &old_terminal) == -1)
 	{
@@ -221,7 +236,7 @@ int c_utils_rrmf(void)
 		return C_UTILS_STANDARD_FAILURE;
 	}
 
-	if(c_utils_scan_char() < 0)
+	if(c_utils_scan_character() < 0)
 	{
 		return C_UTILS_INTERNAL_FAILURE;
 	}
@@ -233,7 +248,7 @@ int c_utils_rrmf(void)
 		return C_UTILS_STANDARD_FAILURE;
 	}
 
-	if(c_utils_scan_char() < 0)
+	if(c_utils_scan_character() < 0)
 	{
 		return C_UTILS_INTERNAL_FAILURE;
 	}
@@ -266,7 +281,7 @@ int c_utils_rlf(void)
 		return C_UTILS_STANDARD_FAILURE;
 	}
 
-	if(c_utils_scan_char() < 0)
+	if(c_utils_scan_character() < 0)
 	{
 		return C_UTILS_INTERNAL_FAILURE;
 	}
