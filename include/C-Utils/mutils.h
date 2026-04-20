@@ -1,9 +1,9 @@
 /* Include guard: */
-#ifndef C_UTILS_M_UTILS_H
+#if !defined(C_UTILS_M_UTILS_H)
 #define C_UTILS_M_UTILS_H
 
 /* Import C to C++: */
-#ifdef __cplusplus
+#if defined(__cplusplus)
 extern "C"
 {
 #endif
@@ -25,8 +25,9 @@ long double c_utils_circle_area_ld(const long double radius_value);   /* Functio
 long double c_utils_sphere_volume_ld(const long double radius_value); /* Function to calculate the volume of a sphere using a long double value. */
 
 /* End importation: */
-#ifdef __cplusplus
+#if defined(__cplusplus)
 }
 #endif
 
+/* End C_UTILS_M_UTILS_H: */
 #endif
