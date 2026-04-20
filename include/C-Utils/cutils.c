@@ -502,7 +502,7 @@ signed int c_utils_make_directory(const unsigned char *const path, unsigned int 
 	}
 }
 
-signed int c_utils_linear_char_search(const unsigned char *const array, const size_t count, const unsigned char target)
+signed int c_utils_linear_unsigned_char_search(const unsigned char *const array, const size_t count, const unsigned char target)
 {
 	if(!array)
 	{
@@ -525,7 +525,7 @@ signed int c_utils_linear_char_search(const unsigned char *const array, const si
 	return C_UTILS_NOT_FOUND;
 }
 
-signed int c_utils_linear_short_int_search(const signed short int *const array, const size_t count, const signed short int target)
+signed int c_utils_linear_signed_short_int_search(const signed short int *const array, const size_t count, const signed short int target)
 {
 	if(!array)
 	{
@@ -548,7 +548,7 @@ signed int c_utils_linear_short_int_search(const signed short int *const array, 
 	return C_UTILS_NOT_FOUND;
 }
 
-signed int c_utils_linear_int_search(const signed int *const array, const size_t count, const signed int target)
+signed int c_utils_linear_signed_int_search(const signed int *const array, const size_t count, const signed int target)
 {
 	if(!array)
 	{
@@ -571,7 +571,7 @@ signed int c_utils_linear_int_search(const signed int *const array, const size_t
 	return C_UTILS_NOT_FOUND;
 }
 
-signed int c_utils_linear_long_int_search(const signed long int *const array, const size_t count, const signed long int target)
+signed int c_utils_linear_signed_long_int_search(const signed long int *const array, const size_t count, const signed long int target)
 {
 	if(!array)
 	{
@@ -595,7 +595,7 @@ signed int c_utils_linear_long_int_search(const signed long int *const array, co
 }
 
 #if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
-signed int c_utils_linear_long_long_int_search(const signed long long int *const array, const size_t count, const signed long long int target)
+signed int c_utils_linear_signed_long_long_int_search(const signed long long int *const array, const size_t count, const signed long long int target)
 {
 	if(!array)
 	{
