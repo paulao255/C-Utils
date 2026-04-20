@@ -217,7 +217,7 @@ signed int c_utils_rlf(void)
 		return C_UTILS_STANDARD_FAILURE;
 	}
 
-	if(c_utils_scan_char() < 0)
+	if(c_utils_scan_character() < 0)
 	{
 		return C_UTILS_INTERNAL_FAILURE;
 	}
