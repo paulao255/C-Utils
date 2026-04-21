@@ -28,6 +28,19 @@ float c_utils_sphere_volume_f(const float radius_value)
 	return (4.0f / 3.0f) * C_UTILS_M_PIf * (radius_value * radius_value * radius_value);
 }
 
+float c_utils_summation_f(const float (*f)(float i), signed long int index, const signed long int end)
+{
+	float result = 0.0f;
+
+	while(index <= end)
+	{
+		result = result + f((float)index);
+		++index;
+	}
+
+	return result;
+}
+
 double c_utils_circumfer_d(const double radius_value)
 {
 	return 2.0 * C_UTILS_M_PI * radius_value;
@@ -43,6 +56,19 @@ double c_utils_sphere_volume_d(const double radius_value)
 	return (4.0 / 3.0) * C_UTILS_M_PI * (radius_value * radius_value * radius_value);
 }
 
+double c_utils_summation_d(const double (*f)(double i), signed long int index, const signed long int end)
+{
+	double result = 0.0;
+
+	while(index <= end)
+	{
+		result = result + f((double)index);
+		++index;
+	}
+
+	return result;
+}
+
 long double c_utils_circumfer_ld(const long double radius_value)
 {
 	return 2.0L * C_UTILS_M_PIl * radius_value;
@@ -56,6 +82,19 @@ long double c_utils_circle_area_ld(const long double radius_value)
 long double c_utils_sphere_volume_ld(const long double radius_value)
 {
 	return (4.0L / 3.0L) * C_UTILS_M_PIl * (radius_value * radius_value * radius_value);
+}
+
+long double c_utils_summation_ld(const long double (*f)(long double i), signed long int index, const signed long int end)
+{
+	long double result = 0.0;
+
+	while(index <= end)
+	{
+		result = result + f((long double)index);
+		++index;
+	}
+
+	return result;
 }
 
 /* End importation: */
