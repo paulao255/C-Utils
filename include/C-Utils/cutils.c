@@ -119,10 +119,12 @@ signed int c_utils_enable_virtual_terminal_and_utf8(void)
 		return C_UTILS_STANDARD_FAILURE;
 	}
 
+	return C_UTILS_SUCCESS;
+#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
+	return C_UTILS_SUCCESS;
 #else
 	return C_UTILS_STANDARD_FAILURE;
 #endif
-	return C_UTILS_SUCCESS;
 }
 
 signed int c_utils_scan_character(void)
@@ -283,7 +285,7 @@ signed int c_utils_url_opener(const unsigned char *const url)
 	else
 	{
 #if defined(_WIN32) || defined(_WIN64)
-		ShellExecuteA(NULL, "open", (LPCSTR)url, NULL, NULL, SW_SHOWNORMAL);
+		ShellExecuteA((void *)0, "open", (LPCSTR)url, (void *)0, (void *)0, SW_SHOWNORMAL);
 #elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
 		pid_t pid = fork();
 
@@ -301,18 +303,18 @@ signed int c_utils_url_opener(const unsigned char *const url)
 #if defined(__linux__) || defined(__ANDROID__)
 			*arguments = "xdg-open";
 			*(arguments + 1) = (const char *)url;
-			*(arguments + 2) = NULL;
+			*(arguments + 2) = (void *)0;
 			execv("/usr/bin/xdg-open", (char *const *)arguments);
 #elif defined(__APPLE__)
 			*arguments = "open";
 			*(arguments + 1) = (const char *)url;
-			*(arguments + 2) = NULL;
+			*(arguments + 2) = (void *)0;
 			execv("/usr/bin/open", (char *const *)arguments);
 #endif
 			_exit(1);
 		}
 
-		waitpid(pid, NULL, 0);
+		waitpid(pid, (void *)0, 0);
 
 #endif
 		return C_UTILS_SUCCESS;
@@ -745,7 +747,7 @@ const unsigned char *c_utils_verify_os(void)
 struct tm c_utils_current_time(void)
 {
 	struct tm result;
-	const time_t now = time(NULL);
+	const time_t now = time((void *)0);
 
 #if defined(_WIN32) || defined(_WIN64)
 	localtime_s(&result, &now);
