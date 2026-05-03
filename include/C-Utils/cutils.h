@@ -3,7 +3,7 @@
 #define C_UTILS_C_UTILS_H
 
 /* Importations: */
-#include "defs.h"
+#include "definitions.h"
 #include <time.h>
 #if defined(_WIN32) || defined(_WIN64)
 #include <windows.h>
