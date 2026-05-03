@@ -5,7 +5,11 @@
 /* Importations: */
 #include "defs.h"
 #include <time.h>
-
+#if defined(_WIN32) || defined(_WIN64)
+#include <windows.h>
+#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
+#include <pthread.h>
+#endif
 
 /* Import C to C++: */
 #if defined(__cplusplus)
@@ -13,13 +17,23 @@ extern "C"
 {
 #endif
 
+#if defined(_WIN32) || defined(_WIN64)
+#define C_UTILS_THREAD_FUNCTION DWORD WINAPI
+#define C_UTILS_THREAD_FUNCTION_RETURN 0ul
+typedef HANDLE c_utils_thread_t;
+#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
+#define C_UTILS_THREAD_FUNCTION void *
+#define C_UTILS_THREAD_FUNCTION_RETURN (void *)0
+typedef pthread_t c_utils_thread_t;
+#endif
+
 /* Functions prototypes: */
 signed int c_utils_clear_standard_output(void);                                                                                                        /* Clear the standard output.                          */
 signed int c_utils_clear_standard_input(void);                                                                                                         /* Clear the standard input.                           */
-signed int c_utils_initialize(void);                                                                                                                   /* Initialize many common functions of C-Utils.        */
-signed int c_utils_scan_enter(void);                                                                                                                   /* Press enter to continue function.                   */
 signed int c_utils_enable_virtual_terminal_and_utf8(void);                                                                                             /* Function to solve encoding in the Windows terminal. */
+signed int c_utils_initialize(void);                                                                                                                   /* Initialize many common functions of C-Utils.        */
 signed int c_utils_scan_character(void);                                                                                                               /* Scan character function.                            */
+signed int c_utils_scan_enter(void);                                                                                                                   /* Press enter to continue function.                   */
 signed int c_utils_rlf(void);                                                                                                                          /* Read "LICENSE" function.                            */
 signed int c_utils_rrmf(void);                                                                                                                         /* Read "READ-ME" function.                            */
 signed int c_utils_url_opener(const unsigned char *const url);                                                                                         /* URL opener function.                                */
@@ -39,6 +53,10 @@ signed int c_utils_linear_float_search(const float *const array, const size_t co
 signed int c_utils_linear_double_search(const double *const array, const size_t count, const double target);                                           /* Linear double search function.                      */
 signed int c_utils_linear_long_double_search(const long double *const array, const size_t count, const long double target);                            /* Linear long double search function.                 */
 signed int c_utils_linear_unsigned_array_search(const unsigned char *const *const array, const size_t count, const unsigned char *const target);       /* Linear array search function.                       */
+signed int c_utils_thread_create(c_utils_thread_t *thread, C_UTILS_THREAD_FUNCTION (*function)(void *), void *arguments);                              /* Thread create function.                             */
+signed int c_utils_thread_join(c_utils_thread_t thread);                                                                                               /* Thread join function.                               */
+signed int c_utils_thread_detach(c_utils_thread_t thread);                                                                                             /* Thread detach function.                             */
+signed long int c_utils_get_maximum_threads(void);
 const unsigned char *c_utils_verify_os(void);                                                                                                          /* Function to verify the operating system.            */
 struct tm c_utils_current_time(void);                                                                                                                  /* Get current time struct.                            */
 

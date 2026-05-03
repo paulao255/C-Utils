@@ -14,6 +14,7 @@
 #include <direct.h>
 #include <conio.h>
 #elif defined(__linux__) || defined(__ANDROID__)
+#include <pthread.h>
 #include <termios.h>
 #include <unistd.h>
 #include <sys/stat.h>
@@ -21,6 +22,7 @@
 #include <sys/wait.h>
 #elif defined(__APPLE__)
 #include <TargetConditionals.h>
+#include <pthread.h>
 #include <termios.h>
 #include <unistd.h>
 #include <sys/stat.h>
@@ -49,31 +51,6 @@ signed int c_utils_clear_standard_input(void)
 	while(characters != '\n' && characters != EOF)
 	{
 		characters = getchar();
-	}
-
-	return C_UTILS_SUCCESS;
-}
-
-signed int c_utils_initialize(void)
-{
-	if(c_utils_enable_virtual_terminal_and_utf8() < 0)
-	{
-		return C_UTILS_STANDARD_FAILURE;
-	}
-
-	return C_UTILS_SUCCESS;
-}
-
-signed int c_utils_scan_enter(void)
-{
-	if(c_utils_clear_standard_input() < 0)
-	{
-		return C_UTILS_INTERNAL_FAILURE;
-	}
-
-	if(getchar() == EOF)
-	{
-		return C_UTILS_STANDARD_FAILURE;
 	}
 
 	return C_UTILS_SUCCESS;
@@ -125,6 +102,16 @@ signed int c_utils_enable_virtual_terminal_and_utf8(void)
 #else
 	return C_UTILS_STANDARD_FAILURE;
 #endif
+}
+
+signed int c_utils_initialize(void)
+{
+	if(c_utils_enable_virtual_terminal_and_utf8() < 0)
+	{
+		return C_UTILS_STANDARD_FAILURE;
+	}
+
+	return C_UTILS_SUCCESS;
 }
 
 signed int c_utils_scan_character(void)
@@ -207,6 +194,21 @@ signed int c_utils_scan_character(void)
 #endif
 
 	return character;
+}
+
+signed int c_utils_scan_enter(void)
+{
+	if(c_utils_clear_standard_input() < 0)
+	{
+		return C_UTILS_INTERNAL_FAILURE;
+	}
+
+	if(getchar() == EOF)
+	{
+		return C_UTILS_STANDARD_FAILURE;
+	}
+
+	return C_UTILS_SUCCESS;
 }
 
 signed int c_utils_rlf(void)
@@ -717,6 +719,57 @@ signed int c_utils_linear_unsigned_array_search(const unsigned char *const *cons
 	}
 
 	return C_UTILS_NOT_FOUND;
+}
+
+signed int c_utils_thread_create(c_utils_thread_t *thread, C_UTILS_THREAD_FUNCTION (*function)(void *), void *arguments)
+{
+#if defined(_WIN32) || defined(_WIN64)
+	return ((*thread = CreateThread((void *)0, 0, (LPTHREAD_START_ROUTINE)function, arguments, 0, (void *)0)) == (void *)0) ? C_UTILS_STANDARD_FAILURE : C_UTILS_SUCCESS;
+#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
+	return (pthread_create(thread, (void *)0, function, arguments) != 0) ? C_UTILS_STANDARD_FAILURE : C_UTILS_SUCCESS;
+#endif
+}
+
+signed int c_utils_thread_join(c_utils_thread_t thread)
+{
+#if defined(_WIN32) || defined(_WIN64)
+	if(WaitForSingleObject(thread, INFINITE) != WAIT_OBJECT_0)
+	{
+		if(!CloseHandle(thread))
+		{
+			return C_UTILS_STANDARD_FAILURE;
+		}
+
+		return C_UTILS_STANDARD_FAILURE;
+	}
+
+	if(!CloseHandle(thread))
+	{
+		return C_UTILS_STANDARD_FAILURE;
+	}
+
+	return C_UTILS_SUCCESS;
+#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
+	return (pthread_join(thread, (void *)0) != 0) ? C_UTILS_STANDARD_FAILURE : C_UTILS_SUCCESS;
+#endif
+}
+
+signed int c_utils_thread_detach(c_utils_thread_t thread)
+{
+#if defined(_WIN32) || defined(_WIN64)
+	return (CloseHandle(thread) == 0) ? C_UTILS_STANDARD_FAILURE : C_UTILS_SUCCESS;
+#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
+	return (pthread_detach(thread) != 0) ? C_UTILS_STANDARD_FAILURE : C_UTILS_SUCCESS;
+#endif
+}
+
+signed long int c_utils_get_maximum_threads(void)
+{
+#if defined(_WIN32) || defined(_WIN64)
+	return (signed long int)GetActiveProcessorCount(ALL_PROCESSOR_GROUPS);
+#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
+	return sysconf(_SC_NPROCESSORS_ONLN);
+#endif
 }
 
 const unsigned char *c_utils_verify_os(void)

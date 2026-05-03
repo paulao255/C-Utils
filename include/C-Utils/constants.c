@@ -30,10 +30,10 @@ const signed int C_UTILS_MIN_RPV                      =  0                      
 const signed int C_UTILS_MAX_RPV                      = 18                                          ; /* Maximum recommended precision value constant. */
 
 /* C-Utils version variables: */
-const signed long int C_UTILS_FULL_VERSION            = 20260502L                                   ; /* C Utils full version constant.                */
+const signed long int C_UTILS_FULL_VERSION            = 20260503L                                   ; /* C Utils full version constant.                */
 const signed long int C_UTILS_MAJOR_VERSION           = 2026L                                       ; /* C Utils major version constant.               */
 const signed long int C_UTILS_MINOR_VERSION           = 5L	                                    ; /* C Utils minor version constant.               */
-const signed long int C_UTILS_PATCH_VERSION           = 2L                                          ; /* C Utils patch version constant.               */
+const signed long int C_UTILS_PATCH_VERSION           = 3L                                          ; /* C Utils patch version constant.               */
 
 #if defined(__cplusplus)
 }
