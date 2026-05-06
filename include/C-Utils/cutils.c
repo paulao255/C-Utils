@@ -37,6 +37,99 @@ extern "C"
 {
 #endif
 
+signed short int c_utils_validate_date(const signed long int year, const signed long int month, const signed long int day)
+{
+	if(year < 1L)
+	{
+		return C_UTILS_INPUT_FAILURE;
+	}
+
+	if(month < 1L || month > 12L)
+	{
+		return C_UTILS_INPUT_FAILURE;
+	}
+
+	else
+	{
+		signed short int days_in_month[12] = {
+			31,
+			28,
+			31,
+			30,
+			31,
+			30,
+			31,
+			31,
+			30,
+			31,
+			30,
+			31
+		};
+		struct tm current_date = c_utils_current_time();
+
+		if((year % 4L == 0L && year % 100L != 0L) || (year % 400L == 0L))
+		{
+			*(days_in_month + 1) = 29;
+		}
+
+		if(day < 1L || day > (signed long int)*(days_in_month + month - 1L))
+		{
+			return C_UTILS_INPUT_FAILURE;
+		}
+
+		if(year > (signed long int)(current_date.tm_year + 1900) || (year == (signed long int)(current_date.tm_year + 1900) && month > (signed long int)(current_date.tm_mon + 1)) || (year == (signed long int)(current_date.tm_year + 1900) && month == (signed long int)(current_date.tm_mon + 1) && day > (signed long int)current_date.tm_mday))
+		{
+			return C_UTILS_INPUT_FAILURE;
+		}
+
+		return C_UTILS_SUCCESS;
+	}
+}
+
+signed short int c_utils_validate_date_future(const signed long int year, const signed long int month, const signed long int day)
+{
+	if(year < 1L)
+	{
+		return C_UTILS_INPUT_FAILURE;
+	}
+
+	if(month < 1L || month > 12L)
+	{
+		return C_UTILS_INPUT_FAILURE;
+	}
+
+	else
+	{
+		signed short int days_in_month[12] =
+		{
+			31,
+			28,
+			31,
+			30,
+			31,
+			30,
+			31,
+			31,
+			30,
+			31,
+			30,
+			31
+		};
+
+		if((year % 4L == 0L && year % 100L != 0L) || (year % 400L == 0L))
+		{
+			*(days_in_month + 1) = 29;
+		}
+
+		if(day < 1L || day > (signed long int)*(days_in_month + month - 1L))
+		{
+			return C_UTILS_INPUT_FAILURE;
+		}
+
+		return C_UTILS_SUCCESS;
+	}
+}
+
 signed int c_utils_clear_standard_output(void)
 {
 	fputs("\033[2J\033[3J\033[H", stdout);
@@ -119,13 +212,6 @@ signed int c_utils_scan_character(void)
 	signed int character;
 #if defined(_WIN32) || defined(_WIN64)
 
-	if(fflush(stdout) == EOF)
-	{
-		fputs("Error while flushing standard output...\n", stderr);
-
-		return C_UTILS_STANDARD_FAILURE;
-	}
-
 	character = _getch();
 #elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
 	struct termios old_terminal;
@@ -133,13 +219,6 @@ signed int c_utils_scan_character(void)
 	signed int keyword;
 	ssize_t result;
 
-	if(fflush(stdout) == EOF)
-	{
-		fputs("Error while flushing standard output...", stderr);
-
-		return C_UTILS_STANDARD_FAILURE;
-	}
-		
 	if(tcgetattr(STDIN_FILENO, &old_terminal) == -1)
 	{
 		perror("\"tcgetattr\" error");
@@ -211,75 +290,9 @@ signed int c_utils_scan_enter(void)
 	return C_UTILS_SUCCESS;
 }
 
-signed int c_utils_rlf(void)
+signed int c_utils_url_opener(const char *const url)
 {
-#if defined(_WIN32) || defined(_WIN64)
-	if(system("more /C /P .\\LICENSE") == -1)
-	{
-		perror("\"system\" error");
-
-		return C_UTILS_STANDARD_FAILURE;
-	}
-
-	if(c_utils_scan_character() < 0)
-	{
-		return C_UTILS_INTERNAL_FAILURE;
-	}
-#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
-	if(system("more -cp ./LICENSE") == -1)
-	{
-		perror("\"system\" error");
-
-		return C_UTILS_STANDARD_FAILURE;
-	}
-
-	if(c_utils_scan_character() < 0)
-	{
-		return C_UTILS_INTERNAL_FAILURE;
-	}
-#else
-	return C_UTILS_STANDARD_FAILURE;
-#endif
-
-	return C_UTILS_SUCCESS;
-}
-
-signed int c_utils_rrmf(void)
-{
-#if defined(_WIN32) || defined(_WIN64)
-	if(system("more /C /P .\\README.md") == -1)
-	{
-		perror("\"system\" error");
-
-		return C_UTILS_STANDARD_FAILURE;
-	}
-
-	if(c_utils_scan_character() < 0)
-	{
-		return C_UTILS_INTERNAL_FAILURE;
-	}
-#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
-	if(system("more -cp ./README.md") == -1)
-	{
-		perror("\"system\" error");
-
-		return C_UTILS_STANDARD_FAILURE;
-	}
-
-	if(c_utils_scan_character() < 0)
-	{
-		return C_UTILS_INTERNAL_FAILURE;
-	}
-#else
-	return C_UTILS_STANDARD_FAILURE;
-#endif
-
-	return C_UTILS_SUCCESS;
-}
-
-signed int c_utils_url_opener(const unsigned char *const url)
-{
-	if(!url)
+	if(url == (void *)0)
 	{
 		return C_UTILS_INPUT_FAILURE;
 	}
@@ -287,7 +300,7 @@ signed int c_utils_url_opener(const unsigned char *const url)
 	else
 	{
 #if defined(_WIN32) || defined(_WIN64)
-		ShellExecuteA((void *)0, "open", (LPCSTR)url, (void *)0, (void *)0, SW_SHOWNORMAL);
+		ShellExecuteA((void *)0, "open", url, (void *)0, (void *)0, SW_SHOWNORMAL);
 #elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
 		pid_t pid = fork();
 
@@ -304,12 +317,12 @@ signed int c_utils_url_opener(const unsigned char *const url)
 
 #if defined(__linux__) || defined(__ANDROID__)
 			*arguments = "xdg-open";
-			*(arguments + 1) = (const char *)url;
+			*(arguments + 1) = url;
 			*(arguments + 2) = (void *)0;
 			execv("/usr/bin/xdg-open", (char *const *)arguments);
 #elif defined(__APPLE__)
 			*arguments = "open";
-			*(arguments + 1) = (const char *)url;
+			*(arguments + 1) = url;
 			*(arguments + 2) = (void *)0;
 			execv("/usr/bin/open", (char *const *)arguments);
 #endif
@@ -378,101 +391,9 @@ signed int c_utils_mssleep(const unsigned int time)
 	return C_UTILS_SUCCESS;
 }
 
-signed int c_utils_validate_date(const signed int year, const signed int month, const signed int day)
+signed int c_utils_make_directory(const char *const path, unsigned int mode)
 {
-	if(year < 1)
-	{
-		return C_UTILS_INPUT_FAILURE;
-	}
-
-	if(month < 1 || month > 12)
-	{
-		return C_UTILS_INPUT_FAILURE;
-	}
-
-	else
-	{
-		signed int days_in_month[12] = {
-			31,
-			28,
-			31,
-			30,
-			31,
-			30,
-			31,
-			31,
-			30,
-			31,
-			30,
-			31
-		};
-		struct tm current_date = c_utils_current_time();
-
-		if((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0))
-		{
-			*(days_in_month + 1) = 29;
-		}
-
-		if(day < 1 || day > *(days_in_month + month - 1))
-		{
-			return C_UTILS_INPUT_FAILURE;
-		}
-
-		if(year > current_date.tm_year + 1900 || (year == current_date.tm_year + 1900 && month > current_date.tm_mon + 1) || (year == current_date.tm_year + 1900 && month == current_date.tm_mon + 1 && day > current_date.tm_mday))
-		{
-			return C_UTILS_INPUT_FAILURE;
-		}
-
-		return C_UTILS_SUCCESS;
-	}
-}
-
-signed int c_utils_validate_date_future(const signed int year, const signed int month, const signed int day)
-{
-	if(year < 1)
-	{
-		return C_UTILS_INPUT_FAILURE;
-	}
-
-	if(month < 1 || month > 12)
-	{
-		return C_UTILS_INPUT_FAILURE;
-	}
-
-	else
-	{
-		signed int days_in_month[12] = {
-			31,
-			28,
-			31,
-			30,
-			31,
-			30,
-			31,
-			31,
-			30,
-			31,
-			30,
-			31
-		};
-
-		if((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0))
-		{
-			*(days_in_month + 1) = 29;
-		}
-
-		if(day < 1 || day > *(days_in_month + month - 1))
-		{
-			return C_UTILS_INPUT_FAILURE;
-		}
-
-		return C_UTILS_SUCCESS;
-	}
-}
-
-signed int c_utils_make_directory(const unsigned char *const path, unsigned int mode)
-{
-	if(!path)
+	if(path == (void *)0)
 	{
 		return C_UTILS_INPUT_FAILURE;
 	}
@@ -480,7 +401,7 @@ signed int c_utils_make_directory(const unsigned char *const path, unsigned int 
 	else
 	{
 #if defined(_WIN32) || defined(_WIN64)
-		if(!_mkdir((const char *const)path))
+		if(!_mkdir(path))
 		{
 			return C_UTILS_SUCCESS;
 		}
@@ -493,7 +414,7 @@ signed int c_utils_make_directory(const unsigned char *const path, unsigned int 
 			mode = 0755;
 		}
 
-		if(mkdir((const char *const)path, (mode_t)mode) == 0)
+		if(mkdir(path, (mode_t)mode) == 0)
 		{
 			return C_UTILS_SUCCESS;
 		}
@@ -506,7 +427,7 @@ signed int c_utils_make_directory(const unsigned char *const path, unsigned int 
 	}
 }
 
-signed int c_utils_linear_unsigned_char_search(const unsigned char *const array, const size_t count, const unsigned char target)
+signed int c_utils_linear_unsigned_char_search(const char *const array, const size_t count, const char target)
 {
 	if(!array)
 	{
@@ -698,7 +619,7 @@ signed int c_utils_linear_long_double_search(const long double *const array, con
 	return C_UTILS_NOT_FOUND;
 }
 
-signed int c_utils_linear_unsigned_array_search(const unsigned char *const *const array, const size_t count, const unsigned char *const target)
+signed int c_utils_linear_unsigned_array_search(const char *const *const array, const size_t count, const char *const target)
 {
 	if(!array || !target)
 	{
@@ -711,7 +632,7 @@ signed int c_utils_linear_unsigned_array_search(const unsigned char *const *cons
 
 		for(index = 0U; index < count; index++)
 		{
-			if(!strcmp((const char *const)*(array + index), (const char *const)target))
+			if(!strcmp(*(array + index), target))
 			{
 				return (signed int)index;
 			}
@@ -721,7 +642,7 @@ signed int c_utils_linear_unsigned_array_search(const unsigned char *const *cons
 	return C_UTILS_NOT_FOUND;
 }
 
-signed int c_utils_thread_create(c_utils_thread_t *thread, C_UTILS_THREAD_FUNCTION (*function)(void *), void *arguments)
+signed int c_utils_thread_create(c_utils_thread_t *thread, C_UTILS_THREAD_FUNCTION (*function)(void *arguments), void *arguments)
 {
 #if defined(_WIN32) || defined(_WIN64)
 	return ((*thread = CreateThread((void *)0, 0, (LPTHREAD_START_ROUTINE)function, arguments, 0, (void *)0)) == (void *)0) ? C_UTILS_STANDARD_FAILURE : C_UTILS_SUCCESS;
@@ -772,28 +693,28 @@ signed long int c_utils_get_maximum_threads(void)
 #endif
 }
 
-const unsigned char *c_utils_verify_os(void)
+const char *c_utils_verify_os(void)
 {
 #if defined(_WIN32) || defined(_WIN64)
-	return (const unsigned char *)"Windows";
+	return "Windows";
 #elif defined(__linux__)
-	return (const unsigned char *)"Linux";
+	return "Linux";
 #elif defined(__ANDROID__)
-	return (const unsigned char *)"Android";
+	return "Android";
 #elif defined(__APPLE__)
 #if TARGET_OS_OSX
-	return (const unsigned char *)"macOS";
+	return "macOS";
 #elif TARGET_OS_IOS
-	return (const unsigned char *)"iOS";
+	return "iOS";
 #elif TARGET_OS_TV
-	return (const unsigned char *)"tvOS";
+	return "tvOS";
 #elif TARGET_OS_WATCH
-	return (const unsigned char *)"watchOS";
+	return "watchOS";
 #else
-	return (const unsigned char *)"Apple (unknown OS)";
+	return "Apple (unknown OS)";
 #endif
 #else
-	return (const unsigned char *)"Unknown OS";
+	return "Unknown OS";
 #endif
 }
 
