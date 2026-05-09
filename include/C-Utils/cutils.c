@@ -698,7 +698,31 @@ const char *c_utils_verify_os(void)
 #if defined(_WIN32) || defined(_WIN64)
 	return "Windows";
 #elif defined(__linux__)
-	return "Linux";
+	const char *const is_wayland = getenv("WAYLAND_DISPLAY");
+	const char *const is_x11 = getenv("DISPLAY");
+
+	if(is_wayland)
+	{
+		if(is_x11)
+		{
+			return "Linux, Wayland and XWayland";
+		}
+
+		else
+		{
+			return "Linux, Wayland";
+		}
+	}
+
+	else if(is_x11)
+	{
+		return "Linux, X11";
+	}
+
+	else
+	{
+		return "Linux (No graphics)";
+	}
 #elif defined(__ANDROID__)
 	return "Android";
 #elif defined(__APPLE__)

@@ -30,10 +30,10 @@ const signed int C_UTILS_MIN_RPV             =  0              ;
 const signed int C_UTILS_MAX_RPV             = 18              ;
 
 /* C-Utils version variables: */
-const signed long int C_UTILS_FULL_VERSION   = 20260503L       ;
+const signed long int C_UTILS_FULL_VERSION   = 20260509L       ;
 const signed long int C_UTILS_MAJOR_VERSION  = 2026L           ;
 const signed long int C_UTILS_MINOR_VERSION  = 5L	       ;
-const signed long int C_UTILS_PATCH_VERSION  = 6L              ;
+const signed long int C_UTILS_PATCH_VERSION  = 9L              ;
 
 #if defined(__cplusplus)
 }
