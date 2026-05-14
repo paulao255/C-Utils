@@ -1,9 +1,9 @@
 /* Include guard: */
-#if !defined(C_UTILS_T_C_UTILS_H)
-#define C_UTILS_T_C_UTILS_H
+#ifndef C_UTILS_TEMPERATURE_UTILS_H
+#define C_UTILS_TEMPERATURE_UTILS_H
 
 /* Import C to C++: */
-#if defined(__cplusplus)
+#ifdef __cplusplus
 extern "C"
 {
 #endif
@@ -39,10 +39,10 @@ long double c_utils_celsius_to_fahrenheit_ld(const long double celsius_value);  
 long double c_utils_fahrenheit_to_kelvin_ld(const long double fahrenheit_value);  /* Function to convert Fahrenheit to Kelvin using a long double value.  */
 long double c_utils_fahrenheit_to_celsius_ld(const long double fahrenheit_value); /* Function to convert Fahrenheit to Celsius using a long double value. */
 
-/* End importation: */
-#if defined(__cplusplus)
+/* End C to C++ importation: */
+#ifdef __cplusplus
 }
 #endif
 
-/* End C_UTILS_T_C_UTILS_H: */
+/* End C_UTILS_TEMPERATURE_UTILS_H: */
 #endif

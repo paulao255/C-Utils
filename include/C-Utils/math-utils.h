@@ -1,9 +1,9 @@
 /* Include guard: */
-#if !defined(C_UTILS_M_UTILS_H)
-#define C_UTILS_M_UTILS_H
+#ifndef C_UTILS_MATH_UTILS_H
+#define C_UTILS_MATH_UTILS_H
 
 /* Import C to C++: */
-#if defined(__cplusplus)
+#ifdef __cplusplus
 extern "C"
 {
 #endif
@@ -27,10 +27,10 @@ long double c_utils_circle_area_ld(const long double radius_value);             
 long double c_utils_sphere_volume_ld(const long double radius_value);                                                /* Function to calculate the volume of a sphere using a long double value. */
 long double c_utils_summation_ld(long double (*f)(long double i), signed long int index, const signed long int end); /* Summation function using long double values.                            */
 
-/* End importation: */
-#if defined(__cplusplus)
+/* End C to C++ importation: */
+#ifdef __cplusplus
 }
 #endif
 
-/* End C_UTILS_M_UTILS_H: */
+/* End C_UTILS_MATH_UTILS_H: */
 #endif

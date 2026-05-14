@@ -1,10 +1,9 @@
 /* Importations: */
-#include "cutils.h"
+#include "c-utils.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>
 #include <string.h>
-#include <limits.h>
 #include <float.h>
 #include <time.h>
 #if defined(_WIN32) || defined(_WIN64)
@@ -14,7 +13,6 @@
 #include <direct.h>
 #include <conio.h>
 #elif defined(__linux__) || defined(__ANDROID__)
-#include <pthread.h>
 #include <termios.h>
 #include <unistd.h>
 #include <sys/stat.h>
@@ -22,7 +20,6 @@
 #include <sys/wait.h>
 #elif defined(__APPLE__)
 #include <TargetConditionals.h>
-#include <pthread.h>
 #include <termios.h>
 #include <unistd.h>
 #include <sys/stat.h>
@@ -32,21 +29,28 @@
 
 
 /* Import C to C++: */
-#if defined(__cplusplus)
+#ifdef __cplusplus
 extern "C"
 {
 #endif
+
+void c_utils_clear_standard_output(void)
+{
+	fputs("\033[2J\033[3J\033[H", stdout);
+
+	return;
+}
 
 signed short int c_utils_validate_date(const signed long int year, const signed long int month, const signed long int day)
 {
 	if(year < 1L)
 	{
-		return C_UTILS_INPUT_FAILURE;
+		return C_UTILS_FAILURE;
 	}
 
 	if(month < 1L || month > 12L)
 	{
-		return C_UTILS_INPUT_FAILURE;
+		return C_UTILS_FAILURE;
 	}
 
 	else
@@ -74,12 +78,12 @@ signed short int c_utils_validate_date(const signed long int year, const signed 
 
 		if(day < 1L || day > (signed long int)*(days_in_month + month - 1L))
 		{
-			return C_UTILS_INPUT_FAILURE;
+			return C_UTILS_FAILURE;
 		}
 
 		if(year > (signed long int)(current_date.tm_year + 1900) || (year == (signed long int)(current_date.tm_year + 1900) && month > (signed long int)(current_date.tm_mon + 1)) || (year == (signed long int)(current_date.tm_year + 1900) && month == (signed long int)(current_date.tm_mon + 1) && day > (signed long int)current_date.tm_mday))
 		{
-			return C_UTILS_INPUT_FAILURE;
+			return C_UTILS_FAILURE;
 		}
 
 		return C_UTILS_SUCCESS;
@@ -90,12 +94,12 @@ signed short int c_utils_validate_date_future(const signed long int year, const 
 {
 	if(year < 1L)
 	{
-		return C_UTILS_INPUT_FAILURE;
+		return C_UTILS_FAILURE;
 	}
 
 	if(month < 1L || month > 12L)
 	{
-		return C_UTILS_INPUT_FAILURE;
+		return C_UTILS_FAILURE;
 	}
 
 	else
@@ -123,21 +127,14 @@ signed short int c_utils_validate_date_future(const signed long int year, const 
 
 		if(day < 1L || day > (signed long int)*(days_in_month + month - 1L))
 		{
-			return C_UTILS_INPUT_FAILURE;
+			return C_UTILS_FAILURE;
 		}
 
 		return C_UTILS_SUCCESS;
 	}
 }
 
-signed int c_utils_clear_standard_output(void)
-{
-	fputs("\033[2J\033[3J\033[H", stdout);
-
-	return C_UTILS_SUCCESS;
-}
-
-signed int c_utils_clear_standard_input(void)
+signed short int c_utils_clear_standard_input(void)
 {
 	signed int characters = getchar();
 
@@ -149,7 +146,7 @@ signed int c_utils_clear_standard_input(void)
 	return C_UTILS_SUCCESS;
 }
 
-signed int c_utils_enable_virtual_terminal_and_utf8(void)
+signed short int c_utils_enable_virtual_terminal_and_utf8(void)
 {
 #if defined(_WIN32) || defined(_WIN64)
 	HANDLE hOut;
@@ -159,14 +156,14 @@ signed int c_utils_enable_virtual_terminal_and_utf8(void)
 
 	if(hOut == INVALID_HANDLE_VALUE)
 	{
-		return C_UTILS_STANDARD_FAILURE;
+		return C_UTILS_FAILURE;
 	}
 
 	mode = 0u;
 
 	if(!GetConsoleMode(hOut, &mode))
 	{
-		return C_UTILS_STANDARD_FAILURE;
+		return C_UTILS_FAILURE;
 	}
 
 	mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
@@ -177,7 +174,7 @@ signed int c_utils_enable_virtual_terminal_and_utf8(void)
 		err = GetLastError();
 		(void)err;
 
-		return C_UTILS_STANDARD_FAILURE;
+		return C_UTILS_FAILURE;
 	}
 	
 	if(!SetConsoleOutputCP(CP_UTF8))
@@ -186,115 +183,47 @@ signed int c_utils_enable_virtual_terminal_and_utf8(void)
 		err = GetLastError();
 		(void)err;
 
-		return C_UTILS_STANDARD_FAILURE;
+		return C_UTILS_FAILURE;
 	}
 
 	return C_UTILS_SUCCESS;
 #elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
 	return C_UTILS_SUCCESS;
 #else
-	return C_UTILS_STANDARD_FAILURE;
+	return C_UTILS_FAILURE;
 #endif
 }
 
-signed int c_utils_initialize(void)
+signed short int c_utils_initialize(void)
 {
-	if(c_utils_enable_virtual_terminal_and_utf8() < 0)
+	if(c_utils_enable_virtual_terminal_and_utf8())
 	{
-		return C_UTILS_STANDARD_FAILURE;
+		return C_UTILS_FAILURE;
 	}
 
 	return C_UTILS_SUCCESS;
 }
 
-signed int c_utils_scan_character(void)
+signed short int c_utils_scan_enter(void)
 {
-	signed int character;
-#if defined(_WIN32) || defined(_WIN64)
-
-	character = _getch();
-#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
-	struct termios old_terminal;
-	struct termios new_terminal;
-	signed int keyword;
-	ssize_t result;
-
-	if(tcgetattr(STDIN_FILENO, &old_terminal) == -1)
+	if(c_utils_clear_standard_input())
 	{
-		perror("\"tcgetattr\" error");
-
-		return C_UTILS_STANDARD_FAILURE;
-	}
-
-	new_terminal = old_terminal;
-	new_terminal.c_lflag &= (tcflag_t) ~(ICANON | ECHO);
-	*(new_terminal.c_cc + VMIN) = 1;
-	*(new_terminal.c_cc + VTIME) = 0;
-
-	if(tcsetattr(STDIN_FILENO, TCSANOW, &new_terminal) == -1)
-	{
-		perror("\"tcsetattr\" error");
-
-		return C_UTILS_STANDARD_FAILURE;
-	}
-
-	result = read(STDIN_FILENO, &keyword, 1U);
-
-	if(result == 0)
-	{
-		if(tcsetattr(STDIN_FILENO, TCSANOW, &old_terminal) == -1)
-		{
-			return C_UTILS_STANDARD_FAILURE;
-		}
-
-		return C_UTILS_STANDARD_FAILURE;
-	}
-
-	else if(result < 0)
-	{
-		perror("\"read\" error");
-
-		if(tcsetattr(STDIN_FILENO, TCSANOW, &old_terminal) == -1)
-		{
-			return C_UTILS_STANDARD_FAILURE;
-		}
-
-		return C_UTILS_STANDARD_FAILURE;
-	}
-
-	character = keyword;
-
-	if(tcsetattr(STDIN_FILENO, TCSANOW, &old_terminal) == -1)
-	{
-		return C_UTILS_STANDARD_FAILURE;
-	}
-#else
-	return C_UTILS_INTERNAL_FAILURE;
-#endif
-
-	return character;
-}
-
-signed int c_utils_scan_enter(void)
-{
-	if(c_utils_clear_standard_input() < 0)
-	{
-		return C_UTILS_INTERNAL_FAILURE;
+		return C_UTILS_FAILURE;
 	}
 
 	if(getchar() == EOF)
 	{
-		return C_UTILS_STANDARD_FAILURE;
+		return C_UTILS_FAILURE;
 	}
 
 	return C_UTILS_SUCCESS;
 }
 
-signed int c_utils_url_opener(const char *const url)
+signed short int c_utils_url_opener(const char *const url)
 {
 	if(url == (void *)0)
 	{
-		return C_UTILS_INPUT_FAILURE;
+		return C_UTILS_FAILURE;
 	}
 	
 	else
@@ -308,7 +237,7 @@ signed int c_utils_url_opener(const char *const url)
 		{
 			perror("\"fork\" error");
 
-			return C_UTILS_STANDARD_FAILURE;
+			return C_UTILS_FAILURE;
 		}
 
 		if(pid == 0)
@@ -336,15 +265,20 @@ signed int c_utils_url_opener(const char *const url)
 	}
 }
 
-signed int c_utils_ssleep(const unsigned int time)
+signed short int c_utils_ssleep(const unsigned int time)
 {
 	if(time == 0U)
 	{
-		return C_UTILS_INPUT_FAILURE;
+		return C_UTILS_FAILURE;
 	}
 
 #if defined(_WIN32) || defined(_WIN64)
-	Sleep((DWORD)time * (DWORD)1000UL);
+	if(time > UINT_MAX / 1000)
+	{
+		return C_UTILS_FAILURE;
+	}
+
+	Sleep((DWORD)time * (DWORD)1000U);
 
 #elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
 	if(sleep(time) > 0)
@@ -352,20 +286,20 @@ signed int c_utils_ssleep(const unsigned int time)
 		fputs("Sleep failed...\n", stderr);
 		perror("Error");
 
-		return C_UTILS_STANDARD_FAILURE;
+		return C_UTILS_FAILURE;
 	}
 
 #else
-	return C_UTILS_STANDARD_FAILURE;
+	return C_UTILS_FAILURE;
 #endif
 	return C_UTILS_SUCCESS;
 }
 
-signed int c_utils_mssleep(const unsigned int time)
+signed short int c_utils_mssleep(const unsigned int time)
 {
 	if(time == 0U)
 	{
-		return C_UTILS_INPUT_FAILURE;
+		return C_UTILS_FAILURE;
 	}
 
 #if defined(_WIN32) || defined(_WIN64)
@@ -374,7 +308,7 @@ signed int c_utils_mssleep(const unsigned int time)
 #elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
 	if(time > UINT_MAX / 1000)
 	{
-		return C_UTILS_INPUT_FAILURE;
+		return C_UTILS_FAILURE;
 	}
 
 	if(usleep(time * 1000) == -1)
@@ -382,20 +316,20 @@ signed int c_utils_mssleep(const unsigned int time)
 		fputs("Sleep failed...\n", stderr);
 		perror("Error");
 
-		return C_UTILS_STANDARD_FAILURE;
+		return C_UTILS_FAILURE;
 	}
 
 #else
-	return C_UTILS_STANDARD_FAILURE;
+	return C_UTILS_FAILURE;
 #endif
 	return C_UTILS_SUCCESS;
 }
 
-signed int c_utils_make_directory(const char *const path, unsigned int mode)
+signed short int c_utils_make_directory(const char *const path, unsigned int mode)
 {
 	if(path == (void *)0)
 	{
-		return C_UTILS_INPUT_FAILURE;
+		return C_UTILS_FAILURE;
 	}
 
 	else
@@ -423,15 +357,83 @@ signed int c_utils_make_directory(const char *const path, unsigned int mode)
 		perror("Error");
 #endif
 
-		return C_UTILS_STANDARD_FAILURE;
+		return C_UTILS_FAILURE;
 	}
 }
 
-signed int c_utils_linear_unsigned_char_search(const char *const array, const size_t count, const char target)
+signed int c_utils_scan_character(void)
+{
+	signed int character;
+#if defined(_WIN32) || defined(_WIN64)
+
+	character = _getch();
+#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
+	signed int keyword;
+	ssize_t result;
+	struct termios old_terminal;
+	struct termios new_terminal;
+
+	if(tcgetattr(STDIN_FILENO, &old_terminal) == -1)
+	{
+		perror("\"tcgetattr\" error");
+
+		return (signed int)C_UTILS_FAILURE;
+	}
+
+	new_terminal = old_terminal;
+	new_terminal.c_lflag &= (tcflag_t) ~(ICANON | ECHO);
+	*(new_terminal.c_cc + VMIN) = 1;
+	*(new_terminal.c_cc + VTIME) = 0;
+
+	if(tcsetattr(STDIN_FILENO, TCSANOW, &new_terminal) == -1)
+	{
+		perror("\"tcsetattr\" error");
+
+		return (signed int)C_UTILS_FAILURE;
+	}
+
+	result = read(STDIN_FILENO, &keyword, 1U);
+
+	if(result == 0)
+	{
+		if(tcsetattr(STDIN_FILENO, TCSANOW, &old_terminal) == -1)
+		{
+			return (signed int)C_UTILS_FAILURE;
+		}
+
+		return (signed int)C_UTILS_FAILURE;
+	}
+
+	else if(result < 0)
+	{
+		perror("\"read\" error");
+
+		if(tcsetattr(STDIN_FILENO, TCSANOW, &old_terminal) == -1)
+		{
+			return (signed int)C_UTILS_FAILURE;
+		}
+
+		return (signed int)C_UTILS_FAILURE;
+	}
+
+	character = keyword;
+
+	if(tcsetattr(STDIN_FILENO, TCSANOW, &old_terminal) == -1)
+	{
+		return (signed int)C_UTILS_FAILURE;
+	}
+#else
+	return (signed int)C_UTILS_FAILURE;
+#endif
+
+	return character;
+}
+
+size_t c_utils_linear_char_search(const char *const array, const size_t count, const char target)
 {
 	if(!array)
 	{
-		return C_UTILS_INPUT_FAILURE;
+		return C_UTILS_FAILURE;
 	}
 
 	else
@@ -442,19 +444,19 @@ signed int c_utils_linear_unsigned_char_search(const char *const array, const si
 		{
 			if(*(array + index) == target)
 			{
-				return (signed int)index;
+				return index;
 			}
 		}
 	}
 
-	return C_UTILS_NOT_FOUND;
+	return C_UTILS_FAILURE;
 }
 
-signed int c_utils_linear_signed_short_int_search(const signed short int *const array, const size_t count, const signed short int target)
+size_t c_utils_linear_signed_short_int_search(const signed short int *const array, const size_t count, const signed short int target)
 {
 	if(!array)
 	{
-		return C_UTILS_INPUT_FAILURE;
+		return C_UTILS_FAILURE;
 	}
 
 	else
@@ -465,19 +467,19 @@ signed int c_utils_linear_signed_short_int_search(const signed short int *const 
 		{
 			if(*(array + index) == target)
 			{
-				return (signed int)index;
+				return index;
 			}
 		}
 	}
 
-	return C_UTILS_NOT_FOUND;
+	return C_UTILS_FAILURE;
 }
 
-signed int c_utils_linear_signed_int_search(const signed int *const array, const size_t count, const signed int target)
+size_t c_utils_linear_signed_int_search(const signed int *const array, const size_t count, const signed int target)
 {
 	if(!array)
 	{
-		return C_UTILS_INPUT_FAILURE;
+		return C_UTILS_FAILURE;
 	}
 
 	else
@@ -488,19 +490,19 @@ signed int c_utils_linear_signed_int_search(const signed int *const array, const
 		{
 			if(*(array + index) == target)
 			{
-				return (signed int)index;
+				return index;
 			}
 		}
 	}
 
-	return C_UTILS_NOT_FOUND;
+	return C_UTILS_FAILURE;
 }
 
-signed int c_utils_linear_signed_long_int_search(const signed long int *const array, const size_t count, const signed long int target)
+size_t c_utils_linear_signed_long_int_search(const signed long int *const array, const size_t count, const signed long int target)
 {
 	if(!array)
 	{
-		return C_UTILS_INPUT_FAILURE;
+		return C_UTILS_FAILURE;
 	}
 
 	else
@@ -511,20 +513,20 @@ signed int c_utils_linear_signed_long_int_search(const signed long int *const ar
 		{
 			if(*(array + index) == target)
 			{
-				return (signed int)index;
+				return index;
 			}
 		}
 	}
 
-	return C_UTILS_NOT_FOUND;
+	return C_UTILS_FAILURE;
 }
 
-#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
-signed int c_utils_linear_signed_long_long_int_search(const signed long long int *const array, const size_t count, const signed long long int target)
+#if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) || (defined(__cplusplus) && __cplusplus >= 201103L)
+size_t c_utils_linear_signed_long_long_int_search(const signed long long int *const array, const size_t count, const signed long long int target)
 {
 	if(!array)
 	{
-		return C_UTILS_INPUT_FAILURE;
+		return C_UTILS_FAILURE;
 	}
 
 	else
@@ -535,20 +537,20 @@ signed int c_utils_linear_signed_long_long_int_search(const signed long long int
 		{
 			if(*(array + index) == target)
 			{
-				return (signed int)index;
+				return index;
 			}
 		}
 	}
 
-	return C_UTILS_NOT_FOUND;
+	return C_UTILS_FAILURE;
 }
 #endif
 
-signed int c_utils_linear_float_search(const float *const array, const size_t count, const float target)
+size_t c_utils_linear_float_search(const float *const array, const size_t count, const float target)
 {
 	if(!array)
 	{
-		return C_UTILS_INPUT_FAILURE;
+		return C_UTILS_FAILURE;
 	}
 
 	else
@@ -561,19 +563,19 @@ signed int c_utils_linear_float_search(const float *const array, const size_t co
 
 			if((difference < 0.0f ? -difference : difference) < 10 * FLT_EPSILON)
 			{
-				return (signed int)index;
+				return index;
 			}
 		}
 	}
 
-	return C_UTILS_NOT_FOUND;
+	return C_UTILS_FAILURE;
 }
 
-signed int c_utils_linear_double_search(const double *const array, const size_t count, const double target)
+size_t c_utils_linear_double_search(const double *const array, const size_t count, const double target)
 {
 	if(!array)
 	{
-		return C_UTILS_INPUT_FAILURE;
+		return C_UTILS_FAILURE;
 	}
 
 	else
@@ -586,19 +588,19 @@ signed int c_utils_linear_double_search(const double *const array, const size_t 
 
 			if((difference < 0.0 ? -difference : difference) < 10 * DBL_EPSILON)
 			{
-				return (signed int)index;
+				return index;
 			}
 		}
 	}
 
-	return C_UTILS_NOT_FOUND;
+	return C_UTILS_FAILURE;
 }
 
-signed int c_utils_linear_long_double_search(const long double *const array, const size_t count, const long double target)
+size_t c_utils_linear_long_double_search(const long double *const array, const size_t count, const long double target)
 {
 	if(!array)
 	{
-		return C_UTILS_INPUT_FAILURE;
+		return C_UTILS_FAILURE;
 	}
 
 	else
@@ -611,19 +613,19 @@ signed int c_utils_linear_long_double_search(const long double *const array, con
 
 			if((difference < 0.0L ? -difference : difference) < 10 * LDBL_EPSILON)
 			{
-				return (signed int)index;
+				return index;
 			}
 		}
 	}
 
-	return C_UTILS_NOT_FOUND;
+	return C_UTILS_FAILURE;
 }
 
-signed int c_utils_linear_unsigned_array_search(const char *const *const array, const size_t count, const char *const target)
+size_t c_utils_linear_array_search(const char *const *const array, const size_t count, const char *const target)
 {
 	if(!array || !target)
 	{
-		return C_UTILS_INPUT_FAILURE;
+		return C_UTILS_FAILURE;
 	}
 
 	else
@@ -634,63 +636,12 @@ signed int c_utils_linear_unsigned_array_search(const char *const *const array, 
 		{
 			if(!strcmp(*(array + index), target))
 			{
-				return (signed int)index;
+				return index;
 			}
 		}
 	}
 
-	return C_UTILS_NOT_FOUND;
-}
-
-signed int c_utils_thread_create(c_utils_thread_t *thread, C_UTILS_THREAD_FUNCTION (*function)(void *arguments), void *arguments)
-{
-#if defined(_WIN32) || defined(_WIN64)
-	return ((*thread = CreateThread((void *)0, 0, (LPTHREAD_START_ROUTINE)function, arguments, 0, (void *)0)) == (void *)0) ? C_UTILS_STANDARD_FAILURE : C_UTILS_SUCCESS;
-#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
-	return (pthread_create(thread, (void *)0, function, arguments) != 0) ? C_UTILS_STANDARD_FAILURE : C_UTILS_SUCCESS;
-#endif
-}
-
-signed int c_utils_thread_join(c_utils_thread_t thread)
-{
-#if defined(_WIN32) || defined(_WIN64)
-	if(WaitForSingleObject(thread, INFINITE) != WAIT_OBJECT_0)
-	{
-		if(!CloseHandle(thread))
-		{
-			return C_UTILS_STANDARD_FAILURE;
-		}
-
-		return C_UTILS_STANDARD_FAILURE;
-	}
-
-	if(!CloseHandle(thread))
-	{
-		return C_UTILS_STANDARD_FAILURE;
-	}
-
-	return C_UTILS_SUCCESS;
-#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
-	return (pthread_join(thread, (void *)0) != 0) ? C_UTILS_STANDARD_FAILURE : C_UTILS_SUCCESS;
-#endif
-}
-
-signed int c_utils_thread_detach(c_utils_thread_t thread)
-{
-#if defined(_WIN32) || defined(_WIN64)
-	return (CloseHandle(thread) == 0) ? C_UTILS_STANDARD_FAILURE : C_UTILS_SUCCESS;
-#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
-	return (pthread_detach(thread) != 0) ? C_UTILS_STANDARD_FAILURE : C_UTILS_SUCCESS;
-#endif
-}
-
-signed long int c_utils_get_maximum_threads(void)
-{
-#if defined(_WIN32) || defined(_WIN64)
-	return (signed long int)GetActiveProcessorCount(ALL_PROCESSOR_GROUPS);
-#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
-	return sysconf(_SC_NPROCESSORS_ONLN);
-#endif
+	return C_UTILS_FAILURE;
 }
 
 const char *c_utils_verify_os(void)
@@ -756,7 +707,7 @@ struct tm c_utils_current_time(void)
 	return result;
 }
 
-/* End importation: */
-#if defined(__cplusplus)
+/* End C to C++ importation: */
+#ifdef __cplusplus
 }
 #endif

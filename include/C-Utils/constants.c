@@ -1,4 +1,5 @@
-#if defined(__cplusplus)
+/* Import C to C++: */
+#ifdef __cplusplus
 extern "C"
 {
 #endif
@@ -19,22 +20,30 @@ const char *const C_UTILS_CYAN_COLOR         = "\033[36m"      ;
 const char *const C_UTILS_WHITE_COLOR        = "\033[37m"      ;
 
 /* C Utils errors handlers. */
-const signed int C_UTILS_SUCCESS             =  0              ;
-const signed int C_UTILS_STANDARD_FAILURE    = -1              ;
-const signed int C_UTILS_INTERNAL_FAILURE    = -2              ;
-const signed int C_UTILS_INPUT_FAILURE       = -3              ;
-const signed int C_UTILS_NOT_FOUND           = -4              ;
+const signed short int C_UTILS_SUCCESS       = 0               ;
+const signed short int C_UTILS_FAILURE       = 1               ;
 
 /* Recommended precision value: */
-const signed int C_UTILS_MIN_RPV             =  0              ;
+const signed int C_UTILS_MIN_RPV             = 0               ;
 const signed int C_UTILS_MAX_RPV             = 18              ;
 
+/* Standardization: */
+const signed long int C_UTILS_MACHINE_BITS   =
+#if defined(_WIN64) || defined(__x86_64__) || defined(__aarch64__) || defined(__powerpc64__) || defined(__ppc64__)
+	64L;
+#elif defined(_WIN32) || defined(__i386__) || defined(__arm__)
+	32L;
+#else
+	0L;
+#endif
+
 /* C-Utils version variables: */
-const signed long int C_UTILS_FULL_VERSION   = 20260509L       ;
+const signed long int C_UTILS_FULL_VERSION   = 20260513L       ;
 const signed long int C_UTILS_MAJOR_VERSION  = 2026L           ;
 const signed long int C_UTILS_MINOR_VERSION  = 5L	       ;
-const signed long int C_UTILS_PATCH_VERSION  = 9L              ;
+const signed long int C_UTILS_PATCH_VERSION  = 13L             ;
 
-#if defined(__cplusplus)
+/* End C to C++ importation: */
+#ifdef __cplusplus
 }
 #endif

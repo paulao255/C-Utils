@@ -1,6 +1,6 @@
 # C-Utils
 
-A C90^ library to make C easier to create programs.
+A C90^ or C++98^ library to make C/C++ more easy to program.
 
 Compatible with:
 
@@ -10,4 +10,4 @@ Compatible with:
 
 ## Credits
 
-**Created by: @paulao255**.
+**Created by: @paulao255 (Paulo Renato)**.

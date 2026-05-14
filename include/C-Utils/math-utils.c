@@ -1,5 +1,5 @@
 /* Importations: */
-#include "mutils.h"
+#include "math-utils.h"
 
 
 /* Import C to C++: */
@@ -97,7 +97,7 @@ long double c_utils_summation_ld(long double (*f)(long double i), signed long in
 	return result;
 }
 
-/* End importation: */
+/* End C to C++ importation: */
 #ifdef __cplusplus
 }
 #endif
