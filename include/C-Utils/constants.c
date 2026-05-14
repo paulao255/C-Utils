@@ -38,10 +38,10 @@ const signed long int C_UTILS_MACHINE_BITS   =
 #endif
 
 /* C-Utils version variables: */
-const signed long int C_UTILS_FULL_VERSION   = 20260513L       ;
+const signed long int C_UTILS_FULL_VERSION   = 20260514L       ;
 const signed long int C_UTILS_MAJOR_VERSION  = 2026L           ;
 const signed long int C_UTILS_MINOR_VERSION  = 5L	       ;
-const signed long int C_UTILS_PATCH_VERSION  = 13L             ;
+const signed long int C_UTILS_PATCH_VERSION  = 14L             ;
 
 /* End C to C++ importation: */
 #ifdef __cplusplus

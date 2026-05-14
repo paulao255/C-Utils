@@ -521,7 +521,7 @@ size_t c_utils_linear_signed_long_int_search(const signed long int *const array,
 	return C_UTILS_FAILURE;
 }
 
-#if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) || (defined(__cplusplus) && __cplusplus >= 201103L)
+#if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) || (defined(__cplusplus) && __cplusplus >= 201103L) || defined(C_UTILS_ENABLE_LONG_LONG_INT)
 size_t c_utils_linear_signed_long_long_int_search(const signed long long int *const array, const size_t count, const signed long long int target)
 {
 	if(!array)
