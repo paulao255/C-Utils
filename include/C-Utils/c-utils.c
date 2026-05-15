@@ -693,6 +693,66 @@ const char *c_utils_verify_os(void)
 #endif
 }
 
+char *c_utils_read_file(const char *const path)
+{
+	FILE *file;
+
+	if(!(file = fopen(path, "rb")))
+	{
+		return (void *)0;
+	}
+
+	else
+	{
+		if(fseek(file, 0L, SEEK_END) != 0)
+		{
+			fclose(file);
+
+			return (void *)0;
+		}
+
+		else
+		{
+			const signed long int size = ftell(file);
+
+			if(size < 0L)
+			{
+				fclose(file);
+
+				return (void *)0;
+			}
+
+			else
+			{
+				char *const buffer = (char *const)malloc((size_t)size + 1U);
+
+				if(buffer == (void *)0)
+				{
+					fclose(file);
+
+					return (void *)0;
+				}
+
+				rewind(file);
+
+				if(fread(buffer, 1U, (size_t)size, file) != (size_t)size)
+				{
+					free(buffer);
+					fclose(file);
+
+					return (void *)0;
+				}
+
+				*(buffer + size) = '\0';
+
+				fclose(file);
+
+				return buffer;
+			}
+		}
+	}
+}
+
 struct tm c_utils_current_time(void)
 {
 	struct tm result;

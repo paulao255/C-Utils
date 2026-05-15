@@ -2,16 +2,6 @@
 #ifndef C_UTILS_DEFINITIONS_H
 #define C_UTILS_DEFINITIONS_H
 
-/* Importations: */
-#include <limits.h>
-#include <float.h>
-
-
-/* If 1 byte != 8 bits: ERROR */
-#if CHAR_BIT != 8
-#error "FATAL ERROR: CHAR_BIT != 8."
-#endif
-
 /* If is not in C90^ or C++98^: ERROR */
 #ifndef __STDC__
 #ifndef __cplusplus
@@ -26,46 +16,63 @@
 #endif
 #endif
 
+/* Activate the default source on Linux, Android and AppleOS. */
+#if defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
+#ifndef _DEFAULT_SOURCE
+#define _DEFAULT_SOURCE
+#endif
+#endif
+
+/* Importations: */
+#include <limits.h>
+#include <float.h>
+
+
+/* If 1 byte != 8 bits: ERROR */
+#if CHAR_BIT != 8
+#error "FATAL ERROR: CHAR_BIT != 8."
+#endif
+
 /* 1 byte: */
-typedef signed char c_utils_int8;              /* C-Utils 1 byte signed integer type.    */
-typedef unsigned char c_utils_uint8;           /* C-Utils 1 byte unsigned integer type.  */
+typedef signed char c_utils_int8_t;              /* C-Utils 1 byte signed integer type.    */
+typedef unsigned char c_utils_uint8_t;           /* C-Utils 1 byte unsigned integer type.  */
 
 /* 2 Bytes: */
 #if USHRT_MAX == 0xFFFFU
-typedef signed short int c_utils_int16;        /* C-Utils 2 bytes signed integer type.   */
-typedef unsigned short int c_utils_uint16;     /* C-Utils 2 bytes unsigned integer type. */
+typedef signed short int c_utils_int16_t;        /* C-Utils 2 bytes signed integer type.   */
+typedef unsigned short int c_utils_uint16_t;     /* C-Utils 2 bytes unsigned integer type. */
 #elif UINT_MAX == 0xFFFFU
-typedef signed int c_utils_int16;              /* C-Utils 2 bytes signed integer type.   */
-typedef unsigned int c_utils_uint16;           /* C-Utils 2 bytes unsigned integer type. */
+typedef signed int c_utils_int16_t;              /* C-Utils 2 bytes signed integer type.   */
+typedef unsigned int c_utils_uint16_t;           /* C-Utils 2 bytes unsigned integer type. */
 #else
 #error "FATAL ERROR: USHRT_MAX != 0xFFFFU && UINT_MAX != 0xFFFFU."
 #endif
 
 /* 4 bytes: */
 #if UINT_MAX == 0xFFFFFFFFUL
-typedef signed int c_utils_int32;              /* C-Utils 4 bytes signed integer type.   */
-typedef unsigned int c_utils_uint32;           /* C-Utils 4 bytes unsigned integer type. */
+typedef signed int c_utils_int32_t;              /* C-Utils 4 bytes signed integer type.   */
+typedef unsigned int c_utils_uint32_t;           /* C-Utils 4 bytes unsigned integer type. */
 #elif ULONG_MAX == 0xFFFFFFFFUL
-typedef signed long int c_utils_int32;         /* C-Utils 4 bytes signed integer type.   */
-typedef unsigned long int c_utils_uint32;      /* C-Utils 4 bytes unsigned integer type. */
+typedef signed long int c_utils_int32_t;         /* C-Utils 4 bytes signed integer type.   */
+typedef unsigned long int c_utils_uint32_t;      /* C-Utils 4 bytes unsigned integer type. */
 #else
 #error "FATAL ERROR: UINT_MAX != 0xFFFFFFFFUL && ULONG_MAX != 0xFFFFFFFFUL."
 #endif
 
 #if FLT_MANT_DIG == 24 && FLT_MAX_EXP == 128 && FLT_MIN_EXP == -125
-typedef float c_utils_float32;
+typedef float c_utils_float32_t;
 #else
 #error "FATAL ERROR: IEEE 754 (Single precision float) not detected."
 #endif
 
 /* 8 bytes: */
 #if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) || (defined(__cplusplus) && __cplusplus >= 201103L) || defined(C_UTILS_ENABLE_LONG_LONG_INT)
-typedef signed long long int c_utils_int64;    /* C-Utils 8 bytes signed integer type.   */
-typedef unsigned long long int c_utils_uint64; /* C-Utils 8 bytes unsigned integer type. */
+typedef signed long long int c_utils_int64_t;    /* C-Utils 8 bytes signed integer type.   */
+typedef unsigned long long int c_utils_uint64_t; /* C-Utils 8 bytes unsigned integer type. */
 #endif
 
 #if DBL_MANT_DIG == 53 && DBL_MAX_EXP == 1024 && DBL_MIN_EXP == -1021
-typedef double c_utils_float64;
+typedef double c_utils_float64_t;
 #else
 #error "FATAL ERROR: IEEE 754 (Double precision float) not detected."
 #endif

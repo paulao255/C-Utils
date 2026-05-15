@@ -38,6 +38,7 @@ size_t c_utils_linear_double_search(const double *const array, const size_t coun
 size_t c_utils_linear_long_double_search(const long double *const array, const size_t count, const long double target);                            /* Linear long double search function.                 */
 size_t c_utils_linear_array_search(const char *const *const array, const size_t count, const char *const target);                                  /* Linear array search function.                       */
 const char *c_utils_verify_os(void);                                                                                                               /* Function to verify the operating system.            */
+char *c_utils_read_file(const char *const path);                                                                                                   /* Function to read a file.                            */
 struct tm c_utils_current_time(void);                                                                                                              /* Get current time struct.                            */
 
 /* End C to C++ importation: */
