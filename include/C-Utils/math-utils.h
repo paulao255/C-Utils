@@ -2,6 +2,10 @@
 #ifndef C_UTILS_MATH_UTILS_H
 #define C_UTILS_MATH_UTILS_H
 
+/* Importations: */
+#include "definitions.h"
+
+
 /* Import C to C++: */
 #ifdef __cplusplus
 extern "C"
@@ -9,23 +13,18 @@ extern "C"
 #endif
 
 /* Pi constants: */
-extern const float       C_UTILS_M_PIf;                                                                              /* Pi const using float value.                                             */
-extern const double      C_UTILS_M_PI ;                                                                              /* Pi const using double value.                                            */
-extern const long double C_UTILS_M_PIl;                                                                              /* Pi const using long double value.                                       */
+extern const c_utils_float32_t C_UTILS_MATH_PI_FLOAT32;                                                                                    /* Pi const using float32_t value.                                             */
+extern const c_utils_float64_t C_UTILS_MATH_PI_FLOAT64;                                                                                    /* Pi const using float64_t value.                                            */
 
 /* Math utils functions prototypes: */
-float c_utils_circumfer_f(const float radius_value);                                                                 /* Function to calculate a circumference using a float value.              */
-float c_utils_circle_area_f(const float radius_value);                                                               /* Function to calculate the area of a circle using a float value.         */
-float c_utils_sphere_volume_f(const float radius_value);                                                             /* Function to calculate the volume of a sphere using a float value.       */
-float c_utils_summation_f(float (*f)(float i), signed long int index, const signed long int end);                    /* Summation function using float values.                                  */
-double c_utils_circumfer_d(const double radius_value);                                                               /* Function to calculate a circumference using a double value.             */
-double c_utils_circle_area_d(const double radius_value);                                                             /* Function to calculate the area of a circle using a double value.        */
-double c_utils_sphere_volume_d(const double radius_value);                                                           /* Function to calculate the volume of a sphere using a double value.      */
-double c_utils_summation_d(double (*f)(double i), signed long int index, const signed long int end);                 /* Summation function using double values.                                 */
-long double c_utils_circumfer_ld(const long double radius_value);                                                    /* Function to calculate a circumference using a long double value.        */
-long double c_utils_circle_area_ld(const long double radius_value);                                                  /* Function to calculate the area of a circle using a long double value.   */
-long double c_utils_sphere_volume_ld(const long double radius_value);                                                /* Function to calculate the volume of a sphere using a long double value. */
-long double c_utils_summation_ld(long double (*f)(long double i), signed long int index, const signed long int end); /* Summation function using long double values.                            */
+c_utils_float32_t c_utils_circumfer_float(const c_utils_float32_t radius_value);                                                           /* Function to calculate a circumference using a float value.              */
+c_utils_float32_t c_utils_circle_area_float(const c_utils_float32_t radius_value);                                                         /* Function to calculate the area of a circle using a float value.         */
+c_utils_float32_t c_utils_sphere_volume_float(const c_utils_float32_t radius_value);                                                       /* Function to calculate the volume of a sphere using a float value.       */
+c_utils_float32_t c_utils_summation_float(c_utils_float32_t (*f)(c_utils_float32_t i), c_utils_int32_t index, const c_utils_int32_t end);  /* Summation function using float values.                                  */
+c_utils_float64_t c_utils_circumfer_double(const c_utils_float64_t radius_value);                                                          /* Function to calculate a circumference using a double value.             */
+c_utils_float64_t c_utils_circle_area_double(const c_utils_float64_t radius_value);                                                        /* Function to calculate the area of a circle using a double value.        */
+c_utils_float64_t c_utils_sphere_volume_double(const c_utils_float64_t radius_value);                                                      /* Function to calculate the volume of a sphere using a double value.      */
+c_utils_float64_t c_utils_summation_double(c_utils_float64_t (*f)(c_utils_float64_t i), c_utils_int32_t index, const c_utils_int32_t end); /* Summation function using double values.                                 */
 
 /* End C to C++ importation: */
 #ifdef __cplusplus

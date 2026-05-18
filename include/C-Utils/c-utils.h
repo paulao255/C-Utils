@@ -14,32 +14,30 @@ extern "C"
 #endif
 
 /* Functions prototypes: */
-void c_utils_clear_standard_output(void);                                                                                                          /* Clear the standard output.                          */
-signed short int c_utils_validate_date(const signed long int year, const signed long int month, const signed long int day);                        /* Validate date function.                             */
-signed short int c_utils_validate_date_future(const signed long int year, const signed long int month, const signed long int day);                 /* Validate all time date function.                    */
-signed short int c_utils_clear_standard_input(void);                                                                                               /* Clear the standard input.                           */
-signed short int c_utils_enable_virtual_terminal_and_utf8(void);                                                                                   /* Function to solve encoding in the Windows terminal. */
-signed short int c_utils_initialize(void);                                                                                                         /* Initialize many common functions of C-Utils.        */
-signed short int c_utils_scan_enter(void);                                                                                                         /* Press enter to continue function.                   */
-signed short int c_utils_url_opener(const char *const url);                                                                                        /* URL opener function.                                */
-signed short int c_utils_ssleep(const unsigned int time);                                                                                          /* Seconds sleep function.                             */
-signed short int c_utils_mssleep(const unsigned int time);                                                                                         /* Milliseconds sleep function.                        */
-signed short int c_utils_make_directory(const char *const path, unsigned int mode);                                                                /* Function to create a directory.                     */
-signed int c_utils_scan_character(void);                                                                                                           /* Scan character function.                            */
-size_t c_utils_linear_char_search(const char *const array, const size_t count, const char target);                                                 /* Linear unsigned char search function.               */
-size_t c_utils_linear_signed_short_int_search(const signed short int *const array, const size_t count, const signed short int target);             /* Linear short int search function.                   */
-size_t c_utils_linear_signed_int_search(const signed int *const array, const size_t count, const signed int target);                               /* Linear int search function.                         */
-size_t c_utils_linear_signed_long_int_search(const signed long int *const array, const size_t count, const signed long int target);                /* Linear long int search function.                    */
-#if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) || (defined(__cplusplus) && __cplusplus >= 201103L)
-size_t c_utils_linear_signed_long_long_int_search(const signed long long int *const array, const size_t count, const signed long long int target); /* Linear long long int search function.               */
+void c_utils_clear_standard_output(void);                                                                                                                                                             /* Clear the standard output.                          */
+c_utils_int16_t c_utils_validate_date(const c_utils_int32_t year, const c_utils_int32_t month, const c_utils_int32_t day);                                                                            /* Validate date function.                             */
+c_utils_int16_t c_utils_validate_date_future(const c_utils_int32_t year, const c_utils_int32_t month, const c_utils_int32_t day);                                                                     /* Validate all time date function.                    */
+c_utils_int16_t c_utils_clear_standard_input(void);                                                                                                                                                   /* Clear the standard input.                           */
+c_utils_int16_t c_utils_enable_virtual_terminal_and_utf8(void);                                                                                                                                       /* Function to solve encoding in the Windows terminal. */
+c_utils_int16_t c_utils_initialize(void);                                                                                                                                                             /* Initialize many common functions of C-Utils.        */
+c_utils_int16_t c_utils_scan_enter(void);                                                                                                                                                             /* Press enter to continue function.                   */
+c_utils_int16_t c_utils_url_opener(const c_utils_char_t *const url);                                                                                                                                  /* URL opener function.                                */
+c_utils_int16_t c_utils_ssleep(const c_utils_uint32_t time);                                                                                                                                          /* Seconds sleep function.                             */
+c_utils_int16_t c_utils_mssleep(const c_utils_uint32_t time);                                                                                                                                         /* Milliseconds sleep function.                        */
+c_utils_int16_t c_utils_make_directory(const c_utils_char_t *const path, c_utils_uint32_t mode);                                                                                                      /* Function to create a directory.                     */
+signed int c_utils_scan_character(void);                                                                                                                                                              /* Scan character function.                            */
+size_t c_utils_linear_char_t_search(const c_utils_char_t *const array, const size_t count, const c_utils_char_t target);                                                                              /* Linear char_t search function.                      */
+size_t c_utils_linear_int16_t_search(const c_utils_int16_t *const array, const size_t count, const c_utils_int16_t target);                                                                           /* Linear int16_t search function.                     */
+size_t c_utils_linear_int32_t_search(const c_utils_int32_t *const array, const size_t count, const c_utils_int32_t target);                                                                           /* Linear int32_t search function.                     */
+#if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) || (defined(__cplusplus) && __cplusplus >= 201103L) || defined(C_UTILS_ENABLE_LONG_LONG_INT) || defined(C_UTILS_ENABLE_ALL_EXTENSIONS)
+size_t c_utils_linear_int64_t_search(const c_utils_int64_t *const array, const size_t count, const c_utils_int64_t target);                                                                           /* Linear int64_t search function.                     */
 #endif
-size_t c_utils_linear_float_search(const float *const array, const size_t count, const float target);                                              /* Linear float search function.                       */
-size_t c_utils_linear_double_search(const double *const array, const size_t count, const double target);                                           /* Linear double search function.                      */
-size_t c_utils_linear_long_double_search(const long double *const array, const size_t count, const long double target);                            /* Linear long double search function.                 */
-size_t c_utils_linear_array_search(const char *const *const array, const size_t count, const char *const target);                                  /* Linear array search function.                       */
-const char *c_utils_verify_os(void);                                                                                                               /* Function to verify the operating system.            */
-char *c_utils_read_file(const char *const path);                                                                                                   /* Function to read a file.                            */
-struct tm c_utils_current_time(void);                                                                                                              /* Get current time struct.                            */
+size_t c_utils_linear_float32_t_search(const c_utils_float32_t *const array, const size_t count, const c_utils_float32_t target);                                                                     /* Linear float32_t search function.                   */
+size_t c_utils_linear_float64_t_search(const c_utils_float64_t *const array, const size_t count, const c_utils_float64_t target);                                                                     /* Linear float64_t search function.                   */
+size_t c_utils_linear_char_t_array_search(const c_utils_char_t *const *const array, const size_t count, const c_utils_char_t *const target);                                                          /* Linear char_t array search function.                */
+c_utils_char_t *c_utils_read_file(const c_utils_char_t *const path);                                                                                                                                  /* Function to read a file.                            */
+const c_utils_char_t *c_utils_verify_os(void);                                                                                                                                                        /* Function to verify the operating system.            */
+struct tm c_utils_current_time(void);                                                                                                                                                                 /* Get current time struct function.                   */
 
 /* End C to C++ importation: */
 #ifdef __cplusplus

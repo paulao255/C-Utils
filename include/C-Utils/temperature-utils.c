@@ -9,104 +9,71 @@ extern "C"
 #endif
 
 /* Temperature limits: */
-const float C_UTILS_MINIMUM_CELSIUSf          = -273.15f;
-const float C_UTILS_MINIMUM_FAHRENHEITf       = -459.67f;
-const float C_UTILS_MINIMUM_KELVINf           =    0.0f ;
-const double C_UTILS_MINIMUM_CELSIUS          = -273.15 ;
-const double C_UTILS_MINIMUM_FAHRENHEIT       = -459.67 ;
-const double C_UTILS_MINIMUM_KELVIN           =    0.0  ;
-const long double C_UTILS_MINIMUM_CELSIUSl    = -273.15L;
-const long double C_UTILS_MINIMUM_FAHRENHEITl = -459.67L;
-const long double C_UTILS_MINIMUM_KELVINl     =    0.0L ;
+const c_utils_float32_t C_UTILS_MINIMUM_CELSIUS_FLOAT32    = -273.15f;
+const c_utils_float32_t C_UTILS_MINIMUM_FAHRENHEIT_FLOAT32 = -459.67f;
+const c_utils_float32_t C_UTILS_MINIMUM_KELVIN_FLOAT32     =    0.0f ;
+const c_utils_float64_t C_UTILS_MINIMUM_CELSIUS_FLOAT64    = -273.15 ;
+const c_utils_float64_t C_UTILS_MINIMUM_FAHRENHEIT_FLOAT64 = -459.67 ;
+const c_utils_float64_t C_UTILS_MINIMUM_KELVIN_FLOAT64     =    0.0  ;
 
-float c_utils_kelvin_to_celsius_f(const float kelvin_value)
+c_utils_float32_t c_utils_kelvin_to_celsius_float(const c_utils_float32_t kelvin_value)
 {
 	return kelvin_value - 273.15f;
 }
 
-float c_utils_kelvin_to_fahrenheit_f(const float kelvin_value)
+c_utils_float32_t c_utils_kelvin_to_fahrenheit_float(const c_utils_float32_t kelvin_value)
 {
 	return kelvin_value * (9.0f / 5.0f) - 459.67f;
 }
 
-float c_utils_celsius_to_kelvin_f(const float celsius_value)
+c_utils_float32_t c_utils_celsius_to_kelvin_float(const c_utils_float32_t celsius_value)
 {
 	return celsius_value + 273.15f;
 }
 
-float c_utils_celsius_to_fahrenheit_f(const float celsius_value)
+c_utils_float32_t c_utils_celsius_to_fahrenheit_float(const c_utils_float32_t celsius_value)
 {
 	return celsius_value * (9.0f / 5.0f) + 32.0f;
 }
 
-float c_utils_fahrenheit_to_kelvin_f(const float fahrenheit_value)
+c_utils_float32_t c_utils_fahrenheit_to_kelvin_f(const c_utils_float32_t fahrenheit_value)
 {
 	return (fahrenheit_value + 459.67f) * (5.0f / 9.0f);
 }
 
-float c_utils_fahrenheit_to_celsius_f(const float fahrenheit_value)
+c_utils_float32_t c_utils_fahrenheit_to_celsius_f(const c_utils_float32_t fahrenheit_value)
 {
 	return (fahrenheit_value - 32.0f) * (5.0f / 9.0f);
 }
 
-double c_utils_kelvin_to_celsius_d(const double kelvin_value)
+c_utils_float64_t c_utils_kelvin_to_celsius_d(const c_utils_float64_t kelvin_value)
 {
 	return kelvin_value - 273.15;
 }
 
-double c_utils_kelvin_to_fahrenheit_d(const double kelvin_value)
+c_utils_float64_t c_utils_kelvin_to_fahrenheit_d(const c_utils_float64_t kelvin_value)
 {
 	return kelvin_value * (9.0 / 5.0) - 459.67;
 }
 
-double c_utils_celsius_to_kelvin_d(const double celsius_value)
+c_utils_float64_t c_utils_celsius_to_kelvin_d(const c_utils_float64_t celsius_value)
 {
 	return celsius_value + 273.15;
 }
 
-double c_utils_celsius_to_fahrenheit_d(const double celsius_value)
+c_utils_float64_t c_utils_celsius_to_fahrenheit_d(const c_utils_float64_t celsius_value)
 {
 	return celsius_value * (9.0 / 5.0) + 32.0;
 }
 
-double c_utils_fahrenheit_to_kelvin_d(const double fahrenheit_value)
+c_utils_float64_t c_utils_fahrenheit_to_kelvin_d(const c_utils_float64_t fahrenheit_value)
 {
 	return (fahrenheit_value + 459.67) * (5.0 / 9.0);
 }
 
-double c_utils_fahrenheit_to_celsius_d(const double fahrenheit_value)
+c_utils_float64_t c_utils_fahrenheit_to_celsius_d(const c_utils_float64_t fahrenheit_value)
 {
 	return (fahrenheit_value - 32.0) * (5.0 / 9.0);
-}
-
-long double c_utils_kelvin_to_celsius_ld(const long double kelvin_value)
-{
-	return kelvin_value - 273.15L;
-}
-
-long double c_utils_kelvin_to_fahrenheit_ld(const long double kelvin_value)
-{
-	return kelvin_value * (9.0L / 5.0L) - 459.67L;
-}
-
-long double c_utils_celsius_to_kelvin_ld(const long double celsius_value)
-{
-	return celsius_value + 273.15L;
-}
-
-long double c_utils_celsius_to_fahrenheit_ld(const long double celsius_value)
-{
-	return celsius_value * (9.0L / 5.0L) + 32.0L;
-}
-
-long double c_utils_fahrenheit_to_kelvin_ld(const long double fahrenheit_value)
-{
-	return (fahrenheit_value + 459.67L) * (5.0L / 9.0L);
-}
-
-long double c_utils_fahrenheit_to_celsius_ld(const long double fahrenheit_value)
-{
-	return (fahrenheit_value - 32.0L) * (5.0L / 9.0L);
 }
 
 /* End importation: */
