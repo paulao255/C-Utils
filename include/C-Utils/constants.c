@@ -35,17 +35,17 @@ const signed int C_UTILS_MAX_RPV                       = 18              ;
 const c_utils_int32_t C_UTILS_MACHINE_BITS   =
 #if defined(_WIN64) || defined(__x86_64__) || defined(__aarch64__) || defined(__powerpc64__) || defined(__ppc64__)
 	64L;
-#elif defined(_WIN32) || defined(__i386__) || defined(__arm__)
+#elif defined(_WIN32) || defined(__i386__) || defined(__arm__) || defined(__XTENSA__)
 	32L;
 #else
 	0L;
 #endif
 
 /* C-Utils version variables: */
-const c_utils_int32_t C_UTILS_FULL_VERSION             = 20260518L       ;
+const c_utils_int32_t C_UTILS_FULL_VERSION             = 20260522L       ;
 const c_utils_int32_t C_UTILS_MAJOR_VERSION            = 2026L           ;
 const c_utils_int32_t C_UTILS_MINOR_VERSION            = 5L	         ;
-const c_utils_int32_t C_UTILS_PATCH_VERSION            = 18L             ;
+const c_utils_int32_t C_UTILS_PATCH_VERSION            = 22L             ;
 
 /* End C to C++ importation: */
 #ifdef __cplusplus

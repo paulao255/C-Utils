@@ -25,6 +25,11 @@
 #include <sys/wait.h>
 #endif
 
+/* Global static variables: */
+void **c_utils_addresses_to_free = (void *)0;
+c_utils_int8_t c_utils_is_initialized = 0;
+c_utils_uint32_t c_utils_addresses_to_free_count = 0u;
+c_utils_uint32_t c_utils_addresses_to_free_cap = 0u;
 
 /* Import C to C++: */
 #ifdef __cplusplus
@@ -32,11 +37,132 @@ extern "C"
 {
 #endif
 
+static void c_utils_terminate(void)
+{
+	c_utils_uint32_t index;
+
+	for(index = 0u; index < c_utils_addresses_to_free_count; index++)
+	{
+		if(*(c_utils_addresses_to_free + index))
+		{
+			free(*(c_utils_addresses_to_free + index));
+			*(c_utils_addresses_to_free + index) = (void *)0;
+		}
+	}
+
+	free(c_utils_addresses_to_free);
+
+	c_utils_addresses_to_free = (void *)0;
+	c_utils_addresses_to_free_count = 0u;
+	c_utils_addresses_to_free_cap = 0u;
+	c_utils_is_initialized = 0;
+
+	return;
+}
+
 void c_utils_clear_standard_output(void)
 {
 	fputs("\033[2J\033[3J\033[H", stdout);
 
 	return;
+}
+#if defined(_WIN32) || defined(_WIN64)
+
+static c_utils_int16_t c_utils_enable_virtual_terminal_and_utf8(void)
+{
+	HANDLE hOut;
+	DWORD mode;
+
+	hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+
+	if(hOut == INVALID_HANDLE_VALUE)
+	{
+		return C_UTILS_FAILURE;
+	}
+
+	mode = 0u;
+
+	if(!GetConsoleMode(hOut, &mode))
+	{
+		return C_UTILS_FAILURE;
+	}
+
+	mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+
+	if(!SetConsoleMode(hOut, mode))
+	{
+		DWORD err;
+		err = GetLastError();
+		(void)err;
+
+		return C_UTILS_FAILURE;
+	}
+	
+	if(!SetConsoleOutputCP(CP_UTF8))
+	{
+		DWORD err;
+		err = GetLastError();
+		(void)err;
+
+		return C_UTILS_FAILURE;
+	}
+
+	return C_UTILS_SUCCESS;
+}
+#endif
+
+c_utils_int16_t c_utils_get_current_time(struct tm *const time_struct)
+{
+	if(!time_struct)
+	{
+		fprintf(stderr, "Error in function c_utils_get_current_time (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		return C_UTILS_FAILURE;
+	}
+
+	else
+	{
+		const time_t now = time((void *)0);
+
+		if(now == (time_t)-1)
+		{
+			fprintf(stderr, "Error: time() failed (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+			return C_UTILS_FAILURE;
+		}
+
+		else
+		{
+#if defined(_WIN32) || defined(_WIN64)
+			if(localtime_s(time_struct, &now) != 0)
+			{
+				fprintf(stderr, "Error in function localtime_s (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+				return C_UTILS_FAILURE;
+			}
+#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
+			if(localtime_r(&now, time_struct) == (void *)0)
+			{
+				fprintf(stderr, "Error in function localtime_r (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+				return C_UTILS_FAILURE;
+			}
+#else
+			const struct tm *const result = localtime(&now);
+
+			if(!result)
+			{
+				fprintf(stderr, "Error in function localtime (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+				return C_UTILS_FAILURE;
+			}
+
+			*time_struct = *result;
+#endif
+		}
+	}
+
+	return C_UTILS_SUCCESS;
 }
 
 c_utils_int16_t c_utils_validate_date(const c_utils_int32_t year, const c_utils_int32_t month, const c_utils_int32_t day)
@@ -68,7 +194,14 @@ c_utils_int16_t c_utils_validate_date(const c_utils_int32_t year, const c_utils_
 			30,
 			31
 		};
-		struct tm current_date = c_utils_current_time();
+		struct tm current_date;
+
+		if(c_utils_get_current_time(&current_date) != C_UTILS_SUCCESS)
+		{
+			fprintf(stderr, "Error in function c_utils_get_current_time (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+			return C_UTILS_FAILURE;
+		}
 
 		if((year % 4L == 0L && year % 100L != 0L) || (year % 400L == 0L))
 		{
@@ -145,59 +278,80 @@ c_utils_int16_t c_utils_clear_standard_input(void)
 	return C_UTILS_SUCCESS;
 }
 
-c_utils_int16_t c_utils_enable_virtual_terminal_and_utf8(void)
-{
-#if defined(_WIN32) || defined(_WIN64)
-	HANDLE hOut;
-	DWORD mode;
-
-	hOut = GetStdHandle(STD_OUTPUT_HANDLE);
-
-	if(hOut == INVALID_HANDLE_VALUE)
-	{
-		return C_UTILS_FAILURE;
-	}
-
-	mode = 0u;
-
-	if(!GetConsoleMode(hOut, &mode))
-	{
-		return C_UTILS_FAILURE;
-	}
-
-	mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
-
-	if(!SetConsoleMode(hOut, mode))
-	{
-		DWORD err;
-		err = GetLastError();
-		(void)err;
-
-		return C_UTILS_FAILURE;
-	}
-	
-	if(!SetConsoleOutputCP(CP_UTF8))
-	{
-		DWORD err;
-		err = GetLastError();
-		(void)err;
-
-		return C_UTILS_FAILURE;
-	}
-
-	return C_UTILS_SUCCESS;
-#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
-	return C_UTILS_SUCCESS;
-#else
-	return C_UTILS_FAILURE;
-#endif
-}
-
 c_utils_int16_t c_utils_initialize(void)
 {
-	if(c_utils_enable_virtual_terminal_and_utf8())
+	if(c_utils_is_initialized != 0)
+	{
+		fputs("Error in function c_utils_is_initialized, double call...\n", stderr);
+
+		return C_UTILS_FAILURE;
+	}
+
+#if defined(_WIN32) || defined(_WIN64)
+	if(c_utils_enable_virtual_terminal_and_utf8() != C_UTILS_SUCCESS)
 	{
 		return C_UTILS_FAILURE;
+	}
+
+#endif
+	if(atexit(c_utils_terminate) != 0)
+	{
+		fprintf(stderr, "Error in function atexit (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		return C_UTILS_FAILURE;
+	}
+
+	c_utils_is_initialized = 1;
+
+	return C_UTILS_SUCCESS;
+}
+
+c_utils_int16_t c_utils_regist_address_to_free(void *const address)
+{
+	if(address == (void *)0)
+	{
+		fprintf(stderr, "Error in function c_utils_regist_address_to_free (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		return C_UTILS_FAILURE;
+	}
+
+	if(!c_utils_is_initialized)
+	{
+		fprintf(stderr, "Error in function c_utils_regist_address_to_free (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		return C_UTILS_FAILURE;
+	}
+
+	else
+	{
+		c_utils_uint32_t index;
+
+		for(index = 0u; index < c_utils_addresses_to_free_count; index++)
+		{
+			if(*(c_utils_addresses_to_free + index) == address)
+			{
+				fprintf(stderr, "Error in function c_utils_regist_address_to_free (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+				return C_UTILS_FAILURE;
+			}
+		}
+
+		if(c_utils_addresses_to_free_count >= c_utils_addresses_to_free_cap)
+		{
+			c_utils_uint32_t new_cap = (c_utils_addresses_to_free_cap == 0u) ? 8u : c_utils_addresses_to_free_cap * 2u;
+			void **new_block = (void **)realloc(c_utils_addresses_to_free, (size_t)new_cap * sizeof(void *));
+
+			if(!new_block)
+			{
+				return C_UTILS_FAILURE;
+			}
+
+			c_utils_addresses_to_free = new_block;
+			c_utils_addresses_to_free_cap = new_cap;
+		}
+
+		*(c_utils_addresses_to_free + c_utils_addresses_to_free_count) = address;
+		c_utils_addresses_to_free_count++;
 	}
 
 	return C_UTILS_SUCCESS;
@@ -205,13 +359,17 @@ c_utils_int16_t c_utils_initialize(void)
 
 c_utils_int16_t c_utils_scan_enter(void)
 {
-	if(c_utils_clear_standard_input())
+	if(c_utils_clear_standard_input() != C_UTILS_SUCCESS)
 	{
+		fputs("Error in function c_utils_clear_standard_input...\n", stderr);
+
 		return C_UTILS_FAILURE;
 	}
 
 	if(getchar() == EOF)
 	{
+		fputs("Error in function getchar (End Of File)...\n", stderr);
+
 		return C_UTILS_FAILURE;
 	}
 
@@ -328,49 +486,51 @@ c_utils_int16_t c_utils_make_directory(const c_utils_char_t *const path, c_utils
 {
 	if(path == (void *)0)
 	{
+		fprintf(stderr, "Error in function c_utils_make_directory (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
 		return C_UTILS_FAILURE;
 	}
 
 	else
 	{
 #if defined(_WIN32) || defined(_WIN64)
-		if(!_mkdir(path))
-		{
-			return C_UTILS_SUCCESS;
-		}
+		(void)mode;
 
-		fputs("Error in function _mkdir...\n", stderr);
-		perror("Error");
+		if(_mkdir(path) != 0)
+		{
+			fprintf(stderr, "Error in function _mkdir (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+			perror("Error");
+
+			return C_UTILS_FAILURE;
+		}
 #elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
 		if(!mode)
 		{
 			mode = 0755L;
 		}
 
-		if(mkdir(path, (mode_t)mode) == 0)
+		if(mkdir(path, (mode_t)mode) != 0)
 		{
-			return C_UTILS_SUCCESS;
+			fprintf(stderr, "Error in function mkdir (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+			perror("Error");
+
+			return C_UTILS_FAILURE;
 		}
-
-		fputs("Error in function mkdir...\n", stderr);
-		perror("Error");
 #endif
-
-		return C_UTILS_FAILURE;
 	}
+
+	return C_UTILS_SUCCESS;
 }
 
 signed int c_utils_scan_character(void)
 {
-	signed int character;
 #if defined(_WIN32) || defined(_WIN64)
+	signed int character = _getch();
 
-	character = _getch();
+	return character;
 #elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
-	signed int keyword;
-	ssize_t result;
 	struct termios old_terminal;
-	struct termios new_terminal;
 
 	if(tcgetattr(STDIN_FILENO, &old_terminal) == -1)
 	{
@@ -379,59 +539,72 @@ signed int c_utils_scan_character(void)
 		return (signed int)C_UTILS_FAILURE;
 	}
 
-	new_terminal = old_terminal;
-	new_terminal.c_lflag &= (tcflag_t) ~(ICANON | ECHO);
-	*(new_terminal.c_cc + VMIN) = 1;
-	*(new_terminal.c_cc + VTIME) = 0;
-
-	if(tcsetattr(STDIN_FILENO, TCSANOW, &new_terminal) == -1)
+	else
 	{
-		perror("\"tcsetattr\" error");
+		struct termios new_terminal = old_terminal;
 
-		return (signed int)C_UTILS_FAILURE;
-	}
+		new_terminal.c_lflag &= (tcflag_t) ~(ICANON | ECHO);
+		*(new_terminal.c_cc + VMIN) = 1;
+		*(new_terminal.c_cc + VTIME) = 0;
 
-	result = read(STDIN_FILENO, &keyword, 1U);
-
-	if(result == 0)
-	{
-		if(tcsetattr(STDIN_FILENO, TCSANOW, &old_terminal) == -1)
+		if(tcsetattr(STDIN_FILENO, TCSANOW, &new_terminal) == -1)
 		{
+			perror("\"tcsetattr\" error");
+
 			return (signed int)C_UTILS_FAILURE;
 		}
 
-		return (signed int)C_UTILS_FAILURE;
-	}
-
-	else if(result < 0)
-	{
-		perror("\"read\" error");
-
-		if(tcsetattr(STDIN_FILENO, TCSANOW, &old_terminal) == -1)
+		else
 		{
-			return (signed int)C_UTILS_FAILURE;
+			c_utils_char_t keyword;
+			ssize_t result = read(STDIN_FILENO, &keyword, 1U);
+
+			if(result == 0)
+			{
+				if(tcsetattr(STDIN_FILENO, TCSANOW, &old_terminal) == -1)
+				{
+					return (signed int)C_UTILS_FAILURE;
+				}
+
+				return (signed int)C_UTILS_FAILURE;
+			}
+
+			else if(result < 0)
+			{
+				perror("\"read\" error");
+
+				if(tcsetattr(STDIN_FILENO, TCSANOW, &old_terminal) == -1)
+				{
+					return (signed int)C_UTILS_FAILURE;
+				}
+
+				return (signed int)C_UTILS_FAILURE;
+			}
+
+			else
+			{
+				signed int character = (c_utils_char_t)keyword;
+
+				if(tcsetattr(STDIN_FILENO, TCSANOW, &old_terminal) == -1)
+				{
+					return (signed int)C_UTILS_FAILURE;
+				}
+
+				return character;
+			}
 		}
-
-		return (signed int)C_UTILS_FAILURE;
-	}
-
-	character = keyword;
-
-	if(tcsetattr(STDIN_FILENO, TCSANOW, &old_terminal) == -1)
-	{
-		return (signed int)C_UTILS_FAILURE;
 	}
 #else
 	return (signed int)C_UTILS_FAILURE;
 #endif
-
-	return character;
 }
 
-size_t c_utils_linear_char_t_search(const c_utils_char_t *const array, const size_t count, const c_utils_char_t target)
+c_utils_int16_t c_utils_linear_char_t_search(const c_utils_char_t *const array, const size_t count, const c_utils_char_t target, size_t *const position)
 {
-	if(!array)
+	if(!array || !position)
 	{
+		fprintf(stderr, "Error in function c_utils_linear_char_t_search (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
 		return C_UTILS_FAILURE;
 	}
 
@@ -443,7 +616,9 @@ size_t c_utils_linear_char_t_search(const c_utils_char_t *const array, const siz
 		{
 			if(*(array + index) == target)
 			{
-				return index;
+				*position = index;
+
+				return C_UTILS_SUCCESS;
 			}
 		}
 	}
@@ -451,10 +626,12 @@ size_t c_utils_linear_char_t_search(const c_utils_char_t *const array, const siz
 	return C_UTILS_FAILURE;
 }
 
-size_t c_utils_linear_int16_t_search(const c_utils_int16_t *const array, const size_t count, const c_utils_int16_t target)
+c_utils_int16_t c_utils_linear_int16_t_search(const c_utils_int16_t *const array, const size_t count, const c_utils_int16_t target, size_t *const position)
 {
-	if(!array)
+	if(!array || !position)
 	{
+		fprintf(stderr, "Error in function c_utils_linear_int16_t_search (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
 		return C_UTILS_FAILURE;
 	}
 
@@ -466,7 +643,9 @@ size_t c_utils_linear_int16_t_search(const c_utils_int16_t *const array, const s
 		{
 			if(*(array + index) == target)
 			{
-				return index;
+				*position = index;
+
+				return C_UTILS_SUCCESS;
 			}
 		}
 	}
@@ -474,10 +653,12 @@ size_t c_utils_linear_int16_t_search(const c_utils_int16_t *const array, const s
 	return C_UTILS_FAILURE;
 }
 
-size_t c_utils_linear_int32_t_search(const c_utils_int32_t *const array, const size_t count, const c_utils_int32_t target)
+c_utils_int16_t c_utils_linear_int32_t_search(const c_utils_int32_t *const array, const size_t count, const c_utils_int32_t target, size_t *const position)
 {
-	if(!array)
+	if(!array || !position)
 	{
+		fprintf(stderr, "Error in function c_utils_linear_int32_t_search (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
 		return C_UTILS_FAILURE;
 	}
 
@@ -489,7 +670,9 @@ size_t c_utils_linear_int32_t_search(const c_utils_int32_t *const array, const s
 		{
 			if(*(array + index) == target)
 			{
-				return index;
+				*position = index;
+
+				return C_UTILS_SUCCESS;
 			}
 		}
 	}
@@ -497,11 +680,16 @@ size_t c_utils_linear_int32_t_search(const c_utils_int32_t *const array, const s
 	return C_UTILS_FAILURE;
 }
 
-#if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) || (defined(__cplusplus) && __cplusplus >= 201103L) || defined(C_UTILS_ENABLE_LONG_LONG_INT) || defined(C_UTILS_ENABLE_ALL_EXTENSIONS)
-size_t c_utils_linear_int64_t_search(const c_utils_int64_t *const array, const size_t count, const c_utils_int64_t target)
+#if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) || \
+    (defined(__cplusplus) && __cplusplus >= 201103L) || \
+    defined(C_UTILS_ENABLE_LONG_LONG_INT) || \
+    defined(C_UTILS_ENABLE_ALL_EXTENSIONS)
+c_utils_int16_t c_utils_linear_int64_t_search(const c_utils_int64_t *const array, const size_t count, const c_utils_int64_t target, size_t *const position)
 {
-	if(!array)
+	if(!array || !position)
 	{
+		fprintf(stderr, "Error in function c_utils_linear_int64_t_search (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
 		return C_UTILS_FAILURE;
 	}
 
@@ -513,7 +701,9 @@ size_t c_utils_linear_int64_t_search(const c_utils_int64_t *const array, const s
 		{
 			if(*(array + index) == target)
 			{
-				return index;
+				*position = index;
+
+				return C_UTILS_SUCCESS;
 			}
 		}
 	}
@@ -522,10 +712,12 @@ size_t c_utils_linear_int64_t_search(const c_utils_int64_t *const array, const s
 }
 #endif
 
-size_t c_utils_linear_float32_t_search(const c_utils_float32_t *const array, const size_t count, const c_utils_float32_t target)
+c_utils_int16_t c_utils_linear_float32_t_search(const c_utils_float32_t *const array, const size_t count, const c_utils_float32_t target, size_t *const position)
 {
-	if(!array)
+	if(!array || !position)
 	{
+		fprintf(stderr, "Error in function c_utils_linear_float32_t_search (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
 		return C_UTILS_FAILURE;
 	}
 
@@ -539,7 +731,9 @@ size_t c_utils_linear_float32_t_search(const c_utils_float32_t *const array, con
 
 			if((difference < 0.0f ? -difference : difference) < 10 * FLT_EPSILON)
 			{
-				return index;
+				*position = index;
+
+				return C_UTILS_SUCCESS;
 			}
 		}
 	}
@@ -547,10 +741,12 @@ size_t c_utils_linear_float32_t_search(const c_utils_float32_t *const array, con
 	return C_UTILS_FAILURE;
 }
 
-size_t c_utils_linear_float64_t_search(const c_utils_float64_t *const array, const size_t count, const c_utils_float64_t target)
+c_utils_int16_t c_utils_linear_float64_t_search(const c_utils_float64_t *const array, const size_t count, const c_utils_float64_t target, size_t *const position)
 {
-	if(!array)
+	if(!array || !position)
 	{
+		fprintf(stderr, "Error in function c_utils_linear_float64_t_search (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
 		return C_UTILS_FAILURE;
 	}
 
@@ -564,7 +760,9 @@ size_t c_utils_linear_float64_t_search(const c_utils_float64_t *const array, con
 
 			if((difference < 0.0 ? -difference : difference) < 10 * DBL_EPSILON)
 			{
-				return index;
+				*position = index;
+
+				return C_UTILS_SUCCESS;
 			}
 		}
 	}
@@ -572,10 +770,12 @@ size_t c_utils_linear_float64_t_search(const c_utils_float64_t *const array, con
 	return C_UTILS_FAILURE;
 }
 
-size_t c_utils_linear_char_t_array_search(const c_utils_char_t *const *const array, const size_t count, const c_utils_char_t *const target)
+c_utils_int16_t c_utils_linear_char_t_array_search(const c_utils_char_t *const *const array, const size_t count, const c_utils_char_t *const target, size_t *const position)
 {
-	if(!array || !target)
+	if(!array || !target || !position)
 	{
+		fprintf(stderr, "Error in function c_utils_linear_char_t_array_search (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
 		return C_UTILS_FAILURE;
 	}
 
@@ -587,7 +787,9 @@ size_t c_utils_linear_char_t_array_search(const c_utils_char_t *const *const arr
 		{
 			if(!strcmp(*(array + index), target))
 			{
-				return index;
+				*position = index;
+
+				return C_UTILS_SUCCESS;
 			}
 		}
 	}
@@ -639,6 +841,8 @@ const c_utils_char_t *c_utils_verify_os(void)
 #else
 	return "Apple (unknown OS)";
 #endif
+#elif defined(__XTENSA__)
+	return "Xtensa";
 #else
 	return "Unknown OS";
 #endif
@@ -646,27 +850,32 @@ const c_utils_char_t *c_utils_verify_os(void)
 
 c_utils_char_t *c_utils_read_file(const c_utils_char_t *const path)
 {
-	FILE *file;
-
-	if(!(file = fopen(path, "rb")))
+	if(!path)
 	{
+		fprintf(stderr, "Error in function c_utils_read_file (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
 		return (void *)0;
+	}
+
+	if(c_utils_is_initialized == 0)
+	{
+		fprintf(stderr, "Error in function c_utils_read_file, C-Utils not initialized (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		return (void *)0;	
 	}
 
 	else
 	{
-		if(fseek(file, 0L, SEEK_END) != 0)
-		{
-			fclose(file);
+		FILE *file;
 
+		if(!(file = fopen(path, "rb")))
+		{
 			return (void *)0;
 		}
 
 		else
 		{
-			const c_utils_int32_t size = (c_utils_int32_t)ftell(file);
-
-			if(size < 0L)
+			if(fseek(file, 0L, SEEK_END) != 0)
 			{
 				fclose(file);
 
@@ -675,47 +884,55 @@ c_utils_char_t *c_utils_read_file(const c_utils_char_t *const path)
 
 			else
 			{
-				c_utils_char_t *const buffer = (c_utils_char_t *const)malloc((size_t)size + 1U);
+				const signed long int size = ftell(file);
 
-				if(buffer == (void *)0)
+				if(size < 0L)
 				{
 					fclose(file);
 
 					return (void *)0;
 				}
 
-				rewind(file);
-
-				if(fread(buffer, 1U, (size_t)size, file) != (size_t)size)
+				else
 				{
-					free(buffer);
+					c_utils_char_t *buffer = (c_utils_char_t *)malloc((size_t)size + 1U);
+
+					if(buffer == (void *)0)
+					{
+						fclose(file);
+
+						return (void *)0;
+					}
+
+					rewind(file);
+
+					if(fread(buffer, 1U, (size_t)size, file) != (size_t)size)
+					{
+						free(buffer);
+						fclose(file);
+
+						return (void *)0;
+					}
+
+					*(buffer + size) = '\0';
+
 					fclose(file);
 
-					return (void *)0;
+					if(c_utils_regist_address_to_free((void *)buffer))
+					{
+						free((void *)buffer);
+						buffer = (void *)0;
+
+						fprintf(stderr, "Error in function c_utils_regist_address_to_free (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+						return (void *)0;
+					}
+
+					return buffer;
 				}
-
-				*(buffer + size) = '\0';
-
-				fclose(file);
-
-				return buffer;
 			}
 		}
 	}
-}
-
-struct tm c_utils_current_time(void)
-{
-	struct tm result;
-	const time_t now = time((void *)0);
-
-#if defined(_WIN32) || defined(_WIN64)
-	localtime_s(&result, &now);
-#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
-	localtime_r(&now, &result);
-#endif
-
-	return result;
 }
 
 /* End C to C++ importation: */
