@@ -9,12 +9,12 @@ extern "C"
 #endif
 
 /* Temperature limits: */
-const c_utils_float32_t C_UTILS_MINIMUM_CELSIUS_FLOAT32    = -273.15f;
-const c_utils_float32_t C_UTILS_MINIMUM_FAHRENHEIT_FLOAT32 = -459.67f;
-const c_utils_float32_t C_UTILS_MINIMUM_KELVIN_FLOAT32     =    0.0f ;
-const c_utils_float64_t C_UTILS_MINIMUM_CELSIUS_FLOAT64    = -273.15 ;
-const c_utils_float64_t C_UTILS_MINIMUM_FAHRENHEIT_FLOAT64 = -459.67 ;
-const c_utils_float64_t C_UTILS_MINIMUM_KELVIN_FLOAT64     =    0.0  ;
+const c_utils_float32_t C_UTILS_MIN_CELSIUS_FLOAT32    = -273.15f;
+const c_utils_float32_t C_UTILS_MIN_FAHRENHEIT_FLOAT32 = -459.67f;
+const c_utils_float32_t C_UTILS_MIN_KELVIN_FLOAT32     =    0.0f ;
+const c_utils_float64_t C_UTILS_MIN_CELSIUS_FLOAT64    = -273.15 ;
+const c_utils_float64_t C_UTILS_MIN_FAHRENHEIT_FLOAT64 = -459.67 ;
+const c_utils_float64_t C_UTILS_MIN_KELVIN_FLOAT64     =    0.0  ;
 
 c_utils_float32_t c_utils_kelvin_to_celsius_float(const c_utils_float32_t kelvin_value)
 {

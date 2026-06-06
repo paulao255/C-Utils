@@ -7,14 +7,15 @@
 
 
 /* C-Utils image structure type: */
-typedef struct c_utils_image
+struct c_utils_image
 {
 	c_utils_uint32_t width;
 	c_utils_uint32_t height;
 	c_utils_uint8_t  channels;
 	c_utils_uint8_t *data;
-}
-c_utils_image;
+};
+
+typedef struct c_utils_image c_utils_image;
 
 /* Import C to C++: */
 #ifdef __cplusplus

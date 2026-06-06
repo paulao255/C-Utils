@@ -81,36 +81,36 @@ extern "C"
 #endif
 
 /* Terminal colors: */
-extern const c_utils_char_t *const C_UTILS_BASE_TERMINAL     ; /* Reset terminal text constant.                   */
-extern const c_utils_char_t *const C_UTILS_BOLD              ; /* Bold terminal text constant.                    */
-extern const c_utils_char_t *const C_UTILS_BASE_TERMINAL_BOLD; /* Reset and bold terminal text constant.          */
-extern const c_utils_char_t *const C_UTILS_ITALIC            ; /* Italic terminal text constant.                  */
-extern const c_utils_char_t *const C_UTILS_UNDERLINE         ; /* Underline terminal text constant.               */
-extern const c_utils_char_t *const C_UTILS_BLACK_COLOR       ; /* Black terminal text constant.                   */
-extern const c_utils_char_t *const C_UTILS_RED_COLOR         ; /* Red terminal text constant.                     */
-extern const c_utils_char_t *const C_UTILS_GREEN_COLOR       ; /* Green terminal text constant.                   */
-extern const c_utils_char_t *const C_UTILS_YELLOW_COLOR      ; /* Yellow terminal text constant.                  */
-extern const c_utils_char_t *const C_UTILS_BLUE_COLOR        ; /* Blue terminal text constant.                    */
-extern const c_utils_char_t *const C_UTILS_MAGENTA_COLOR     ; /* Magenta terminal text constant.                 */
-extern const c_utils_char_t *const C_UTILS_CYAN_COLOR        ; /* Cyan terminal text constant.                    */
-extern const c_utils_char_t *const C_UTILS_WHITE_COLOR       ; /* White terminal text constant.                   */
+extern const c_utils_char_t *const C_UTILS_BASE_TERMINAL         ; /* Reset terminal text constant.                   */
+extern const c_utils_char_t *const C_UTILS_BOLD_TERMINAL         ; /* Bold terminal text constant.                    */
+extern const c_utils_char_t *const C_UTILS_BASE_BOLD_TERMINAL    ; /* Reset and bold terminal text constant.          */
+extern const c_utils_char_t *const C_UTILS_ITALIC_TERMINAL       ; /* Italic terminal text constant.                  */
+extern const c_utils_char_t *const C_UTILS_UNDERLINE_TERMINAL    ; /* Underline terminal text constant.               */
+extern const c_utils_char_t *const C_UTILS_FOREGROUND_BLACK_CLR  ; /* Black terminal text constant.                   */
+extern const c_utils_char_t *const C_UTILS_FOREGROUND_RED_CLR    ; /* Red terminal text constant.                     */
+extern const c_utils_char_t *const C_UTILS_FOREGROUND_GREEN_CLR  ; /* Green terminal text constant.                   */
+extern const c_utils_char_t *const C_UTILS_FOREGROUND_YELLOW_CLR ; /* Yellow terminal text constant.                  */
+extern const c_utils_char_t *const C_UTILS_FOREGROUND_BLUE_CLR   ; /* Blue terminal text constant.                    */
+extern const c_utils_char_t *const C_UTILS_FOREGROUND_MAGENTA_CLR; /* Magenta terminal text constant.                 */
+extern const c_utils_char_t *const C_UTILS_FOREGROUND_CYAN_CLR   ; /* Cyan terminal text constant.                    */
+extern const c_utils_char_t *const C_UTILS_FOREGROUND_WHITE_CLR  ; /* White terminal text constant.                   */
 
 /* C Utils errors handlers. */
-extern const c_utils_int16_t C_UTILS_SUCCESS       ; /* C-Utils success constant.                       */
-extern const c_utils_int16_t C_UTILS_FAILURE       ; /* C-Utils failure constant.                       */
+extern const c_utils_int16_t C_UTILS_SUCCESS                     ; /* C-Utils success constant.                       */
+extern const c_utils_int16_t C_UTILS_FAILURE                     ; /* C-Utils failure constant.                       */
 
 /* Recommended precision value: */
-extern const signed int C_UTILS_MIN_RPV            ; /* Minimum recommended precision value constant.   */
-extern const signed int C_UTILS_MAX_RPV            ; /* Maximum recommended precision value constant.   */
+extern const signed int C_UTILS_MIN_RPV                          ; /* Minimum recommended precision value constant.   */
+extern const signed int C_UTILS_MAX_RPV                          ; /* Maximum recommended precision value constant.   */
 
 /* Standardization: */
-extern const c_utils_int32_t C_UTILS_MACHINE_BITS  ; /* Machine bits constant.                          */
+extern const c_utils_int32_t C_UTILS_MACHINE_BITS                ; /* Machine bits constant.                          */
 
 /* C-Utils version variables: */
-extern const c_utils_int32_t C_UTILS_FULL_VERSION  ; /* C Utils full version constant.                  */
-extern const c_utils_int32_t C_UTILS_MAJOR_VERSION ; /* C Utils major version constant.                 */
-extern const c_utils_int32_t C_UTILS_MINOR_VERSION ; /* C Utils minor version constant.                 */
-extern const c_utils_int32_t C_UTILS_PATCH_VERSION ; /* C Utils patch version constant.                 */
+extern const c_utils_int32_t C_UTILS_FULL_VERSION                ; /* C Utils full version constant.                  */
+extern const c_utils_int32_t C_UTILS_MAJOR_VERSION               ; /* C Utils major version constant.                 */
+extern const c_utils_int32_t C_UTILS_MINOR_VERSION               ; /* C Utils minor version constant.                 */
+extern const c_utils_int32_t C_UTILS_PATCH_VERSION               ; /* C Utils patch version constant.                 */
 
 /* End importation: */
 #ifdef __cplusplus

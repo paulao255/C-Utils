@@ -1,5 +1,7 @@
 /* Importations: */
 #include "c-utils.h"
+#include "definitions.h"
+#include <errno.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -26,7 +28,7 @@
 #endif
 
 /* Global static variables: */
-void **c_utils_addresses_to_free = (void *)0;
+void **c_utils_addresses_to_free = (void **)0;
 c_utils_int8_t c_utils_is_initialized = 0;
 c_utils_uint32_t c_utils_addresses_to_free_count = 0u;
 c_utils_uint32_t c_utils_addresses_to_free_cap = 0u;
@@ -36,29 +38,6 @@ c_utils_uint32_t c_utils_addresses_to_free_cap = 0u;
 extern "C"
 {
 #endif
-
-static void c_utils_terminate(void)
-{
-	c_utils_uint32_t index;
-
-	for(index = 0u; index < c_utils_addresses_to_free_count; index++)
-	{
-		if(*(c_utils_addresses_to_free + index))
-		{
-			free(*(c_utils_addresses_to_free + index));
-			*(c_utils_addresses_to_free + index) = (void *)0;
-		}
-	}
-
-	free(c_utils_addresses_to_free);
-
-	c_utils_addresses_to_free = (void *)0;
-	c_utils_addresses_to_free_count = 0u;
-	c_utils_addresses_to_free_cap = 0u;
-	c_utils_is_initialized = 0;
-
-	return;
-}
 
 void c_utils_clear_standard_output(void)
 {
@@ -70,13 +49,14 @@ void c_utils_clear_standard_output(void)
 
 static c_utils_int16_t c_utils_enable_virtual_terminal_and_utf8(void)
 {
-	HANDLE hOut;
+	HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
 	DWORD mode;
 
-	hOut = GetStdHandle(STD_OUTPUT_HANDLE);
-
-	if(hOut == INVALID_HANDLE_VALUE)
+	if(hOut == INVALID_HANDLE_VALUE || hOut == (HANDLE)0)
 	{
+		fprintf(stderr, "Error in function GetStdHandle (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		perror("Error");
+
 		return C_UTILS_FAILURE;
 	}
 
@@ -113,7 +93,7 @@ static c_utils_int16_t c_utils_enable_virtual_terminal_and_utf8(void)
 
 c_utils_int16_t c_utils_get_current_time(struct tm *const time_struct)
 {
-	if(!time_struct)
+	if(time_struct == (struct tm *)0)
 	{
 		fprintf(stderr, "Error in function c_utils_get_current_time (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
@@ -122,7 +102,7 @@ c_utils_int16_t c_utils_get_current_time(struct tm *const time_struct)
 
 	else
 	{
-		const time_t now = time((void *)0);
+		const time_t now = time((time_t *)0);
 
 		if(now == (time_t)-1)
 		{
@@ -141,7 +121,7 @@ c_utils_int16_t c_utils_get_current_time(struct tm *const time_struct)
 				return C_UTILS_FAILURE;
 			}
 #elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
-			if(localtime_r(&now, time_struct) == (void *)0)
+			if(localtime_r(&now, time_struct) == (struct tm *)0)
 			{
 				fprintf(stderr, "Error in function localtime_r (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
@@ -150,7 +130,7 @@ c_utils_int16_t c_utils_get_current_time(struct tm *const time_struct)
 #else
 			const struct tm *const result = localtime(&now);
 
-			if(!result)
+			if(result == (const struct tm *const)0)
 			{
 				fprintf(stderr, "Error in function localtime (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
@@ -169,11 +149,22 @@ c_utils_int16_t c_utils_validate_date(const c_utils_int32_t year, const c_utils_
 {
 	if(year < 1L)
 	{
+		fprintf(stderr, "Error in function c_utils_validate_date (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
 		return C_UTILS_FAILURE;
 	}
 
 	if(month < 1L || month > 12L)
 	{
+		fprintf(stderr, "Error in function c_utils_validate_date (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		return C_UTILS_FAILURE;
+	}
+
+	if(day < 1L || day > 31L)
+	{
+		fprintf(stderr, "Error in function c_utils_validate_date (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
 		return C_UTILS_FAILURE;
 	}
 
@@ -205,10 +196,10 @@ c_utils_int16_t c_utils_validate_date(const c_utils_int32_t year, const c_utils_
 
 		if((year % 4L == 0L && year % 100L != 0L) || (year % 400L == 0L))
 		{
-			*(days_in_month + 1) = 29;
+			days_in_month[1] = 29;
 		}
 
-		if(day < 1L || day > (c_utils_int32_t)*(days_in_month + month - 1L))
+		if(day > (c_utils_int32_t)days_in_month[month - 1L])
 		{
 			return C_UTILS_FAILURE;
 		}
@@ -226,11 +217,22 @@ c_utils_int16_t c_utils_validate_date_future(const c_utils_int32_t year, const c
 {
 	if(year < 1L)
 	{
+		fprintf(stderr, "Error in function c_utils_validate_date_future (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
 		return C_UTILS_FAILURE;
 	}
 
 	if(month < 1L || month > 12L)
 	{
+		fprintf(stderr, "Error in function c_utils_validate_date_future (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		return C_UTILS_FAILURE;
+	}
+
+	if(day < 1L || day > 31L)
+	{
+		fprintf(stderr, "Error in function c_utils_validate_date_future (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
 		return C_UTILS_FAILURE;
 	}
 
@@ -254,10 +256,10 @@ c_utils_int16_t c_utils_validate_date_future(const c_utils_int32_t year, const c
 
 		if((year % 4L == 0L && year % 100L != 0L) || (year % 400L == 0L))
 		{
-			*(days_in_month + 1) = 29;
+			days_in_month[1] = 29;
 		}
 
-		if(day < 1L || day > (c_utils_int32_t)*(days_in_month + month - 1L))
+		if(day > (c_utils_int32_t)days_in_month[month - 1L])
 		{
 			return C_UTILS_FAILURE;
 		}
@@ -282,7 +284,7 @@ c_utils_int16_t c_utils_initialize(void)
 {
 	if(c_utils_is_initialized != 0)
 	{
-		fputs("Error in function c_utils_is_initialized, double call...\n", stderr);
+		fputs("Error in function c_utils_initialize, double call, C-Utils may be already initialized...\n", stderr);
 
 		return C_UTILS_FAILURE;
 	}
@@ -290,18 +292,37 @@ c_utils_int16_t c_utils_initialize(void)
 #if defined(_WIN32) || defined(_WIN64)
 	if(c_utils_enable_virtual_terminal_and_utf8() != C_UTILS_SUCCESS)
 	{
+		fprintf(stderr, "Error in function c_utils_enable_virtual_terminal_and_utf8 (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
 		return C_UTILS_FAILURE;
 	}
 
 #endif
-	if(atexit(c_utils_terminate) != 0)
-	{
-		fprintf(stderr, "Error in function atexit (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-
-		return C_UTILS_FAILURE;
-	}
 
 	c_utils_is_initialized = 1;
+
+	return C_UTILS_SUCCESS;
+}
+
+c_utils_int16_t c_utils_terminate(void)
+{
+	c_utils_uint32_t index;
+
+	for(index = 0u; index < c_utils_addresses_to_free_count; index++)
+	{
+		if(c_utils_addresses_to_free[index] != (void *)0)
+		{
+			free(c_utils_addresses_to_free[index]);
+			c_utils_addresses_to_free[index] = (void *)0;
+		}
+	}
+
+	free(c_utils_addresses_to_free);
+
+	c_utils_addresses_to_free = (void **)0;
+	c_utils_addresses_to_free_count = 0u;
+	c_utils_addresses_to_free_cap = 0u;
+	c_utils_is_initialized = 0;
 
 	return C_UTILS_SUCCESS;
 }
@@ -315,7 +336,7 @@ c_utils_int16_t c_utils_regist_address_to_free(void *const address)
 		return C_UTILS_FAILURE;
 	}
 
-	if(!c_utils_is_initialized)
+	if(c_utils_is_initialized == 0)
 	{
 		fprintf(stderr, "Error in function c_utils_regist_address_to_free (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
@@ -328,7 +349,7 @@ c_utils_int16_t c_utils_regist_address_to_free(void *const address)
 
 		for(index = 0u; index < c_utils_addresses_to_free_count; index++)
 		{
-			if(*(c_utils_addresses_to_free + index) == address)
+			if(c_utils_addresses_to_free[index] == address)
 			{
 				fprintf(stderr, "Error in function c_utils_regist_address_to_free (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
@@ -338,19 +359,34 @@ c_utils_int16_t c_utils_regist_address_to_free(void *const address)
 
 		if(c_utils_addresses_to_free_count >= c_utils_addresses_to_free_cap)
 		{
-			c_utils_uint32_t new_cap = (c_utils_addresses_to_free_cap == 0u) ? 8u : c_utils_addresses_to_free_cap * 2u;
-			void **new_block = (void **)realloc(c_utils_addresses_to_free, (size_t)new_cap * sizeof(void *));
-
-			if(!new_block)
+			if(c_utils_addresses_to_free_cap > ((c_utils_uint32_t)0xFFFFFFFFU >> 1))
 			{
+				fprintf(stderr, "Error in function c_utils_regist_address_to_free (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
 				return C_UTILS_FAILURE;
 			}
 
-			c_utils_addresses_to_free = new_block;
-			c_utils_addresses_to_free_cap = new_cap;
+			else
+			{
+				c_utils_uint32_t new_cap = (c_utils_addresses_to_free_cap == 0u) ? 8u : (c_utils_addresses_to_free_cap << 1);
+				void **new_block = (void **)realloc(c_utils_addresses_to_free, (size_t)new_cap * sizeof(void *));
+
+				if(new_block == (void **)0)
+				{
+					fprintf(stderr, "Error in function c_utils_regist_address_to_free (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+					return C_UTILS_FAILURE;
+				}
+
+				else
+				{
+					c_utils_addresses_to_free = new_block;
+					c_utils_addresses_to_free_cap = new_cap;
+				}
+			}
 		}
 
-		*(c_utils_addresses_to_free + c_utils_addresses_to_free_count) = address;
+		c_utils_addresses_to_free[c_utils_addresses_to_free_count] = address;
 		c_utils_addresses_to_free_count++;
 	}
 
@@ -361,14 +397,14 @@ c_utils_int16_t c_utils_scan_enter(void)
 {
 	if(c_utils_clear_standard_input() != C_UTILS_SUCCESS)
 	{
-		fputs("Error in function c_utils_clear_standard_input...\n", stderr);
+		fprintf(stderr, "Error in function c_utils_scan_enter (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
 		return C_UTILS_FAILURE;
 	}
 
 	if(getchar() == EOF)
 	{
-		fputs("Error in function getchar (End Of File)...\n", stderr);
+		fprintf(stderr, "Error in function c_utils_scan_enter (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
 		return C_UTILS_FAILURE;
 	}
@@ -378,7 +414,7 @@ c_utils_int16_t c_utils_scan_enter(void)
 
 c_utils_int16_t c_utils_url_opener(const c_utils_char_t *const url)
 {
-	if(url == (void *)0)
+	if(url == (const c_utils_char_t *)0)
 	{
 		return C_UTILS_FAILURE;
 	}
@@ -401,21 +437,20 @@ c_utils_int16_t c_utils_url_opener(const c_utils_char_t *const url)
 		{
 			const c_utils_char_t *arguments[3];
 
+			arguments[1] = url;
+			arguments[2] = (char *)0;
+
 #if defined(__linux__) || defined(__ANDROID__)
-			*arguments = "xdg-open";
-			*(arguments + 1) = url;
-			*(arguments + 2) = (void *)0;
+			arguments[0] = "xdg-open";
 			execv("/usr/bin/xdg-open", (c_utils_char_t *const *)arguments);
 #elif defined(__APPLE__)
-			*arguments = "open";
-			*(arguments + 1) = url;
-			*(arguments + 2) = (void *)0;
+			arguments[0] = "open";
 			execv("/usr/bin/open", (c_utils_char_t *const *)arguments);
 #endif
 			_exit(1);
 		}
 
-		waitpid(pid, (void *)0, 0);
+		waitpid(pid, (int *)0, 0);
 
 #endif
 		return C_UTILS_SUCCESS;
@@ -454,8 +489,10 @@ c_utils_int16_t c_utils_ssleep(const c_utils_uint32_t time)
 
 c_utils_int16_t c_utils_mssleep(const c_utils_uint32_t time)
 {
-	if(time == 0UL)
+	if(time < 1UL || time > 999UL)
 	{
+		fprintf(stderr, "Error in function c_utils_mssleep, value must be between 0 and 999 (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
 		return C_UTILS_FAILURE;
 	}
 
@@ -463,14 +500,9 @@ c_utils_int16_t c_utils_mssleep(const c_utils_uint32_t time)
 	Sleep((DWORD)time);
 
 #elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
-	if(time > 4294967295 / 1000)
+	if(usleep((useconds_t)(time * 1000)) == -1)
 	{
-		return C_UTILS_FAILURE;
-	}
-
-	if(usleep(time * 1000) == -1)
-	{
-		fputs("Sleep failed...\n", stderr);
+		fprintf(stderr, "Error in function usleep (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 		perror("Error");
 
 		return C_UTILS_FAILURE;
@@ -484,7 +516,7 @@ c_utils_int16_t c_utils_mssleep(const c_utils_uint32_t time)
 
 c_utils_int16_t c_utils_make_directory(const c_utils_char_t *const path, c_utils_uint32_t mode)
 {
-	if(path == (void *)0)
+	if(path == (const c_utils_char_t *)0)
 	{
 		fprintf(stderr, "Error in function c_utils_make_directory (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
@@ -504,9 +536,9 @@ c_utils_int16_t c_utils_make_directory(const c_utils_char_t *const path, c_utils
 			return C_UTILS_FAILURE;
 		}
 #elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
-		if(!mode)
+		if(mode == 0UL)
 		{
-			mode = 0755L;
+			mode = 0755UL;
 		}
 
 		if(mkdir(path, (mode_t)mode) != 0)
@@ -544,8 +576,8 @@ signed int c_utils_scan_character(void)
 		struct termios new_terminal = old_terminal;
 
 		new_terminal.c_lflag &= (tcflag_t) ~(ICANON | ECHO);
-		*(new_terminal.c_cc + VMIN) = 1;
-		*(new_terminal.c_cc + VTIME) = 0;
+		new_terminal.c_cc[VMIN] = 1;
+		new_terminal.c_cc[VTIME] = 0;
 
 		if(tcsetattr(STDIN_FILENO, TCSANOW, &new_terminal) == -1)
 		{
@@ -583,7 +615,7 @@ signed int c_utils_scan_character(void)
 
 			else
 			{
-				signed int character = (c_utils_char_t)keyword;
+				signed int character = (c_utils_uint8_t)keyword;
 
 				if(tcsetattr(STDIN_FILENO, TCSANOW, &old_terminal) == -1)
 				{
@@ -599,202 +631,240 @@ signed int c_utils_scan_character(void)
 #endif
 }
 
-c_utils_int16_t c_utils_linear_char_t_search(const c_utils_char_t *const array, const size_t count, const c_utils_char_t target, size_t *const position)
+void *c_utils_memory_allocate(const size_t size)
 {
-	if(!array || !position)
+	if(size == 0u)
 	{
-		fprintf(stderr, "Error in function c_utils_linear_char_t_search (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		fprintf(stderr, "Error in function c_utils_memory_allocate (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
-		return C_UTILS_FAILURE;
+		return (void *)0;
 	}
 
 	else
 	{
-		size_t index;
+		void *pointer = malloc(size);
 
-		for(index = 0U; index < count; index++)
+		if(pointer == (void *)0)
 		{
-			if(*(array + index) == target)
-			{
-				*position = index;
+			fprintf(stderr, "Error in function c_utils_memory_allocate (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		}
 
-				return C_UTILS_SUCCESS;
+		else
+		{
+			if(c_utils_regist_address_to_free(pointer) != C_UTILS_SUCCESS)
+			{
+				fprintf(stderr, "Error in function c_utils_memory_allocate (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+				free(pointer);
+
+				pointer = (void *)0;
 			}
 		}
-	}
 
-	return C_UTILS_FAILURE;
+		return pointer;
+	}
 }
 
-c_utils_int16_t c_utils_linear_int16_t_search(const c_utils_int16_t *const array, const size_t count, const c_utils_int16_t target, size_t *const position)
+void *c_utils_memory_reallocate(void *const old_pointer, const size_t size)
 {
-	if(!array || !position)
+	if(size == 0u)
 	{
-		fprintf(stderr, "Error in function c_utils_linear_int16_t_search (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		fprintf(stderr, "Error in function c_utils_memory_reallocate (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
-		return C_UTILS_FAILURE;
+		return ((void *)0);
+	}
+
+	if(old_pointer == (void *)0)
+	{
+		fprintf(stderr, "Error in function c_utils_memory_reallocate (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		return ((void *)0);
 	}
 
 	else
 	{
-		size_t index;
+		size_t saved_address  = (size_t)old_pointer;
+		void *const new_pointer = realloc(old_pointer, size);
 
-		for(index = 0U; index < count; index++)
+		if(new_pointer == (void *)0)
 		{
-			if(*(array + index) == target)
-			{
-				*position = index;
+			fprintf(stderr, "Error in function c_utils_memory_reallocate (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
-				return C_UTILS_SUCCESS;
+			return ((void *)0);
+		}
+
+		if(new_pointer == (void *)saved_address)
+		{
+			return new_pointer;
+		}
+
+		else
+		{
+			c_utils_uint32_t index;
+
+			for(index = 0u; index < c_utils_addresses_to_free_count; index++)
+			{
+				if((size_t)c_utils_addresses_to_free[index] == saved_address)
+				{
+					c_utils_addresses_to_free[index] = new_pointer;
+					return new_pointer;
+				}
+			}
+
+			if(c_utils_regist_address_to_free(new_pointer) != C_UTILS_SUCCESS)
+			{
+				fprintf(stderr, "Error in function c_utils_memory_reallocate (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+				free(new_pointer);
+
+				return (void *)0;
 			}
 		}
-	}
 
-	return C_UTILS_FAILURE;
+		return new_pointer;
+	}
 }
 
-c_utils_int16_t c_utils_linear_int32_t_search(const c_utils_int32_t *const array, const size_t count, const c_utils_int32_t target, size_t *const position)
+const c_utils_char_t *c_utils_read_file(const c_utils_char_t *const path)
 {
-	if(!array || !position)
+	if(!path)
 	{
-		fprintf(stderr, "Error in function c_utils_linear_int32_t_search (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		fprintf(stderr, "Error in function c_utils_read_file, invalid path (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
-		return C_UTILS_FAILURE;
+		return (c_utils_char_t *)0;
+	}
+
+	if(c_utils_is_initialized == 0)
+	{
+		fprintf(stderr, "Error in function c_utils_read_file, C-Utils not initialized (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		return (c_utils_char_t *)0;
 	}
 
 	else
 	{
-		size_t index;
+		FILE *file = fopen(path, "rb");
 
-		for(index = 0U; index < count; index++)
+		if(!file)
 		{
-			if(*(array + index) == target)
-			{
-				*position = index;
+			int error = errno;
 
-				return C_UTILS_SUCCESS;
+			if(error == ENOENT)
+			{
+				fprintf(stderr, "Error in function c_utils_read_file, file not found (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+			}
+
+			else if(error == EACCES)
+			{
+				fprintf(stderr, "Error in function c_utils_read_file, permission denied (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+			}
+
+			else
+			{
+				fprintf(stderr, "Error in function c_utils_read_file (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+				perror("Error");
+			}
+
+			return (c_utils_char_t *)0;
+		}
+
+		else
+		{
+			if(fseek(file, 0L, SEEK_END) != 0)
+			{
+				fprintf(stderr, "Error in function fseek (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+				if(fclose(file) != 0)
+				{
+					fprintf(stderr, "Error in function fclose (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+					perror("Error");
+				}
+
+				return (c_utils_char_t *)0;
+			}
+
+			else
+			{
+				const signed long int size = ftell(file);
+
+				if(size < 0L)
+				{
+					if(fclose(file) != 0)
+					{
+						fprintf(stderr, "Error in function fclose (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+						perror("Error");
+					}
+
+					return (c_utils_char_t *)0;
+				}
+
+				else
+				{
+					c_utils_char_t *buffer = (c_utils_char_t *)malloc((size_t)size + 1U);
+
+					if(buffer == (c_utils_char_t *)0)
+					{
+						if(fclose(file) != 0)
+						{
+							fprintf(stderr, "Error in function fclose (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+							perror("Error");
+						}
+
+						return (c_utils_char_t *)0;
+					}
+
+					if(fseek(file, 0L, SEEK_SET) != 0)
+					{
+						fprintf(stderr, "Error in function fseek (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+						free(buffer);
+
+						if(fclose(file) != 0)
+						{
+							fprintf(stderr, "Error in function fclose (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+							perror("Error");
+						}
+
+						return (c_utils_char_t *)0;
+					}
+
+					clearerr(file);
+
+					if(fread(buffer, 1U, (size_t)size, file) != (size_t)size)
+					{
+						free(buffer);
+
+						if(fclose(file) != 0)
+						{
+							fprintf(stderr, "Error in function fclose (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+							perror("Error");
+						}
+
+						return (c_utils_char_t *)0;
+					}
+
+					buffer[size] = '\0';
+
+					if(fclose(file) != 0)
+					{
+						fprintf(stderr, "Error in function fclose (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+						perror("Error");
+					}
+
+					if(c_utils_regist_address_to_free((void *)buffer) != C_UTILS_SUCCESS)
+					{
+						free((void *)buffer);
+						buffer = (c_utils_char_t *)0;
+
+						fprintf(stderr, "Error in function c_utils_regist_address_to_free (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+						return (c_utils_char_t *)0;
+					}
+
+					return buffer;
+				}
 			}
 		}
 	}
-
-	return C_UTILS_FAILURE;
-}
-
-#if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) || \
-    (defined(__cplusplus) && __cplusplus >= 201103L) || \
-    defined(C_UTILS_ENABLE_LONG_LONG_INT) || \
-    defined(C_UTILS_ENABLE_ALL_EXTENSIONS)
-c_utils_int16_t c_utils_linear_int64_t_search(const c_utils_int64_t *const array, const size_t count, const c_utils_int64_t target, size_t *const position)
-{
-	if(!array || !position)
-	{
-		fprintf(stderr, "Error in function c_utils_linear_int64_t_search (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-
-		return C_UTILS_FAILURE;
-	}
-
-	else
-	{
-		size_t index;
-
-		for(index = 0U; index < count; index++)
-		{
-			if(*(array + index) == target)
-			{
-				*position = index;
-
-				return C_UTILS_SUCCESS;
-			}
-		}
-	}
-
-	return C_UTILS_FAILURE;
-}
-#endif
-
-c_utils_int16_t c_utils_linear_float32_t_search(const c_utils_float32_t *const array, const size_t count, const c_utils_float32_t target, size_t *const position)
-{
-	if(!array || !position)
-	{
-		fprintf(stderr, "Error in function c_utils_linear_float32_t_search (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-
-		return C_UTILS_FAILURE;
-	}
-
-	else
-	{
-		size_t index;
-
-		for(index = 0U; index < count; index++)
-		{
-			const c_utils_float32_t difference = *(array + index) - target;
-
-			if((difference < 0.0f ? -difference : difference) < 10 * FLT_EPSILON)
-			{
-				*position = index;
-
-				return C_UTILS_SUCCESS;
-			}
-		}
-	}
-
-	return C_UTILS_FAILURE;
-}
-
-c_utils_int16_t c_utils_linear_float64_t_search(const c_utils_float64_t *const array, const size_t count, const c_utils_float64_t target, size_t *const position)
-{
-	if(!array || !position)
-	{
-		fprintf(stderr, "Error in function c_utils_linear_float64_t_search (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-
-		return C_UTILS_FAILURE;
-	}
-
-	else
-	{
-		size_t index;
-
-		for(index = 0U; index < count; index++)
-		{
-			const c_utils_float64_t difference = *(array + index) - target;
-
-			if((difference < 0.0 ? -difference : difference) < 10 * DBL_EPSILON)
-			{
-				*position = index;
-
-				return C_UTILS_SUCCESS;
-			}
-		}
-	}
-
-	return C_UTILS_FAILURE;
-}
-
-c_utils_int16_t c_utils_linear_char_t_array_search(const c_utils_char_t *const *const array, const size_t count, const c_utils_char_t *const target, size_t *const position)
-{
-	if(!array || !target || !position)
-	{
-		fprintf(stderr, "Error in function c_utils_linear_char_t_array_search (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-
-		return C_UTILS_FAILURE;
-	}
-
-	else
-	{
-		size_t index;
-
-		for(index = 0U; index < count; index++)
-		{
-			if(!strcmp(*(array + index), target))
-			{
-				*position = index;
-
-				return C_UTILS_SUCCESS;
-			}
-		}
-	}
-
-	return C_UTILS_FAILURE;
 }
 
 const c_utils_char_t *c_utils_verify_os(void)
@@ -846,93 +916,6 @@ const c_utils_char_t *c_utils_verify_os(void)
 #else
 	return "Unknown OS";
 #endif
-}
-
-c_utils_char_t *c_utils_read_file(const c_utils_char_t *const path)
-{
-	if(!path)
-	{
-		fprintf(stderr, "Error in function c_utils_read_file (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-
-		return (void *)0;
-	}
-
-	if(c_utils_is_initialized == 0)
-	{
-		fprintf(stderr, "Error in function c_utils_read_file, C-Utils not initialized (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-
-		return (void *)0;	
-	}
-
-	else
-	{
-		FILE *file;
-
-		if(!(file = fopen(path, "rb")))
-		{
-			return (void *)0;
-		}
-
-		else
-		{
-			if(fseek(file, 0L, SEEK_END) != 0)
-			{
-				fclose(file);
-
-				return (void *)0;
-			}
-
-			else
-			{
-				const signed long int size = ftell(file);
-
-				if(size < 0L)
-				{
-					fclose(file);
-
-					return (void *)0;
-				}
-
-				else
-				{
-					c_utils_char_t *buffer = (c_utils_char_t *)malloc((size_t)size + 1U);
-
-					if(buffer == (void *)0)
-					{
-						fclose(file);
-
-						return (void *)0;
-					}
-
-					rewind(file);
-
-					if(fread(buffer, 1U, (size_t)size, file) != (size_t)size)
-					{
-						free(buffer);
-						fclose(file);
-
-						return (void *)0;
-					}
-
-					*(buffer + size) = '\0';
-
-					fclose(file);
-
-					if(c_utils_regist_address_to_free((void *)buffer))
-					{
-						free((void *)buffer);
-						buffer = (void *)0;
-
-						fprintf(stderr, "Error in function c_utils_regist_address_to_free (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-
-						return (void *)0;
-					}
-
-					return buffer;
-				}
-			}
-		}
-	}
 }
 
 /* End C to C++ importation: */

@@ -13,12 +13,12 @@ extern "C"
 #endif
 
 /* Temperature limits: */
-extern const c_utils_float32_t C_UTILS_MINIMUM_CELSIUS_FLOAT32   ;                                /* Minimum Celsius temperature constant (in float32_t).                 */
-extern const c_utils_float32_t C_UTILS_MINIMUM_FAHRENHEIT_FLOAT32;                                /* Minimum Fahrenheit temperature constant (in float32_t).              */
-extern const c_utils_float32_t C_UTILS_MINIMUM_KELVIN_FLOAT32    ;                                /* Minimum Kelvin temperature constant (in float32_t).                  */
-extern const c_utils_float64_t C_UTILS_MINIMUM_CELSIUS_FLOAT64   ;                                /* Minimum Celsius temperature constant (in float64_t).                 */
-extern const c_utils_float64_t C_UTILS_MINIMUM_FAHRENHEIT_FLOAT64;                                /* Minimum Fahrenheit temperature constant (in float64_t).              */
-extern const c_utils_float64_t C_UTILS_MINIMUM_KELVIN_FLOAT64    ;                                /* Minimum Kelvin temperature constant (in float64_t).                  */
+extern const c_utils_float32_t C_UTILS_MIN_CELSIUS_FLOAT32   ;                                    /* Minimum Celsius temperature constant (in float32_t).                 */
+extern const c_utils_float32_t C_UTILS_MIN_FAHRENHEIT_FLOAT32;                                    /* Minimum Fahrenheit temperature constant (in float32_t).              */
+extern const c_utils_float32_t C_UTILS_MIN_KELVIN_FLOAT32    ;                                    /* Minimum Kelvin temperature constant (in float32_t).                  */
+extern const c_utils_float64_t C_UTILS_MIN_CELSIUS_FLOAT64   ;                                    /* Minimum Celsius temperature constant (in float64_t).                 */
+extern const c_utils_float64_t C_UTILS_MIN_FAHRENHEIT_FLOAT64;                                    /* Minimum Fahrenheit temperature constant (in float64_t).              */
+extern const c_utils_float64_t C_UTILS_MIN_KELVIN_FLOAT64    ;                                    /* Minimum Kelvin temperature constant (in float64_t).                  */
 
 /* Temperature conversion functions prototypes: */
 c_utils_float32_t c_utils_kelvin_to_celsius_float(const c_utils_float32_t kelvin_value);          /* Function to convert Kelvin to Celsius using a float value.           */
