@@ -1,12 +1,15 @@
 # C-Utils
 
-A C90^ or C++98^ library to make C/C++ more easy to program.
+A C/C++ library to make C/C++ more easy to program, working with C90 and C++98 standards or higher.
 
 Compatible with:
 
-- [x] Windows (x86/64).
-- [x] Linux (x86/64).
+- [x] Windows (x86-64).
+- [x] Linux (x86-64).
 - [x] Mac OS (not tested yet, if you can test it, send an e-mail to **contactpaulao\@gmail.com**).
+- [x] Android NDK/Termux (x86-64, Not tested yet, if you can test it, send an e-mail to **contactpaulao\@gmail.com**).
+- [x] IOS (not tested yet, if you can test it, send an e-mail to **contactpaulao\@gmail.com**).
+- [x] DOS-PC (x80386/i386)Partially works (not tested yet, if you can test it, send an e-mail to **contactpaulao\@gmail.com**).
 
 ## Credits
 

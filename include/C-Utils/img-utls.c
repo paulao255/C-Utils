@@ -1,6 +1,9 @@
-/* Importations: */
+/*************************/
+/* Library importations: */
+/*************************/
+
 #include "c-utils.h"
-#include "image-utils.h"
+#include "img-utls.h"
 #include <png.h>
 #include <jpeglib.h>
 #include <setjmp.h>
@@ -9,6 +12,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+/******************************/
+/* C-Utils JPG error manager: */
+/******************************/
 
 struct c_utils_jpg_error_manager
 {
@@ -18,11 +24,18 @@ struct c_utils_jpg_error_manager
 
 typedef struct c_utils_jpg_error_manager c_utils_jpg_error_manager;
 
+/********************/
 /* Import C to C++: */
+/********************/
+
 #ifdef __cplusplus
 extern "C"
 {
 #endif
+
+/**************************/
+/* Functions definitions: */
+/**************************/
 
 static void c_utils_jpg_error_exit(j_common_ptr cinfo)
 {
@@ -379,12 +392,12 @@ c_utils_int16_t c_utils_load_png(const c_utils_char_t *const filename, struct c_
 							image->height = (c_utils_uint32_t)height;
 							image->channels = channels;
 
-							if(c_utils_regist_address_to_free((void *)image->data) != C_UTILS_SUCCESS)
+							if(c_utils_mem_regist_to_free((void *)image->data) != C_UTILS_SUCCESS)
 							{
 								free((void *)image->data);
 								image->data = (c_utils_uint8_t *)0;
 
-								fprintf(stderr, "Error in function c_utils_regist_address_to_free (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+								fprintf(stderr, "Error in function c_utils_mem_regist_to_free (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
 								return C_UTILS_FAILURE;
 							}
@@ -656,12 +669,12 @@ c_utils_int16_t c_utils_load_jpg(const c_utils_char_t *const filename, struct c_
 				jpeg_finish_decompress(&cinfo);
 				jpeg_destroy_decompress(&cinfo);
 
-				if(c_utils_regist_address_to_free((void *)image->data) != C_UTILS_SUCCESS)
+				if(c_utils_mem_regist_to_free((void *)image->data) != C_UTILS_SUCCESS)
 				{
 					free((void *)image->data);
 					image->data = (c_utils_uint8_t *)0;
 
-					fprintf(stderr, "Error in function c_utils_regist_address_to_free (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+					fprintf(stderr, "Error in function c_utils_mem_regist_to_free (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 					perror("Error");
 
 					if(fclose(fp) != 0)
@@ -748,7 +761,10 @@ c_utils_int16_t c_utils_image_flip_vertical(struct c_utils_image *const image)
 	return C_UTILS_SUCCESS;
 }
 
+/*****************************/
 /* End C to C++ importation: */
+/*****************************/
+
 #ifdef __cplusplus
 }
 #endif
