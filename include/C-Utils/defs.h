@@ -342,17 +342,17 @@ extern const c_utils_uint16_t C_UTILS_MACHINE_BITS;
 /* C-Utils version constants: */
 /******************************/
 
-/* C-Utils full version constant. */
-extern const c_utils_int32_t C_UTILS_FULL_VERSION;
+/* C-Utils version full constant. */
+extern const c_utils_int32_t C_UTILS_VERSION_FULL;
 
-/* C-Utils major version constant. */
-extern const c_utils_int32_t C_UTILS_MAJOR_VERSION;
+/* C-Utils version year constant. */
+extern const c_utils_int32_t C_UTILS_VERSION_YEAR;
 
-/* C-Utils minor version constant. */
-extern const c_utils_int32_t C_UTILS_MINOR_VERSION;
+/* C-Utils version month constant. */
+extern const c_utils_int32_t C_UTILS_VERSION_MONTH;
 
-/* C-Utils patch version constant. */
-extern const c_utils_int32_t C_UTILS_PATCH_VERSION;
+/* C-Utils version day constant. */
+extern const c_utils_int32_t C_UTILS_VERSION_DAY;
 
 /*****************************/
 /* End C to C++ importation: */
