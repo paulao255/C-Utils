@@ -46,14 +46,14 @@ static void c_utils_jpg_error_exit(j_common_ptr cinfo)
 
 c_utils_int16_t c_utils_save_png(const c_utils_char_t *const filename, struct c_utils_image image)
 {
-	if(filename == (const c_utils_char_t *)0)
+	if(filename == (c_utils_char_t *)0)
 	{
 		fprintf(stderr, "Error in function c_utils_save_png filename does not exist (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
 		return C_UTILS_FAILURE;
 	}
 
-	if(image.data == (const c_utils_uint8_t *)0)
+	if(image.data == (c_utils_uint8_t *)0)
 	{
 		fprintf(stderr, "Error in function c_utils_save_png, data does not exist (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
@@ -78,7 +78,7 @@ c_utils_int16_t c_utils_save_png(const c_utils_char_t *const filename, struct c_
 	{
 		FILE *const fp = fopen(filename, "wb");
 
-		if(fp == (const FILE *)0)
+		if(fp == (FILE *)0)
 		{
 			return C_UTILS_FAILURE;
 		}
@@ -195,21 +195,21 @@ c_utils_int16_t c_utils_save_png(const c_utils_char_t *const filename, struct c_
 
 c_utils_int16_t c_utils_load_png(const c_utils_char_t *const filename, struct c_utils_image *const image)
 {
-	if(filename == (const c_utils_char_t *)0)
+	if(filename == (c_utils_char_t *)0)
 	{
 		fprintf(stderr, "Error in function c_utils_load_png (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
 		return C_UTILS_FAILURE;
 	}
 
-	if(image == (const struct c_utils_image *)0)
+	if(image == (struct c_utils_image *)0)
 	{
 		fprintf(stderr, "Error in function c_utils_load_png (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
 		return C_UTILS_FAILURE;
 	}
 
-	if(image->data != (const c_utils_uint8_t *)0)
+	if(image->data != (c_utils_uint8_t *)0)
 	{
 		fprintf(stderr, "Error in function c_utils_load_png (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
@@ -218,7 +218,7 @@ c_utils_int16_t c_utils_load_png(const c_utils_char_t *const filename, struct c_
 
 	else
 	{
-		FILE *fp = fopen(filename, "rb");
+		FILE *const fp = fopen(filename, "rb");
 
 		if(fp == (FILE *)0)
 		{
@@ -413,14 +413,14 @@ c_utils_int16_t c_utils_load_png(const c_utils_char_t *const filename, struct c_
 
 c_utils_int16_t c_utils_save_jpg(const c_utils_char_t *const filename, struct c_utils_image image, c_utils_int8_t quality)
 {
-	if(filename == (const c_utils_char_t *)0)
+	if(filename == (c_utils_char_t *)0)
 	{
 		fprintf(stderr, "Error in function c_utils_save_jpg (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
 		return C_UTILS_FAILURE;
 	}
 
-	if(image.data == (const c_utils_uint8_t *)0)
+	if(image.data == (c_utils_uint8_t *)0)
 	{
 		fprintf(stderr, "Error in function c_utils_save_jpg (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
@@ -443,7 +443,7 @@ c_utils_int16_t c_utils_save_jpg(const c_utils_char_t *const filename, struct c_
 
 	else
 	{
-		FILE *fp = fopen(filename, "wb");
+		FILE *const fp = fopen(filename, "wb");
 
 		if(fp == (FILE *)0)
 		{
@@ -556,7 +556,7 @@ c_utils_int16_t c_utils_save_jpg(const c_utils_char_t *const filename, struct c_
 
 			if(free_rgb)
 			{
-				free(rgb_data);
+				free((void *)rgb_data);
 				rgb_data = (c_utils_uint8_t *)0;
 			}
 
@@ -575,21 +575,21 @@ c_utils_int16_t c_utils_save_jpg(const c_utils_char_t *const filename, struct c_
 
 c_utils_int16_t c_utils_load_jpg(const c_utils_char_t *const filename, struct c_utils_image *const image)
 {
-	if(filename == (const c_utils_char_t *)0)
+	if(filename == (c_utils_char_t *)0)
 	{
 		fprintf(stderr, "Error in function c_utils_load_jpg filename does not exist (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
 		return C_UTILS_FAILURE;
 	}
 
-	if(image == (const struct c_utils_image *)0)
+	if(image == (struct c_utils_image *)0)
 	{
 		fprintf(stderr, "Error in function c_utils_load_jpg image is an invalid pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
 		return C_UTILS_FAILURE;
 	}
 
-	if(image->data != (const c_utils_uint8_t *)0)
+	if(image->data != (c_utils_uint8_t *)0)
 	{
 		fprintf(stderr, "Error in function c_utils_load_jpg, image->data is not NULL (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
@@ -602,6 +602,9 @@ c_utils_int16_t c_utils_load_jpg(const c_utils_char_t *const filename, struct c_
 
 		if(fp == (FILE *)0)
 		{
+			fprintf(stderr, "Error in function c_utils_load_jpg, fopen failed (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+			perror("Error");
+
 			return C_UTILS_FAILURE;
 		}
 

@@ -123,7 +123,7 @@ static c_utils_int16_t c_utils_enable_virtual_terminal_and_utf8(void)
 }
 #endif
 
-c_utils_int16_t c_utils_mem_free_and_unregist(void *const address)
+c_utils_int16_t c_utils_mem_free_and_unregist(const void *const address)
 {
 	if(c_utils_is_initialized == 0u)
 	{
@@ -147,7 +147,7 @@ c_utils_int16_t c_utils_mem_free_and_unregist(void *const address)
 		{
 			if(c_utils_addresses_to_free[index] == address)
 			{
-				free(address);
+				free((void *)address);
 
 				c_utils_addresses_to_free_count--;
 				c_utils_addresses_to_free[index] = c_utils_addresses_to_free[c_utils_addresses_to_free_count];
@@ -202,7 +202,7 @@ c_utils_int16_t c_utils_get_current_time(struct tm *const time_struct)
 #else
 			const struct tm *const result = localtime(&now);
 
-			if(result == (const struct tm *const)0)
+			if(result == (struct tm *)0)
 			{
 				fprintf(stderr, "Error in function localtime (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
@@ -380,7 +380,7 @@ c_utils_int16_t c_utils_terminate(void)
 	return C_UTILS_SUCCESS;
 }
 
-c_utils_int16_t c_utils_mem_regist_to_free(void *const address)
+c_utils_int16_t c_utils_mem_regist_to_free(const void *const address)
 {
 	if(address == (void *)0)
 	{
@@ -439,7 +439,7 @@ c_utils_int16_t c_utils_mem_regist_to_free(void *const address)
 			}
 		}
 
-		c_utils_addresses_to_free[c_utils_addresses_to_free_count] = address;
+		c_utils_addresses_to_free[c_utils_addresses_to_free_count] = (void *)address;
 		c_utils_addresses_to_free_count++;
 	}
 
@@ -482,7 +482,7 @@ c_utils_int16_t c_utils_url_opener(const c_utils_char_t *const url)
 
 	return C_UTILS_FAILURE;
 #else
-	if(url == (const c_utils_char_t *)0)
+	if(url == (c_utils_char_t *)0)
 	{
 		return C_UTILS_FAILURE;
 	}
@@ -610,7 +610,7 @@ c_utils_int16_t c_utils_make_directory(const c_utils_char_t *const path, c_utils
 
 	return C_UTILS_FAILURE;
 #else
-	if(path == (const c_utils_char_t *)0)
+	if(path == (c_utils_char_t *)0)
 	{
 		fprintf(stderr, "Error in function c_utils_make_directory (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
@@ -746,7 +746,7 @@ signed int c_utils_scan_character(void)
 #endif
 }
 
-void *c_utils_mem_allocate(void *const old_pointer, const size_t size)
+void *c_utils_mem_allocate(const void *const old_pointer, const size_t size)
 {
 	if(size == 0u)
 	{
@@ -780,7 +780,7 @@ void *c_utils_mem_allocate(void *const old_pointer, const size_t size)
 	else
 	{
 		size_t saved_address  = (size_t)old_pointer;
-		void *const new_pointer = realloc(old_pointer, size);
+		const void *const new_pointer = realloc((void *)old_pointer, size);
 
 		if(new_pointer == (void *)0)
 		{
@@ -791,7 +791,7 @@ void *c_utils_mem_allocate(void *const old_pointer, const size_t size)
 
 		if(new_pointer == (void *)saved_address)
 		{
-			return new_pointer;
+			return (void *)new_pointer;
 		}
 
 		else
@@ -802,9 +802,9 @@ void *c_utils_mem_allocate(void *const old_pointer, const size_t size)
 			{
 				if((size_t)c_utils_addresses_to_free[index] == saved_address)
 				{
-					c_utils_addresses_to_free[index] = new_pointer;
+					c_utils_addresses_to_free[index] = (void *)new_pointer;
 
-					return new_pointer;
+					return (void *)new_pointer;
 				}
 			}
 
@@ -812,13 +812,13 @@ void *c_utils_mem_allocate(void *const old_pointer, const size_t size)
 			{
 				fprintf(stderr, "Error in function c_utils_mem_allocate (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
-				free(new_pointer);
+				free((void *)new_pointer);
 
 				return (void *)0;
 			}
 		}
 
-		return new_pointer;
+		return (void *)new_pointer;
 	}
 }
 
@@ -836,7 +836,7 @@ const c_utils_char_t *c_utils_read_file(const c_utils_char_t *const path)
 		return (c_utils_char_t *)0;
 	}
 
-	if(path == (const c_utils_char_t *)0)
+	if(path == (c_utils_char_t *)0)
 	{
 		fprintf(stderr, "Error in function c_utils_read_file, invalid path (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
@@ -847,7 +847,7 @@ const c_utils_char_t *c_utils_read_file(const c_utils_char_t *const path)
 	{
 		FILE *const file = fopen(path, "rb");
 
-		if(file == (const FILE *)0)
+		if(file == (FILE *)0)
 		{
 			const int error = errno;
 

@@ -25,7 +25,7 @@ c_utils_int16_t c_utils_thread_create(c_utils_thread_t *const thread, c_utils_th
 #if defined(_WIN32) || defined(_WIN64)
 	return ((*thread = CreateThread((LPSECURITY_ATTRIBUTES *)0, 0UL, (LPTHREAD_START_ROUTINE)f, arguments, 0, (LPDWORD *)0)) == (HANDLE *)0) ? C_UTILS_FAILURE : C_UTILS_SUCCESS;
 #elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
-	return (pthread_create(thread, (const pthread_attr_t *)0, f, arguments) != 0) ? C_UTILS_FAILURE : C_UTILS_SUCCESS;
+	return (pthread_create(thread, (pthread_attr_t *)0, f, arguments) != 0) ? C_UTILS_FAILURE : C_UTILS_SUCCESS;
 #endif
 }
 

@@ -31,9 +31,9 @@
 #define _DEFAULT_SOURCE
 #endif
 
-/************************/
-/* Libary importations: */
-/************************/
+/*************************/
+/* Library importations: */
+/*************************/
 
 #include <limits.h>
 #include <float.h>
