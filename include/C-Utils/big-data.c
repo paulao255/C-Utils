@@ -1615,8 +1615,9 @@ c_utils_int16_t c_utils_generic_binary_search(const void *const array, const voi
 
 		while(low < high)
 		{
+			int cmp;
 			middle = low + (high - low) / 2u;
-			const int cmp = strcmp(type_array[middle], type_target);
+			cmp = strcmp(type_array[middle], type_target);
 
 			if(cmp == 0)
 			{

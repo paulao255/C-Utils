@@ -45,13 +45,6 @@ c_utils_int16_t c_utils_generic_kelvin_to_celsius(const void *const kelvin_value
 		return C_UTILS_FAILURE;
 	}
 
-	if(size != 4u && size != 8u)
-	{
-		fprintf(stderr, "Error in function c_utils_generic_kelvin_to_celsius (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-
-		return C_UTILS_FAILURE;
-	}
-
 	if(size == 4u)
 	{
 		c_utils_float32_t kelvin_value = *(c_utils_float32_t *)kelvin_value_pointer;
@@ -62,6 +55,13 @@ c_utils_int16_t c_utils_generic_kelvin_to_celsius(const void *const kelvin_value
 	{
 		c_utils_float64_t kelvin_value = *(c_utils_float64_t *)kelvin_value_pointer;
 		*(c_utils_float64_t *)celsius_value_pointer = kelvin_value - 273.15;
+	}
+
+	else
+	{
+		fprintf(stderr, "Error in function c_utils_generic_kelvin_to_celsius (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		return C_UTILS_FAILURE;
 	}
 
 	return C_UTILS_SUCCESS;
@@ -83,13 +83,6 @@ c_utils_int16_t c_utils_generic_kelvin_to_fahrenheit(const void *const kelvin_va
 		return C_UTILS_FAILURE;
 	}
 
-	if(size != 4u && size != 8u)
-	{
-		fprintf(stderr, "Error in function c_utils_generic_kelvin_to_fahrenheit (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-
-		return C_UTILS_FAILURE;
-	}
-
 	if(size == 4u)
 	{
 		c_utils_float32_t kelvin_value = *(c_utils_float32_t *)kelvin_value_pointer;
@@ -100,6 +93,13 @@ c_utils_int16_t c_utils_generic_kelvin_to_fahrenheit(const void *const kelvin_va
 	{
 		c_utils_float64_t kelvin_value = *(c_utils_float64_t *)kelvin_value_pointer;
 		*(c_utils_float64_t *)fahrenheit_value_pointer = kelvin_value * (9.0 / 5.0) - 459.67;
+	}
+
+	else
+	{
+		fprintf(stderr, "Error in function c_utils_generic_kelvin_to_fahrenheit (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		return C_UTILS_FAILURE;
 	}
 
 	return C_UTILS_SUCCESS;
@@ -121,13 +121,6 @@ c_utils_int16_t c_utils_generic_celsius_to_fahrenheit(const void *const celsius_
 		return C_UTILS_FAILURE;
 	}
 
-	if(size != 4u && size != 8u)
-	{
-		fprintf(stderr, "Error in function c_utils_generic_celsius_to_fahrenheit (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-
-		return C_UTILS_FAILURE;
-	}
-
 	if(size == 4u)
 	{
 		c_utils_float32_t celsius_value = *(c_utils_float32_t *)celsius_value_pointer;
@@ -138,6 +131,13 @@ c_utils_int16_t c_utils_generic_celsius_to_fahrenheit(const void *const celsius_
 	{
 		c_utils_float64_t celsius_value = *(c_utils_float64_t *)celsius_value_pointer;
 		*(c_utils_float64_t *)fahrenheit_value_pointer = celsius_value * (9.0 / 5.0) + 32.0;
+	}
+
+	else
+	{
+		fprintf(stderr, "Error in function c_utils_generic_celsius_to_fahrenheit (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		return C_UTILS_FAILURE;
 	}
 
 	return C_UTILS_SUCCESS;
@@ -159,13 +159,6 @@ c_utils_int16_t c_utils_generic_celsius_to_kelvin(const void *const celsius_valu
 		return C_UTILS_FAILURE;
 	}
 
-	if(size != 4u || size != 8u)
-	{
-		fprintf(stderr, "Error in function c_utils_generic_celsius_to_kelvin (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-
-		return C_UTILS_FAILURE;
-	}
-
 	if(size == 4u)
 	{
 		c_utils_float32_t celsius_value = *(c_utils_float32_t *)celsius_value_pointer;
@@ -176,6 +169,13 @@ c_utils_int16_t c_utils_generic_celsius_to_kelvin(const void *const celsius_valu
 	{
 		c_utils_float64_t celsius_value = *(c_utils_float64_t *)celsius_value_pointer;
 		*(c_utils_float64_t *)kelvin_value_pointer = celsius_value + 273.15;
+	}
+
+	else
+	{
+		fprintf(stderr, "Error in function c_utils_generic_celsius_to_kelvin (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		return C_UTILS_FAILURE;
 	}
 
 	return C_UTILS_SUCCESS;
@@ -197,13 +197,6 @@ c_utils_int16_t c_utils_generic_fahrenheit_to_celsius(const void *const fahrenhe
 		return C_UTILS_FAILURE;
 	}
 
-	if(size != 4u || size != 8u)
-	{
-		fprintf(stderr, "Error in function c_utils_generic_fahrenheit_to_celsius (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-
-		return C_UTILS_FAILURE;
-	}
-
 	if(size == 4u)
 	{
 		c_utils_float32_t fahrenheit_value = *(c_utils_float32_t *)fahrenheit_value_pointer;
@@ -214,6 +207,13 @@ c_utils_int16_t c_utils_generic_fahrenheit_to_celsius(const void *const fahrenhe
 	{
 		c_utils_float64_t fahrenheit_value = *(c_utils_float64_t *)fahrenheit_value_pointer;
 		*(c_utils_float64_t *)celsius_value_pointer = (fahrenheit_value - 32.0) * (5.0 / 9.0);
+	}
+
+	else
+	{	
+		fprintf(stderr, "Error in function c_utils_generic_fahrenheit_to_celsius (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		return C_UTILS_FAILURE;
 	}
 
 	return C_UTILS_SUCCESS;
@@ -235,13 +235,6 @@ c_utils_int16_t c_utils_generic_fahrenheit_to_kelvin(const void *const fahrenhei
 		return C_UTILS_FAILURE;
 	}
 
-	if(size != 4u || size != 8u)
-	{
-		fprintf(stderr, "Error in function c_utils_generic_fahrenheit_to_kelvin (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-
-		return C_UTILS_FAILURE;
-	}
-
 	if(size == 4u)
 	{
 		c_utils_float32_t fahrenheit_value = *(c_utils_float32_t *)fahrenheit_value_pointer;
@@ -252,6 +245,13 @@ c_utils_int16_t c_utils_generic_fahrenheit_to_kelvin(const void *const fahrenhei
 	{
 		c_utils_float64_t fahrenheit_value = *(c_utils_float64_t *)fahrenheit_value_pointer;
 		*(c_utils_float64_t *)kelvin_value_pointer = (fahrenheit_value - 32.0) * (5.0 / 9.0) + 273.15;
+	}
+
+	else
+	{
+		fprintf(stderr, "Error in function c_utils_generic_fahrenheit_to_kelvin (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		return C_UTILS_FAILURE;
 	}
 
 	return C_UTILS_SUCCESS;
