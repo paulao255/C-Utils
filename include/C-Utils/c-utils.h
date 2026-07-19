@@ -28,9 +28,6 @@ extern "C"
 /* This function clears the standard output (like "clear" or "cls" but in a faster and simplified form). */
 void c_utils_clear_standard_output(void);
 
-/* This function free memory and unregister it from C-Utils addresses to free list. */
-c_utils_int16_t c_utils_mem_free_and_unregist(const void *const address);
-
 /* This function gets current time (Operacional System time) and puts it into the first argument a time struct pointer. */
 c_utils_int16_t c_utils_get_current_time(struct tm *const time);
 
@@ -46,8 +43,14 @@ c_utils_int16_t c_utils_initialize(void);
 /* Terminate C-Utils. */
 c_utils_int16_t c_utils_terminate(void);
 
+/* Function to allocate/reallocate memory and register it to C-Utils addresses to free list. */
+c_utils_int16_t c_utils_mem_allocate(const void **const address_pointer, const size_t size);
+
 /* C-Utils memory register address to free function. */
 c_utils_int16_t c_utils_mem_regist_to_free(const void *const address);
+
+/* This function free memory and unregister it from C-Utils addresses to free list. */
+c_utils_int16_t c_utils_mem_free_and_unregist(const void *const address);
 
 /* Function to scan any caracter except enter, that when pressed it jumps back to the caller. */
 c_utils_int16_t c_utils_scan_enter(void);
@@ -63,9 +66,6 @@ c_utils_int16_t c_utils_make_directory(const c_utils_char_t *const path, c_utils
 
 /* Function to scan a character from the standard input. */
 signed int c_utils_scan_character(void);
-
-/* Function to allocate/reallocate memory. */
-void *c_utils_mem_allocate(const void *const old_pointer, const size_t size);
 
 /* Function to read a file from the Operational System and return it to the caller. */
 const c_utils_char_t *c_utils_read_file(const c_utils_char_t *const path);

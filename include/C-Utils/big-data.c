@@ -22,7 +22,7 @@ extern "C"
 
 c_utils_int16_t c_utils_generic_array_is_sorted(const void *const array, const size_t count, const size_t element_size, const c_utils_uint8_t type)
 {
-	if(array == (void *)0)
+	if(!array)
 	{
 		fprintf(stderr, "Error in function c_utils_generic_array_is_sorted (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
@@ -38,8 +38,8 @@ c_utils_int16_t c_utils_generic_array_is_sorted(const void *const array, const s
 
 	if(type == 0u)
 	{
-		size_t index;
 		const c_utils_char_t *const type_array = (const c_utils_char_t *)array;
+		size_t index;
 
 		for(index = 0u; index < count - 1u; index++)
 		{
@@ -52,8 +52,8 @@ c_utils_int16_t c_utils_generic_array_is_sorted(const void *const array, const s
 
 	else if(type == 1u)
 	{
-		size_t index;
 		const c_utils_char_t *const *const type_array = (const c_utils_char_t *const *)array;
+		size_t index;
 
 		for(index = 0u; index < count - 1u; index++)
 		{
@@ -68,8 +68,8 @@ c_utils_int16_t c_utils_generic_array_is_sorted(const void *const array, const s
 	{
 		if(element_size == 1u)
 		{
-			size_t index;
 			const c_utils_uint8_t *const type_array = (const c_utils_uint8_t *)array;
+			size_t index;
 
 			for(index = 0u; index < count - 1u; index++)
 			{
@@ -82,8 +82,8 @@ c_utils_int16_t c_utils_generic_array_is_sorted(const void *const array, const s
 
 		else if(element_size == 2u)
 		{
-			size_t index;
 			const c_utils_uint16_t *const type_array = (const c_utils_uint16_t *)array;
+			size_t index;
 
 			for(index = 0u; index < count - 1u; index++)
 			{
@@ -96,8 +96,8 @@ c_utils_int16_t c_utils_generic_array_is_sorted(const void *const array, const s
 
 		else if(element_size == 4u)
 		{
-			size_t index;
 			const c_utils_uint32_t *const type_array = (const c_utils_uint32_t *)array;
+			size_t index;
 
 			for(index = 0u; index < count - 1u; index++)
 			{
@@ -112,8 +112,8 @@ defined(C_UTILS_ENABLE_INT64) || defined(C_UTILS_ENABLE_ALL_EXTENSIONS)
 
 		else if(element_size == 8u)
 		{
-			size_t index;
 			const c_utils_uint64_t *const type_array = (const c_utils_uint64_t *)array;
+			size_t index;
 
 			for(index = 0u; index < count - 1u; index++)
 			{
@@ -137,8 +137,8 @@ defined(C_UTILS_ENABLE_INT64) || defined(C_UTILS_ENABLE_ALL_EXTENSIONS)
 	{
 		if(element_size == 1u)
 		{
-			size_t index;
 			const c_utils_int8_t *const type_array = (const c_utils_int8_t *)array;
+			size_t index;
 
 			for(index = 0u; index < count - 1u; index++)
 			{
@@ -151,8 +151,8 @@ defined(C_UTILS_ENABLE_INT64) || defined(C_UTILS_ENABLE_ALL_EXTENSIONS)
 
 		else if(element_size == 2u)
 		{
-			size_t index;
 			const c_utils_int16_t *const type_array = (const c_utils_int16_t *)array;
+			size_t index;
 
 			for(index = 0u; index < count - 1u; index++)
 			{
@@ -165,8 +165,8 @@ defined(C_UTILS_ENABLE_INT64) || defined(C_UTILS_ENABLE_ALL_EXTENSIONS)
 
 		else if(element_size == 4u)
 		{
-			size_t index;
 			const c_utils_int32_t *const type_array = (const c_utils_int32_t *)array;
+			size_t index;
 
 			for(index = 0u; index < count - 1u; index++)
 			{
@@ -181,8 +181,8 @@ defined(C_UTILS_ENABLE_INT64) || defined(C_UTILS_ENABLE_ALL_EXTENSIONS)
 
 		else if(element_size == 8u)
 		{
-			size_t index;
 			const c_utils_int64_t *const type_array = (const c_utils_int64_t *)array;
+			size_t index;
 
 			for(index = 0u; index < count - 1u; index++)
 			{
@@ -207,8 +207,8 @@ defined(C_UTILS_ENABLE_INT64) || defined(C_UTILS_ENABLE_ALL_EXTENSIONS)
 	{
 		if(element_size == 4u)
 		{
-			size_t index;
 			const c_utils_float32_t *const type_array = (const c_utils_float32_t *)array;
+			size_t index;
 
 			for(index = 0u; index < count - 1u; index++)
 			{
@@ -221,8 +221,8 @@ defined(C_UTILS_ENABLE_INT64) || defined(C_UTILS_ENABLE_ALL_EXTENSIONS)
 
 		else if(element_size == 8u)
 		{
-			size_t index;
 			const c_utils_float64_t *const type_array = (const c_utils_float64_t *)array;
+			size_t index;
 
 			for(index = 0u; index < count - 1u; index++)
 			{
@@ -253,7 +253,7 @@ defined(C_UTILS_ENABLE_INT64) || defined(C_UTILS_ENABLE_ALL_EXTENSIONS)
 
 c_utils_int16_t c_utils_generic_insertion_sort(const void *const array, const size_t count, const size_t element_size, const c_utils_uint8_t type)
 {
-	if(array == (void *)0)
+	if(!array)
 	{
 		fprintf(stderr, "Error in function c_utils_generic_insertion_sort (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
@@ -269,8 +269,8 @@ c_utils_int16_t c_utils_generic_insertion_sort(const void *const array, const si
 
 	if(type == 0u)
 	{
-		size_t index;
 		c_utils_char_t *const type_array = (c_utils_char_t *)array;
+		size_t index;
 
 		for(index = 1u; index < count; index++)
 		{
@@ -289,8 +289,8 @@ c_utils_int16_t c_utils_generic_insertion_sort(const void *const array, const si
 
 	else if(type == 1u)
 	{
-		size_t index;
 		c_utils_char_t **const type_array = (c_utils_char_t **)array;
+		size_t index;
 
 		for(index = 1u; index < count; index++)
 		{
@@ -311,8 +311,8 @@ c_utils_int16_t c_utils_generic_insertion_sort(const void *const array, const si
 	{
 		if(element_size == 1u)
 		{
-			size_t index;
 			c_utils_uint8_t *const type_array = (c_utils_uint8_t *)array;
+			size_t index;
 
 			for(index = 1u; index < count; index++)
 			{
@@ -331,8 +331,8 @@ c_utils_int16_t c_utils_generic_insertion_sort(const void *const array, const si
 
 		else if(element_size == 2u)
 		{
-			size_t index;
 			c_utils_uint16_t *const type_array = (c_utils_uint16_t *)array;
+			size_t index;
 
 			for(index = 1u; index < count; index++)
 			{
@@ -351,8 +351,8 @@ c_utils_int16_t c_utils_generic_insertion_sort(const void *const array, const si
 
 		else if(element_size == 4u)
 		{
-			size_t index;
 			c_utils_uint32_t *const type_array = (c_utils_uint32_t *)array;
+			size_t index;
 
 			for(index = 1u; index < count; index++)
 			{
@@ -373,8 +373,8 @@ c_utils_int16_t c_utils_generic_insertion_sort(const void *const array, const si
 
 		else if(element_size == 8u)
 		{
-			size_t index;
 			c_utils_uint64_t *const type_array = (c_utils_uint64_t *)array;
+			size_t index;
 
 			for(index = 1u; index < count; index++)
 			{
@@ -404,8 +404,8 @@ c_utils_int16_t c_utils_generic_insertion_sort(const void *const array, const si
 	{
 		if(element_size == 1u)
 		{
-			size_t index;
 			c_utils_int8_t *const type_array = (c_utils_int8_t *)array;
+			size_t index;
 
 			for(index = 1u; index < count; index++)
 			{
@@ -424,8 +424,8 @@ c_utils_int16_t c_utils_generic_insertion_sort(const void *const array, const si
 
 		else if(element_size == 2u)
 		{
-			size_t index;
 			c_utils_int16_t *const type_array = (c_utils_int16_t *)array;
+			size_t index;
 
 			for(index = 1u; index < count; index++)
 			{
@@ -444,8 +444,8 @@ c_utils_int16_t c_utils_generic_insertion_sort(const void *const array, const si
 
 		else if(element_size == 4u)
 		{
-			size_t index;
 			c_utils_int32_t *const type_array = (c_utils_int32_t *)array;
+			size_t index;
 
 			for(index = 1u; index < count; index++)
 			{
@@ -466,8 +466,8 @@ c_utils_int16_t c_utils_generic_insertion_sort(const void *const array, const si
 
 		else if(element_size == 8u)
 		{
-			size_t index;
 			c_utils_int64_t *const type_array = (c_utils_int64_t *)array;
+			size_t index;
 
 			for(index = 1u; index < count; index++)
 			{
@@ -497,8 +497,8 @@ c_utils_int16_t c_utils_generic_insertion_sort(const void *const array, const si
 	{
 		if(element_size == 4u)
 		{
-			size_t index;
 			c_utils_float32_t *const type_array = (c_utils_float32_t *)array;
+			size_t index;
 
 			for(index = 1u; index < count; index++)
 			{
@@ -517,8 +517,8 @@ c_utils_int16_t c_utils_generic_insertion_sort(const void *const array, const si
 
 		else if(element_size == 8u)
 		{
-			size_t index;
 			c_utils_float64_t *const type_array = (c_utils_float64_t *)array;
+			size_t index;
 
 			for(index = 1u; index < count; index++)
 			{
@@ -555,7 +555,7 @@ c_utils_int16_t c_utils_generic_insertion_sort(const void *const array, const si
 
 c_utils_int16_t c_utils_generic_merge_sort(const void *const array, const size_t count, const size_t element_size, const c_utils_uint8_t type)
 {
-	if(array == (void *)0)
+	if(!array)
 	{
 		fprintf(stderr, "Error in function c_utils_generic_merge_sort (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
@@ -575,110 +575,118 @@ c_utils_int16_t c_utils_generic_merge_sort(const void *const array, const size_t
 		{
 			c_utils_char_t *const type_array = (c_utils_char_t *)array;
 			c_utils_char_t *const temporary_array = (c_utils_char_t *)malloc(count * sizeof(c_utils_char_t));
-			size_t width;
 
-			if(temporary_array == (c_utils_char_t *)0)
+			if(!temporary_array)
 			{
 				fprintf(stderr, "Error in function c_utils_generic_merge_sort (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
 				return C_UTILS_FAILURE;
 			}
 
-			for(width = 1u; width < count; width *= 2u)
+			else
 			{
-				size_t left;
+				size_t width;
 
-				for(left = 0u; left < count; left += 2u * width)
+				for(width = 1u; width < count; width *= 2u)
 				{
-					size_t middle = (left + width < count) ? (left + width) : count;
-					size_t right = (left + 2u * width < count) ? (left + 2u * width) : count;
-					size_t left_index = left;
-					size_t right_index = middle;
-					size_t merge_index = left;
+					size_t left;
 
-					while(left_index < middle && right_index < right)
+					for(left = 0u; left < count; left += 2u * width)
 					{
-						if(type_array[left_index] <= type_array[right_index])
+						size_t middle = (left + width < count) ? (left + width) : count;
+						size_t right = (left + 2u * width < count) ? (left + 2u * width) : count;
+						size_t left_index = left;
+						size_t right_index = middle;
+						size_t merge_index = left;
+
+						while(left_index < middle && right_index < right)
+						{
+							if(type_array[left_index] <= type_array[right_index])
+							{
+								temporary_array[merge_index++] = type_array[left_index++];
+							}
+
+							else
+							{
+								temporary_array[merge_index++] = type_array[right_index++];
+							}
+						}
+
+						while(left_index < middle)
 						{
 							temporary_array[merge_index++] = type_array[left_index++];
 						}
 
-						else
+						while(right_index < right)
 						{
 							temporary_array[merge_index++] = type_array[right_index++];
 						}
-					}
 
-					while(left_index < middle)
-					{
-						temporary_array[merge_index++] = type_array[left_index++];
+						memcpy(type_array + left, temporary_array + left, (right - left) * sizeof(c_utils_char_t));
 					}
-
-					while(right_index < right)
-					{
-						temporary_array[merge_index++] = type_array[right_index++];
-					}
-
-					memcpy(type_array + left, temporary_array + left, (right - left) * sizeof(c_utils_char_t));
 				}
-			}
 
-			free((void *)temporary_array);
+				free((void *)temporary_array);
+			}
 		}
 
 		else if(type == 1u)
 		{
 			c_utils_char_t **const type_array = (c_utils_char_t **)array;
 			c_utils_char_t **const temporary_array = (c_utils_char_t **)malloc(count * sizeof(c_utils_char_t *));
-			size_t width;
 
-			if(temporary_array == (c_utils_char_t **)0)
+			if(!temporary_array)
 			{
 				fprintf(stderr, "Error in function c_utils_generic_merge_sort (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
 				return C_UTILS_FAILURE;
 			}
 
-			for(width = 1u; width < count; width *= 2u)
+			else
 			{
-				size_t left;
+				size_t width;
 
-				for(left = 0u; left < count; left += 2u * width)
+				for(width = 1u; width < count; width *= 2u)
 				{
-					size_t middle = (left + width < count) ? (left + width) : count;
-					size_t right = (left + 2u * width < count) ? (left + 2u * width) : count;
-					size_t left_index = left;
-					size_t right_index = middle;
-					size_t merge_index = left;
+					size_t left;
 
-					while(left_index < middle && right_index < right)
+					for(left = 0u; left < count; left += 2u * width)
 					{
-						if(strcmp(type_array[left_index], type_array[right_index]) <= 0)
+						size_t middle = (left + width < count) ? (left + width) : count;
+						size_t right = (left + 2u * width < count) ? (left + 2u * width) : count;
+						size_t left_index = left;
+						size_t right_index = middle;
+						size_t merge_index = left;
+
+						while(left_index < middle && right_index < right)
+						{
+							if(strcmp(type_array[left_index], type_array[right_index]) <= 0)
+							{
+								temporary_array[merge_index++] = type_array[left_index++];
+							}
+
+							else
+							{
+								temporary_array[merge_index++] = type_array[right_index++];
+							}
+						}
+
+						while(left_index < middle)
 						{
 							temporary_array[merge_index++] = type_array[left_index++];
 						}
 
-						else
+						while(right_index < right)
 						{
 							temporary_array[merge_index++] = type_array[right_index++];
 						}
-					}
 
-					while(left_index < middle)
-					{
-						temporary_array[merge_index++] = type_array[left_index++];
+						memcpy(type_array + left, temporary_array + left, (right - left) * sizeof(c_utils_char_t *));
 					}
-
-					while(right_index < right)
-					{
-						temporary_array[merge_index++] = type_array[right_index++];
-					}
-
-					memcpy(type_array + left, temporary_array + left, (right - left) * sizeof(c_utils_char_t *));
 				}
-			}
 
-			free((void *)temporary_array);
+				free((void *)temporary_array);
+			}
 		}
 
 		else if(type == 2u)
@@ -687,165 +695,177 @@ c_utils_int16_t c_utils_generic_merge_sort(const void *const array, const size_t
 			{
 				c_utils_uint8_t *const type_array = (c_utils_uint8_t *)array;
 				c_utils_uint8_t *const temporary_array = (c_utils_uint8_t *)malloc(count * sizeof(c_utils_uint8_t));
-				size_t width;
 
-				if(temporary_array == (c_utils_uint8_t *)0)
+				if(!temporary_array)
 				{
 					fprintf(stderr, "Error in function c_utils_generic_merge_sort (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
 					return C_UTILS_FAILURE;
 				}
 
-				for(width = 1u; width < count; width *= 2u)
+				else
 				{
-					size_t left;
+					size_t width;
 
-					for(left = 0u; left < count; left += 2u * width)
+					for(width = 1u; width < count; width *= 2u)
 					{
-						size_t middle = (left + width < count) ? (left + width) : count;
-						size_t right = (left + 2u * width < count) ? (left + 2u * width) : count;
-						size_t left_index = left;
-						size_t right_index = middle;
-						size_t merge_index = left;
+						size_t left;
 
-						while(left_index < middle && right_index < right)
+						for(left = 0u; left < count; left += 2u * width)
 						{
-							if(type_array[left_index] <= type_array[right_index])
+							size_t middle = (left + width < count) ? (left + width) : count;
+							size_t right = (left + 2u * width < count) ? (left + 2u * width) : count;
+							size_t left_index = left;
+							size_t right_index = middle;
+							size_t merge_index = left;
+
+							while(left_index < middle && right_index < right)
+							{
+								if(type_array[left_index] <= type_array[right_index])
+								{
+									temporary_array[merge_index++] = type_array[left_index++];
+								}
+
+								else
+								{
+									temporary_array[merge_index++] = type_array[right_index++];
+								}
+							}
+
+							while(left_index < middle)
 							{
 								temporary_array[merge_index++] = type_array[left_index++];
 							}
 
-							else
+							while(right_index < right)
 							{
 								temporary_array[merge_index++] = type_array[right_index++];
 							}
-						}
 
-						while(left_index < middle)
-						{
-							temporary_array[merge_index++] = type_array[left_index++];
+							memcpy(type_array + left, temporary_array + left, (right - left) * sizeof(c_utils_uint8_t));
 						}
-
-						while(right_index < right)
-						{
-							temporary_array[merge_index++] = type_array[right_index++];
-						}
-
-						memcpy(type_array + left, temporary_array + left, (right - left) * sizeof(c_utils_uint8_t));
 					}
-				}
 
-				free((void *)temporary_array);
+					free((void *)temporary_array);
+				}
 			}
 
 			else if(element_size == 2u)
 			{
 				c_utils_uint16_t *const type_array = (c_utils_uint16_t *)array;
 				c_utils_uint16_t *const temporary_array = (c_utils_uint16_t *)malloc(count * sizeof(c_utils_uint16_t));
-				size_t width;
 
-				if(temporary_array == (c_utils_uint16_t *)0)
+				if(!temporary_array)
 				{
 					fprintf(stderr, "Error in function c_utils_generic_merge_sort (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
 					return C_UTILS_FAILURE;
 				}
 
-				for(width = 1u; width < count; width *= 2u)
+				else
 				{
-					size_t left;
+					size_t width;
 
-					for(left = 0u; left < count; left += 2u * width)
+					for(width = 1u; width < count; width *= 2u)
 					{
-						size_t middle = (left + width < count) ? (left + width) : count;
-						size_t right = (left + 2u * width < count) ? (left + 2u * width) : count;
-						size_t left_index = left;
-						size_t right_index = middle;
-						size_t merge_index = left;
+						size_t left;
 
-						while(left_index < middle && right_index < right)
+						for(left = 0u; left < count; left += 2u * width)
 						{
-							if(type_array[left_index] <= type_array[right_index])
+							size_t middle = (left + width < count) ? (left + width) : count;
+							size_t right = (left + 2u * width < count) ? (left + 2u * width) : count;
+							size_t left_index = left;
+							size_t right_index = middle;
+							size_t merge_index = left;
+
+							while(left_index < middle && right_index < right)
+							{
+								if(type_array[left_index] <= type_array[right_index])
+								{
+									temporary_array[merge_index++] = type_array[left_index++];
+								}
+
+								else
+								{
+									temporary_array[merge_index++] = type_array[right_index++];
+								}
+							}
+
+							while(left_index < middle)
 							{
 								temporary_array[merge_index++] = type_array[left_index++];
 							}
 
-							else
+							while(right_index < right)
 							{
 								temporary_array[merge_index++] = type_array[right_index++];
 							}
-						}
 
-						while(left_index < middle)
-						{
-							temporary_array[merge_index++] = type_array[left_index++];
+							memcpy(type_array + left, temporary_array + left, (right - left) * sizeof(c_utils_uint16_t));
 						}
-
-						while(right_index < right)
-						{
-							temporary_array[merge_index++] = type_array[right_index++];
-						}
-
-						memcpy(type_array + left, temporary_array + left, (right - left) * sizeof(c_utils_uint16_t));
 					}
-				}
 
-				free((void *)temporary_array);
+					free((void *)temporary_array);
+				}
 			}
 
 			else if(element_size == 4u)
 			{
 				c_utils_uint32_t *const type_array = (c_utils_uint32_t *)array;
 				c_utils_uint32_t *const temporary_array = (c_utils_uint32_t *)malloc(count * sizeof(c_utils_uint32_t));
-				size_t width;
 
-				if(temporary_array == (c_utils_uint32_t *)0)
+				if(!temporary_array)
 				{
 					fprintf(stderr, "Error in function c_utils_generic_merge_sort (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
 					return C_UTILS_FAILURE;
 				}
 
-				for(width = 1u; width < count; width *= 2u)
+				else
 				{
-					size_t left;
+					size_t width;
 
-					for(left = 0u; left < count; left += 2u * width)
+					for(width = 1u; width < count; width *= 2u)
 					{
-						size_t middle = (left + width < count) ? (left + width) : count;
-						size_t right = (left + 2u * width < count) ? (left + 2u * width) : count;
-						size_t left_index = left;
-						size_t right_index = middle;
-						size_t merge_index = left;
+						size_t left;
 
-						while(left_index < middle && right_index < right)
+						for(left = 0u; left < count; left += 2u * width)
 						{
-							if(type_array[left_index] <= type_array[right_index])
+							size_t middle = (left + width < count) ? (left + width) : count;
+							size_t right = (left + 2u * width < count) ? (left + 2u * width) : count;
+							size_t left_index = left;
+							size_t right_index = middle;
+							size_t merge_index = left;
+
+							while(left_index < middle && right_index < right)
+							{
+								if(type_array[left_index] <= type_array[right_index])
+								{
+									temporary_array[merge_index++] = type_array[left_index++];
+								}
+
+								else
+								{
+									temporary_array[merge_index++] = type_array[right_index++];
+								}
+							}
+
+							while(left_index < middle)
 							{
 								temporary_array[merge_index++] = type_array[left_index++];
 							}
 
-							else
+							while(right_index < right)
 							{
 								temporary_array[merge_index++] = type_array[right_index++];
 							}
-						}
 
-						while(left_index < middle)
-						{
-							temporary_array[merge_index++] = type_array[left_index++];
+							memcpy(type_array + left, temporary_array + left, (right - left) * sizeof(c_utils_uint32_t));
 						}
-
-						while(right_index < right)
-						{
-							temporary_array[merge_index++] = type_array[right_index++];
-						}
-
-						memcpy(type_array + left, temporary_array + left, (right - left) * sizeof(c_utils_uint32_t));
 					}
-				}
 
-				free((void *)temporary_array);
+					free((void *)temporary_array);
+				}
 			}
 #if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) || (defined(__cplusplus) && __cplusplus >= 201103L) || \
      defined(C_UTILS_ENABLE_INT64) || defined(C_UTILS_ENABLE_ALL_EXTENSIONS)
@@ -854,55 +874,59 @@ c_utils_int16_t c_utils_generic_merge_sort(const void *const array, const size_t
 			{
 				c_utils_uint64_t *const type_array = (c_utils_uint64_t *)array;
 				c_utils_uint64_t *const temporary_array = (c_utils_uint64_t *)malloc(count * sizeof(c_utils_uint64_t));
-				size_t width;
 
-				if(temporary_array == (c_utils_uint64_t *)0)
+				if(!temporary_array)
 				{
 					fprintf(stderr, "Error in function c_utils_generic_merge_sort (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
 					return C_UTILS_FAILURE;
 				}
 
-				for(width = 1u; width < count; width *= 2u)
+				else
 				{
-					size_t left;
+					size_t width;
 
-					for(left = 0u; left < count; left += 2u * width)
+					for(width = 1u; width < count; width *= 2u)
 					{
-						size_t middle = (left + width < count) ? (left + width) : count;
-						size_t right = (left + 2u * width < count) ? (left + 2u * width) : count;
-						size_t left_index = left;
-						size_t right_index = middle;
-						size_t merge_index = left;
+						size_t left;
 
-						while(left_index < middle && right_index < right)
+						for(left = 0u; left < count; left += 2u * width)
 						{
-							if(type_array[left_index] <= type_array[right_index])
+							size_t middle = (left + width < count) ? (left + width) : count;
+							size_t right = (left + 2u * width < count) ? (left + 2u * width) : count;
+							size_t left_index = left;
+							size_t right_index = middle;
+							size_t merge_index = left;
+
+							while(left_index < middle && right_index < right)
+							{
+								if(type_array[left_index] <= type_array[right_index])
+								{
+									temporary_array[merge_index++] = type_array[left_index++];
+								}
+
+								else
+								{
+									temporary_array[merge_index++] = type_array[right_index++];
+								}
+							}
+
+							while(left_index < middle)
 							{
 								temporary_array[merge_index++] = type_array[left_index++];
 							}
 
-							else
+							while(right_index < right)
 							{
 								temporary_array[merge_index++] = type_array[right_index++];
 							}
-						}
 
-						while(left_index < middle)
-						{
-							temporary_array[merge_index++] = type_array[left_index++];
+							memcpy(type_array + left, temporary_array + left, (right - left) * sizeof(c_utils_uint64_t));
 						}
-
-						while(right_index < right)
-						{
-							temporary_array[merge_index++] = type_array[right_index++];
-						}
-
-						memcpy(type_array + left, temporary_array + left, (right - left) * sizeof(c_utils_uint64_t));
 					}
-				}
 
-				free((void *)temporary_array);
+					free((void *)temporary_array);
+				}
 			}
 #endif
 
@@ -920,165 +944,177 @@ c_utils_int16_t c_utils_generic_merge_sort(const void *const array, const size_t
 			{
 				c_utils_int8_t *const type_array = (c_utils_int8_t *)array;
 				c_utils_int8_t *const temporary_array = (c_utils_int8_t *)malloc(count * sizeof(c_utils_int8_t));
-				size_t width;
 
-				if(temporary_array == (c_utils_int8_t *)0)
+				if(!temporary_array)
 				{
 					fprintf(stderr, "Error in function c_utils_generic_merge_sort (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
 					return C_UTILS_FAILURE;
 				}
 
-				for(width = 1u; width < count; width *= 2u)
+				else
 				{
-					size_t left;
+					size_t width;
 
-					for(left = 0u; left < count; left += 2u * width)
+					for(width = 1u; width < count; width *= 2u)
 					{
-						size_t middle = (left + width < count) ? (left + width) : count;
-						size_t right = (left + 2u * width < count) ? (left + 2u * width) : count;
-						size_t left_index = left;
-						size_t right_index = middle;
-						size_t merge_index = left;
+						size_t left;
 
-						while(left_index < middle && right_index < right)
+						for(left = 0u; left < count; left += 2u * width)
 						{
-							if(type_array[left_index] <= type_array[right_index])
+							size_t middle = (left + width < count) ? (left + width) : count;
+							size_t right = (left + 2u * width < count) ? (left + 2u * width) : count;
+							size_t left_index = left;
+							size_t right_index = middle;
+							size_t merge_index = left;
+
+							while(left_index < middle && right_index < right)
+							{
+								if(type_array[left_index] <= type_array[right_index])
+								{
+									temporary_array[merge_index++] = type_array[left_index++];
+								}
+
+								else
+								{
+									temporary_array[merge_index++] = type_array[right_index++];
+								}
+							}
+
+							while(left_index < middle)
 							{
 								temporary_array[merge_index++] = type_array[left_index++];
 							}
 
-							else
+							while(right_index < right)
 							{
 								temporary_array[merge_index++] = type_array[right_index++];
 							}
-						}
 
-						while(left_index < middle)
-						{
-							temporary_array[merge_index++] = type_array[left_index++];
+							memcpy(type_array + left, temporary_array + left, (right - left) * sizeof(c_utils_int8_t));
 						}
-
-						while(right_index < right)
-						{
-							temporary_array[merge_index++] = type_array[right_index++];
-						}
-
-						memcpy(type_array + left, temporary_array + left, (right - left) * sizeof(c_utils_int8_t));
 					}
-				}
 
-				free((void *)temporary_array);
+					free((void *)temporary_array);
+				}
 			}
 
 			else if(element_size == 2u)
 			{
 				c_utils_int16_t *const type_array = (c_utils_int16_t *)array;
 				c_utils_int16_t *const temporary_array = (c_utils_int16_t *)malloc(count * sizeof(c_utils_int16_t));
-				size_t width;
 
-				if(temporary_array == (c_utils_int16_t *)0)
+				if(!temporary_array)
 				{
 					fprintf(stderr, "Error in function c_utils_generic_merge_sort (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
 					return C_UTILS_FAILURE;
 				}
 
-				for(width = 1u; width < count; width *= 2u)
+				else
 				{
-					size_t left;
+					size_t width;
 
-					for(left = 0u; left < count; left += 2u * width)
+					for(width = 1u; width < count; width *= 2u)
 					{
-						size_t middle = (left + width < count) ? (left + width) : count;
-						size_t right = (left + 2u * width < count) ? (left + 2u * width) : count;
-						size_t left_index = left;
-						size_t right_index = middle;
-						size_t merge_index = left;
+						size_t left;
 
-						while(left_index < middle && right_index < right)
+						for(left = 0u; left < count; left += 2u * width)
 						{
-							if(type_array[left_index] <= type_array[right_index])
+							size_t middle = (left + width < count) ? (left + width) : count;
+							size_t right = (left + 2u * width < count) ? (left + 2u * width) : count;
+							size_t left_index = left;
+							size_t right_index = middle;
+							size_t merge_index = left;
+
+							while(left_index < middle && right_index < right)
+							{
+								if(type_array[left_index] <= type_array[right_index])
+								{
+									temporary_array[merge_index++] = type_array[left_index++];
+								}
+
+								else
+								{
+									temporary_array[merge_index++] = type_array[right_index++];
+								}
+							}
+
+							while(left_index < middle)
 							{
 								temporary_array[merge_index++] = type_array[left_index++];
 							}
 
-							else
+							while(right_index < right)
 							{
 								temporary_array[merge_index++] = type_array[right_index++];
 							}
-						}
 
-						while(left_index < middle)
-						{
-							temporary_array[merge_index++] = type_array[left_index++];
+							memcpy(type_array + left, temporary_array + left, (right - left) * sizeof(c_utils_int16_t));
 						}
-
-						while(right_index < right)
-						{
-							temporary_array[merge_index++] = type_array[right_index++];
-						}
-
-						memcpy(type_array + left, temporary_array + left, (right - left) * sizeof(c_utils_int16_t));
 					}
-				}
 
-				free((void *)temporary_array);
+					free((void *)temporary_array);
+				}
 			}
 
 			else if(element_size == 4u)
 			{
 				c_utils_int32_t *const type_array = (c_utils_int32_t *)array;
 				c_utils_int32_t *const temporary_array = (c_utils_int32_t *)malloc(count * sizeof(c_utils_int32_t));
-				size_t width;
 
-				if(temporary_array == (c_utils_int32_t *)0)
+				if(!temporary_array)
 				{
 					fprintf(stderr, "Error in function c_utils_generic_merge_sort (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
 					return C_UTILS_FAILURE;
 				}
 
-				for(width = 1u; width < count; width *= 2u)
+				else
 				{
-					size_t left;
+					size_t width;
 
-					for(left = 0u; left < count; left += 2u * width)
+					for(width = 1u; width < count; width *= 2u)
 					{
-						size_t middle = (left + width < count) ? (left + width) : count;
-						size_t right = (left + 2u * width < count) ? (left + 2u * width) : count;
-						size_t left_index = left;
-						size_t right_index = middle;
-						size_t merge_index = left;
+						size_t left;
 
-						while(left_index < middle && right_index < right)
+						for(left = 0u; left < count; left += 2u * width)
 						{
-							if(type_array[left_index] <= type_array[right_index])
+							size_t middle = (left + width < count) ? (left + width) : count;
+							size_t right = (left + 2u * width < count) ? (left + 2u * width) : count;
+							size_t left_index = left;
+							size_t right_index = middle;
+							size_t merge_index = left;
+
+							while(left_index < middle && right_index < right)
+							{
+								if(type_array[left_index] <= type_array[right_index])
+								{
+									temporary_array[merge_index++] = type_array[left_index++];
+								}
+
+								else
+								{
+									temporary_array[merge_index++] = type_array[right_index++];
+								}
+							}
+
+							while(left_index < middle)
 							{
 								temporary_array[merge_index++] = type_array[left_index++];
 							}
 
-							else
+							while(right_index < right)
 							{
 								temporary_array[merge_index++] = type_array[right_index++];
 							}
-						}
 
-						while(left_index < middle)
-						{
-							temporary_array[merge_index++] = type_array[left_index++];
+							memcpy(type_array + left, temporary_array + left, (right - left) * sizeof(c_utils_int32_t));
 						}
-
-						while(right_index < right)
-						{
-							temporary_array[merge_index++] = type_array[right_index++];
-						}
-
-						memcpy(type_array + left, temporary_array + left, (right - left) * sizeof(c_utils_int32_t));
 					}
-				}
 
-				free((void *)temporary_array);
+					free((void *)temporary_array);
+				}
 			}
 #if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) || (defined(__cplusplus) && __cplusplus >= 201103L) || \
      defined(C_UTILS_ENABLE_INT64) || defined(C_UTILS_ENABLE_ALL_EXTENSIONS)
@@ -1087,55 +1123,59 @@ c_utils_int16_t c_utils_generic_merge_sort(const void *const array, const size_t
 			{
 				c_utils_int64_t *const type_array = (c_utils_int64_t *)array;
 				c_utils_int64_t *const temporary_array = (c_utils_int64_t *)malloc(count * sizeof(c_utils_int64_t));
-				size_t width;
 
-				if(temporary_array == (c_utils_int64_t *)0)
+				if(!temporary_array)
 				{
 					fprintf(stderr, "Error in function c_utils_generic_merge_sort (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
 					return C_UTILS_FAILURE;
 				}
 
-				for(width = 1u; width < count; width *= 2u)
+				else
 				{
-					size_t left;
+					size_t width;
 
-					for(left = 0u; left < count; left += 2u * width)
+					for(width = 1u; width < count; width *= 2u)
 					{
-						size_t middle = (left + width < count) ? (left + width) : count;
-						size_t right = (left + 2u * width < count) ? (left + 2u * width) : count;
-						size_t left_index = left;
-						size_t right_index = middle;
-						size_t merge_index = left;
+						size_t left;
 
-						while(left_index < middle && right_index < right)
+						for(left = 0u; left < count; left += 2u * width)
 						{
-							if(type_array[left_index] <= type_array[right_index])
+							size_t middle = (left + width < count) ? (left + width) : count;
+							size_t right = (left + 2u * width < count) ? (left + 2u * width) : count;
+							size_t left_index = left;
+							size_t right_index = middle;
+							size_t merge_index = left;
+
+							while(left_index < middle && right_index < right)
+							{
+								if(type_array[left_index] <= type_array[right_index])
+								{
+									temporary_array[merge_index++] = type_array[left_index++];
+								}
+
+								else
+								{
+									temporary_array[merge_index++] = type_array[right_index++];
+								}
+							}
+
+							while(left_index < middle)
 							{
 								temporary_array[merge_index++] = type_array[left_index++];
 							}
 
-							else
+							while(right_index < right)
 							{
 								temporary_array[merge_index++] = type_array[right_index++];
 							}
-						}
 
-						while(left_index < middle)
-						{
-							temporary_array[merge_index++] = type_array[left_index++];
+							memcpy(type_array + left, temporary_array + left, (right - left) * sizeof(c_utils_int64_t));
 						}
-
-						while(right_index < right)
-						{
-							temporary_array[merge_index++] = type_array[right_index++];
-						}
-
-						memcpy(type_array + left, temporary_array + left, (right - left) * sizeof(c_utils_int64_t));
 					}
-				}
 
-				free((void *)temporary_array);
+					free((void *)temporary_array);
+				}
 			}
 #endif
 
@@ -1153,110 +1193,118 @@ c_utils_int16_t c_utils_generic_merge_sort(const void *const array, const size_t
 			{
 				c_utils_float32_t *const type_array = (c_utils_float32_t *)array;
 				c_utils_float32_t *const temporary_array = (c_utils_float32_t *)malloc(count * sizeof(c_utils_float32_t));
-				size_t width;
 
-				if(temporary_array == (c_utils_float32_t *)0)
+				if(!temporary_array)
 				{
 					fprintf(stderr, "Error in function c_utils_generic_merge_sort (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
 					return C_UTILS_FAILURE;
 				}
 
-				for(width = 1u; width < count; width *= 2u)
+				else
 				{
-					size_t left;
+					size_t width;
 
-					for(left = 0u; left < count; left += 2u * width)
+					for(width = 1u; width < count; width *= 2u)
 					{
-						size_t middle = (left + width < count) ? (left + width) : count;
-						size_t right = (left + 2u * width < count) ? (left + 2u * width) : count;
-						size_t left_index = left;
-						size_t right_index = middle;
-						size_t merge_index = left;
+						size_t left;
 
-						while(left_index < middle && right_index < right)
+						for(left = 0u; left < count; left += 2u * width)
 						{
-							if(type_array[left_index] <= type_array[right_index])
+							size_t middle = (left + width < count) ? (left + width) : count;
+							size_t right = (left + 2u * width < count) ? (left + 2u * width) : count;
+							size_t left_index = left;
+							size_t right_index = middle;
+							size_t merge_index = left;
+
+							while(left_index < middle && right_index < right)
+							{
+								if(type_array[left_index] <= type_array[right_index])
+								{
+									temporary_array[merge_index++] = type_array[left_index++];
+								}
+
+								else
+								{
+									temporary_array[merge_index++] = type_array[right_index++];
+								}
+							}
+
+							while(left_index < middle)
 							{
 								temporary_array[merge_index++] = type_array[left_index++];
 							}
 
-							else
+							while(right_index < right)
 							{
 								temporary_array[merge_index++] = type_array[right_index++];
 							}
-						}
 
-						while(left_index < middle)
-						{
-							temporary_array[merge_index++] = type_array[left_index++];
+							memcpy(type_array + left, temporary_array + left, (right - left) * sizeof(c_utils_float32_t));
 						}
-
-						while(right_index < right)
-						{
-							temporary_array[merge_index++] = type_array[right_index++];
-						}
-
-						memcpy(type_array + left, temporary_array + left, (right - left) * sizeof(c_utils_float32_t));
 					}
-				}
 
-				free((void *)temporary_array);
+					free((void *)temporary_array);
+				}
 			}
 
 			else if(element_size == 8u)
 			{
 				c_utils_float64_t *const type_array = (c_utils_float64_t *)array;
 				c_utils_float64_t *const temporary_array = (c_utils_float64_t *)malloc(count * sizeof(c_utils_float64_t));
-				size_t width;
 
-				if(temporary_array == (c_utils_float64_t *)0)
+				if(!temporary_array)
 				{
 					fprintf(stderr, "Error in function c_utils_generic_merge_sort (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
 					return C_UTILS_FAILURE;
 				}
 
-				for(width = 1u; width < count; width *= 2u)
+				else
 				{
-					size_t left;
+					size_t width;
 
-					for(left = 0u; left < count; left += 2u * width)
+					for(width = 1u; width < count; width *= 2u)
 					{
-						size_t middle = (left + width < count) ? (left + width) : count;
-						size_t right = (left + 2u * width < count) ? (left + 2u * width) : count;
-						size_t left_index = left;
-						size_t right_index = middle;
-						size_t merge_index = left;
+						size_t left;
 
-						while(left_index < middle && right_index < right)
+						for(left = 0u; left < count; left += 2u * width)
 						{
-							if(type_array[left_index] <= type_array[right_index])
+							size_t middle = (left + width < count) ? (left + width) : count;
+							size_t right = (left + 2u * width < count) ? (left + 2u * width) : count;
+							size_t left_index = left;
+							size_t right_index = middle;
+							size_t merge_index = left;
+
+							while(left_index < middle && right_index < right)
+							{
+								if(type_array[left_index] <= type_array[right_index])
+								{
+									temporary_array[merge_index++] = type_array[left_index++];
+								}
+
+								else
+								{
+									temporary_array[merge_index++] = type_array[right_index++];
+								}
+							}
+
+							while(left_index < middle)
 							{
 								temporary_array[merge_index++] = type_array[left_index++];
 							}
 
-							else
+							while(right_index < right)
 							{
 								temporary_array[merge_index++] = type_array[right_index++];
 							}
-						}
 
-						while(left_index < middle)
-						{
-							temporary_array[merge_index++] = type_array[left_index++];
+							memcpy(type_array + left, temporary_array + left, (right - left) * sizeof(c_utils_float64_t));
 						}
-
-						while(right_index < right)
-						{
-							temporary_array[merge_index++] = type_array[right_index++];
-						}
-
-						memcpy(type_array + left, temporary_array + left, (right - left) * sizeof(c_utils_float64_t));
 					}
-				}
 
-				free((void *)temporary_array);
+					free((void *)temporary_array);
+				}
 			}
 
 			else
@@ -1280,21 +1328,21 @@ c_utils_int16_t c_utils_generic_merge_sort(const void *const array, const size_t
 
 c_utils_int16_t c_utils_generic_linear_search(const void *const array, const void *const target, const size_t count, const size_t element_size, const c_utils_uint8_t type, size_t *const position)
 {
-	if(array == (void *)0)
+	if(!array)
 	{
 		fprintf(stderr, "Error in function c_utils_generic_linear_search (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
 		return C_UTILS_FAILURE;
 	}
 
-	if(target == (void *)0)
+	if(!target)
 	{
 		fprintf(stderr, "Error in function c_utils_generic_linear_search (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
 		return C_UTILS_FAILURE;
 	}
 
-	if(position == (size_t *)0)
+	if(!position)
 	{
 		fprintf(stderr, "Error in function c_utils_generic_linear_search (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
@@ -1500,7 +1548,7 @@ defined(C_UTILS_ENABLE_INT64) || defined(C_UTILS_ENABLE_ALL_EXTENSIONS)
 				const c_utils_float32_t absolute_target = type_target < 0.0f ? -type_target : type_target;
 				const c_utils_float32_t scale = absolute_array > absolute_target ? absolute_array : absolute_target;
 
-				if(absolute_difference <= 10 * FLT_EPSILON * scale)
+				if(absolute_difference <= 10 * C_UTILS_FLOAT32_EPSILON * scale)
 				{
 					*position = index;
 				}
@@ -1521,7 +1569,7 @@ defined(C_UTILS_ENABLE_INT64) || defined(C_UTILS_ENABLE_ALL_EXTENSIONS)
 				const c_utils_float64_t absolute_target = type_target < 0.0 ? -type_target : type_target;
 				const c_utils_float64_t scale = absolute_array > absolute_target ? absolute_array : absolute_target;
 
-				if(absolute_difference <= 10 * DBL_EPSILON * scale)
+				if(absolute_difference <= 10 * C_UTILS_FLOAT64_EPSILON * scale)
 				{
 					*position = index;
 				}
@@ -1548,21 +1596,21 @@ defined(C_UTILS_ENABLE_INT64) || defined(C_UTILS_ENABLE_ALL_EXTENSIONS)
 
 c_utils_int16_t c_utils_generic_binary_search(const void *const array, const void *const target, const size_t count, const size_t element_size, const c_utils_uint8_t type, size_t *const position)
 {
-	if(array == (void *)0)
+	if(!array)
 	{
 		fprintf(stderr, "Error in function c_utils_generic_binary_search (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
 		return C_UTILS_FAILURE;
 	}
 
-	if(target == (void *)0)
+	if(!target)
 	{
 		fprintf(stderr, "Error in function c_utils_generic_binary_search (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
 		return C_UTILS_FAILURE;
 	}
 
-	if(position == (size_t *)0)
+	if(!position)
 	{
 		fprintf(stderr, "Error in function c_utils_generic_binary_search (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
@@ -1918,7 +1966,7 @@ defined(C_UTILS_ENABLE_INT64) || defined(C_UTILS_ENABLE_ALL_EXTENSIONS)
 				absolute_target = type_target < 0.0f ? -type_target : type_target;
 				scale = absolute_array > absolute_target ? absolute_array : absolute_target;
 
-				if(absolute_difference <= 10 * FLT_EPSILON * scale)
+				if(absolute_difference <= 10 * C_UTILS_FLOAT32_EPSILON * scale)
 				{
 					*position = middle;
 				}
@@ -1957,7 +2005,7 @@ defined(C_UTILS_ENABLE_INT64) || defined(C_UTILS_ENABLE_ALL_EXTENSIONS)
 				absolute_target = type_target < 0.0 ? -type_target : type_target;
 				scale = absolute_array > absolute_target ? absolute_array : absolute_target;
 
-				if(absolute_difference <= 10 * DBL_EPSILON * scale)
+				if(absolute_difference <= 10 * C_UTILS_FLOAT64_EPSILON * scale)
 				{
 					*position = middle;
 				}

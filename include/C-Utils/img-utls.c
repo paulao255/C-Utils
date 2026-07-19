@@ -46,14 +46,14 @@ static void c_utils_jpg_error_exit(j_common_ptr cinfo)
 
 c_utils_int16_t c_utils_save_png(const c_utils_char_t *const filename, struct c_utils_image image)
 {
-	if(filename == (c_utils_char_t *)0)
+	if(!filename)
 	{
 		fprintf(stderr, "Error in function c_utils_save_png filename does not exist (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
 		return C_UTILS_FAILURE;
 	}
 
-	if(image.data == (c_utils_uint8_t *)0)
+	if(!image.data)
 	{
 		fprintf(stderr, "Error in function c_utils_save_png, data does not exist (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
@@ -78,7 +78,7 @@ c_utils_int16_t c_utils_save_png(const c_utils_char_t *const filename, struct c_
 	{
 		FILE *const fp = fopen(filename, "wb");
 
-		if(fp == (FILE *)0)
+		if(!fp)
 		{
 			return C_UTILS_FAILURE;
 		}
@@ -88,7 +88,7 @@ c_utils_int16_t c_utils_save_png(const c_utils_char_t *const filename, struct c_
 			png_structp png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, (void *)0, (png_error_ptr)0, (png_error_ptr)0);
 			png_bytep *row_pointers = (png_bytep *)0;
 
-			if(png_ptr == (png_structp)0)
+			if(!png_ptr)
 			{
 				if(fclose(fp) != 0)
 				{
@@ -123,7 +123,7 @@ c_utils_int16_t c_utils_save_png(const c_utils_char_t *const filename, struct c_
 			{
 				png_infop info_ptr = png_create_info_struct(png_ptr);
 
-				if(info_ptr == (png_infop)0)
+				if(!info_ptr)
 				{
 					png_destroy_write_struct(&png_ptr, (png_infopp)(void *)0);
 
@@ -195,14 +195,14 @@ c_utils_int16_t c_utils_save_png(const c_utils_char_t *const filename, struct c_
 
 c_utils_int16_t c_utils_load_png(const c_utils_char_t *const filename, struct c_utils_image *const image)
 {
-	if(filename == (c_utils_char_t *)0)
+	if(!filename)
 	{
 		fprintf(stderr, "Error in function c_utils_load_png (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
 		return C_UTILS_FAILURE;
 	}
 
-	if(image == (struct c_utils_image *)0)
+	if(!image)
 	{
 		fprintf(stderr, "Error in function c_utils_load_png (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
@@ -220,7 +220,7 @@ c_utils_int16_t c_utils_load_png(const c_utils_char_t *const filename, struct c_
 	{
 		FILE *const fp = fopen(filename, "rb");
 
-		if(fp == (FILE *)0)
+		if(!fp)
 		{
 			return C_UTILS_FAILURE;
 		}
@@ -230,7 +230,7 @@ c_utils_int16_t c_utils_load_png(const c_utils_char_t *const filename, struct c_
 			png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, (void *)0, (png_error_ptr)0, (png_error_ptr)0);
 			png_bytep *row_pointers = (png_bytep *)0;
 
-			if(png_ptr == (png_structp)0)
+			if(!png_ptr)
 			{
 				if(fclose(fp) != 0)
 				{
@@ -333,7 +333,7 @@ c_utils_int16_t c_utils_load_png(const c_utils_char_t *const filename, struct c_
 
 					image->data = (c_utils_uint8_t *)malloc((size_t)width * (size_t)height * (size_t)channels);
 
-					if(image->data == (c_utils_uint8_t *)0)
+					if(!image->data)
 					{
 						png_destroy_read_struct(&png_ptr, &info_ptr, (png_infopp)(void *)0);
 
@@ -350,9 +350,9 @@ c_utils_int16_t c_utils_load_png(const c_utils_char_t *const filename, struct c_
 					{
 						row_pointers = (png_bytep *)malloc((size_t)height * sizeof(png_bytep));
 
-						if(row_pointers == (png_bytep *)0)
+						if(!row_pointers)
 						{
-							free(image->data);
+							free((void *)image->data);
 							image->data = (c_utils_uint8_t *)0;
 
 							png_destroy_read_struct(&png_ptr, &info_ptr, (png_infopp)(void *)0);
@@ -413,14 +413,14 @@ c_utils_int16_t c_utils_load_png(const c_utils_char_t *const filename, struct c_
 
 c_utils_int16_t c_utils_save_jpg(const c_utils_char_t *const filename, struct c_utils_image image, c_utils_int8_t quality)
 {
-	if(filename == (c_utils_char_t *)0)
+	if(!filename)
 	{
 		fprintf(stderr, "Error in function c_utils_save_jpg (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
 		return C_UTILS_FAILURE;
 	}
 
-	if(image.data == (c_utils_uint8_t *)0)
+	if(!image.data)
 	{
 		fprintf(stderr, "Error in function c_utils_save_jpg (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
@@ -445,8 +445,11 @@ c_utils_int16_t c_utils_save_jpg(const c_utils_char_t *const filename, struct c_
 	{
 		FILE *const fp = fopen(filename, "wb");
 
-		if(fp == (FILE *)0)
+		if(!fp)
 		{
+			fprintf(stderr, "Error in function c_utils_save_jpg, fopen failed (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+			perror("Error");
+
 			return C_UTILS_FAILURE;
 		}
 
@@ -462,7 +465,7 @@ c_utils_int16_t c_utils_save_jpg(const c_utils_char_t *const filename, struct c_
 			{
 				rgb_data = (c_utils_uint8_t *)malloc((size_t)image.width * (size_t)image.height * 3u);
 
-				if(rgb_data == (c_utils_uint8_t *)0)
+				if(!rgb_data)
 				{
 					if(fclose(fp) != 0)
 					{
@@ -575,14 +578,14 @@ c_utils_int16_t c_utils_save_jpg(const c_utils_char_t *const filename, struct c_
 
 c_utils_int16_t c_utils_load_jpg(const c_utils_char_t *const filename, struct c_utils_image *const image)
 {
-	if(filename == (c_utils_char_t *)0)
+	if(!filename)
 	{
 		fprintf(stderr, "Error in function c_utils_load_jpg filename does not exist (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
 		return C_UTILS_FAILURE;
 	}
 
-	if(image == (struct c_utils_image *)0)
+	if(!image)
 	{
 		fprintf(stderr, "Error in function c_utils_load_jpg image is an invalid pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
@@ -600,7 +603,7 @@ c_utils_int16_t c_utils_load_jpg(const c_utils_char_t *const filename, struct c_
 	{
 		FILE *const fp = fopen(filename, "rb");
 
-		if(fp == (FILE *)0)
+		if(!fp)
 		{
 			fprintf(stderr, "Error in function c_utils_load_jpg, fopen failed (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 			perror("Error");
@@ -645,7 +648,7 @@ c_utils_int16_t c_utils_load_jpg(const c_utils_char_t *const filename, struct c_
 			image->channels = (c_utils_uint8_t)cinfo.output_components;
 			image->data = (c_utils_uint8_t *)malloc((size_t)image->width * (size_t)image->height * (size_t)image->channels);
 
-			if(image->data == (c_utils_uint8_t *)0)
+			if(!image->data)
 			{
 				jpeg_destroy_decompress(&cinfo);
 
@@ -703,14 +706,14 @@ c_utils_int16_t c_utils_load_jpg(const c_utils_char_t *const filename, struct c_
 
 c_utils_int16_t c_utils_image_flip_vertical(struct c_utils_image *const image)
 {
-	if(image == (struct c_utils_image *)0)
+	if(!image)
 	{
 		fprintf(stderr, "Error in function c_utils_image_flip_vertical, image is invalid (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
 		return C_UTILS_FAILURE;
 	}
 
-	if(image->data == (c_utils_uint8_t *)0)
+	if(!image->data)
 	{
 		fprintf(stderr, "Error in function c_utils_image_flip_vertical, image->data is invalid (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
@@ -736,8 +739,11 @@ c_utils_int16_t c_utils_image_flip_vertical(struct c_utils_image *const image)
 		size_t row_size = (size_t)image->width * (size_t)image->channels;
 		c_utils_uint8_t *temp = (c_utils_uint8_t *)malloc((size_t)row_size);
 
-		if(temp == (c_utils_uint8_t *)0)
+		if(!temp)
 		{
+			fprintf(stderr, "Error in function c_utils_image_flip_vertical, image->channels != 3 && image->channels != 4 (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+			perror("Error");
+
 			return C_UTILS_FAILURE;
 		}
 
@@ -752,12 +758,12 @@ c_utils_int16_t c_utils_image_flip_vertical(struct c_utils_image *const image)
 				top = image->data + (size_t)i * row_size;
 				bottom = image->data + (size_t)(image->height - 1u - i) * row_size;
 
-				memcpy(temp,   top,    row_size);
-				memcpy(top,    bottom, row_size);
-				memcpy(bottom, temp,   row_size);
+				memcpy((void *)temp, (void *)top, row_size);
+				memcpy((void *)top, (void *)bottom, row_size);
+				memcpy((void *)bottom, (void *)temp, row_size);
 			}
 
-			free(temp);
+			free((void *)temp);
 		}
 	}
 

@@ -31,28 +31,28 @@ const c_utils_float64_t C_UTILS_MATH_E_FLOAT64  = 2.718281828459045;
 
 c_utils_int16_t c_utils_generic_summation(const void *const lower_bound, const void *const upper_bound, const void *(*const f)(const void *const i, const size_t f_element_size), const size_t element_size, const void *const result)
 {
-	if(lower_bound == (void *)0)
+	if(!lower_bound)
 	{
 		fprintf(stderr, "Error in function c_utils_generic_summation (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
 		return C_UTILS_FAILURE;
 	}
 
-	if(upper_bound == (void *)0)
+	if(!upper_bound)
 	{
 		fprintf(stderr, "Error in function c_utils_generic_summation (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
 		return C_UTILS_FAILURE;
 	}
 
-	if(f == 0)
+	if(!f)
 	{
 		fprintf(stderr, "Error in function c_utils_generic_summation (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
 		return C_UTILS_FAILURE;
 	}
 
-	if(result == (void *)0)
+	if(!result)
 	{
 		fprintf(stderr, "Error in function c_utils_generic_summation (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
@@ -78,7 +78,7 @@ c_utils_int16_t c_utils_generic_summation(const void *const lower_bound, const v
 			c_utils_float32_t current_value = counter;
 			const void *const term_pointer = f((void *)&current_value, element_size);
 
-			if(term_pointer == (void *)0)
+			if(!term_pointer)
 			{
 				fprintf(stderr, "Error in function c_utils_generic_summation (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
@@ -136,7 +136,7 @@ c_utils_int16_t c_utils_generic_summation(const void *const lower_bound, const v
 			c_utils_float64_t current_value = counter;
 			const void *const term_pointer = f((void *)&current_value, element_size);
 
-			if(term_pointer == (void *)0)
+			if(!term_pointer)
 			{
 				fprintf(stderr, "Error in function c_utils_generic_summation (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
@@ -187,28 +187,28 @@ c_utils_int16_t c_utils_generic_summation(const void *const lower_bound, const v
 
 c_utils_int16_t c_utils_generic_product(const void *const lower_bound, const void *const upper_bound, const void *(*const f)(const void *const i, const size_t f_element_size), const size_t element_size, const void *const result)
 {
-	if(lower_bound == (void *)0)
+	if(!lower_bound)
 	{
 		fprintf(stderr, "Error in function c_utils_generic_product (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
 		return C_UTILS_FAILURE;
 	}
 
-	if(upper_bound == (void *)0)
+	if(!upper_bound)
 	{
 		fprintf(stderr, "Error in function c_utils_generic_product (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
 		return C_UTILS_FAILURE;
 	}
 
-	if(f == 0)
+	if(!f)
 	{
 		fprintf(stderr, "Error in function c_utils_generic_product (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
 		return C_UTILS_FAILURE;
 	}
 
-	if(result == (void *)0)
+	if(!result)
 	{
 		fprintf(stderr, "Error in function c_utils_generic_product (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
@@ -234,7 +234,7 @@ c_utils_int16_t c_utils_generic_product(const void *const lower_bound, const voi
 			c_utils_float32_t current_value = counter;
 			const void *const term_pointer = f((void *)&current_value, element_size);
 
-			if(term_pointer == (void *)0)
+			if(!term_pointer)
 			{
 				fprintf(stderr, "Error in function c_utils_generic_product (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
@@ -291,7 +291,7 @@ c_utils_int16_t c_utils_generic_product(const void *const lower_bound, const voi
 			c_utils_float64_t current_value = counter;
 			const void *const term_pointer = f((void *)&current_value, element_size);
 
-			if(term_pointer == (void *)0)
+			if(!term_pointer)
 			{
 				fprintf(stderr, "Error in function c_utils_generic_product (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
@@ -341,14 +341,14 @@ c_utils_int16_t c_utils_generic_product(const void *const lower_bound, const voi
 
 c_utils_int16_t c_utils_factorial(const void *const value, const size_t element_size, const void *const result)
 {
-	if(value == (void *)0)
+	if(!value)
 	{
 		fprintf(stderr, "Error in function c_utils_factorial (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
 		return C_UTILS_FAILURE;
 	}
 
-	if(result == (void *)0)
+	if(!result)
 	{
 		fprintf(stderr, "Error in function c_utils_factorial (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
@@ -451,21 +451,21 @@ c_utils_int16_t c_utils_factorial(const void *const value, const size_t element_
 
 c_utils_int16_t c_utils_generic_log_base(const void *const base, const void *const value, const size_t element_size, void *const result)
 {
-	if(base == (void *)0)
+	if(!base)
 	{
 		fprintf(stderr, "Error in function c_utils_generic_log_base (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
 		return C_UTILS_FAILURE;
 	}
 
-	if(value == (void *)0)
+	if(!value)
 	{
 		fprintf(stderr, "Error in function c_utils_generic_log_base (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
 		return C_UTILS_FAILURE;
 	}
 
-	if(result == (void *)0)
+	if(!result)
 	{
 		fprintf(stderr, "Error in function c_utils_generic_log_base (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 

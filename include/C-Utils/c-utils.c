@@ -132,7 +132,7 @@ c_utils_int16_t c_utils_mem_free_and_unregist(const void *const address)
 		return C_UTILS_FAILURE;
 	}
 
-	if(address == (void *)0)
+	if(!address)
 	{
 		fprintf(stderr, "Error in function c_utils_mem_free_and_unregist, invalid address (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
@@ -165,7 +165,7 @@ c_utils_int16_t c_utils_mem_free_and_unregist(const void *const address)
 
 c_utils_int16_t c_utils_get_current_time(struct tm *const time_struct)
 {
-	if(time_struct == (struct tm *)0)
+	if(!time_struct)
 	{
 		fprintf(stderr, "Error in function c_utils_get_current_time (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
@@ -193,7 +193,7 @@ c_utils_int16_t c_utils_get_current_time(struct tm *const time_struct)
 				return C_UTILS_FAILURE;
 			}
 #elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
-			if(localtime_r(&now, time_struct) == (struct tm *)0)
+			if(!localtime_r(&now, time_struct))
 			{
 				fprintf(stderr, "Error in function localtime_r (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
@@ -202,7 +202,7 @@ c_utils_int16_t c_utils_get_current_time(struct tm *const time_struct)
 #else
 			const struct tm *const result = localtime(&now);
 
-			if(result == (struct tm *)0)
+			if(!result)
 			{
 				fprintf(stderr, "Error in function localtime (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
@@ -369,7 +369,7 @@ c_utils_int16_t c_utils_terminate(void)
 			}
 		}
 
-		free(c_utils_addresses_to_free);
+		free((void *)c_utils_addresses_to_free);
 
 		c_utils_addresses_to_free = (void **)0;
 		c_utils_addresses_to_free_count = 0u;
@@ -382,7 +382,7 @@ c_utils_int16_t c_utils_terminate(void)
 
 c_utils_int16_t c_utils_mem_regist_to_free(const void *const address)
 {
-	if(address == (void *)0)
+	if(!address)
 	{
 		fprintf(stderr, "Error in function c_utils_mem_regist_to_free (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
@@ -424,7 +424,7 @@ c_utils_int16_t c_utils_mem_regist_to_free(const void *const address)
 				c_utils_uint32_t new_cap = (c_utils_addresses_to_free_cap == 0u) ? 8u : (c_utils_addresses_to_free_cap << 1);
 				void **new_block = (void **)realloc((void *)c_utils_addresses_to_free, (size_t)new_cap * sizeof(void *));
 
-				if(new_block == (void **)0)
+				if(!new_block)
 				{
 					fprintf(stderr, "Error in function c_utils_mem_regist_to_free (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
@@ -482,7 +482,7 @@ c_utils_int16_t c_utils_url_opener(const c_utils_char_t *const url)
 
 	return C_UTILS_FAILURE;
 #else
-	if(url == (c_utils_char_t *)0)
+	if(!url)
 	{
 		return C_UTILS_FAILURE;
 	}
@@ -610,7 +610,7 @@ c_utils_int16_t c_utils_make_directory(const c_utils_char_t *const path, c_utils
 
 	return C_UTILS_FAILURE;
 #else
-	if(path == (c_utils_char_t *)0)
+	if(!path)
 	{
 		fprintf(stderr, "Error in function c_utils_make_directory (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
@@ -746,24 +746,31 @@ signed int c_utils_scan_character(void)
 #endif
 }
 
-void *c_utils_mem_allocate(const void *const old_pointer, const size_t size)
+c_utils_int16_t c_utils_mem_allocate(const void **const address_pointer, const size_t size)
 {
 	if(size == 0u)
 	{
 		fprintf(stderr, "Error in function c_utils_mem_allocate (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
-		return (void *)0;
+		return C_UTILS_FAILURE;
 	}
 
-	if(old_pointer == (void *)0)
+	if(!address_pointer)
+	{
+		fprintf(stderr, "Error in function c_utils_mem_allocate (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		return C_UTILS_FAILURE;
+	}
+
+	if(!(*address_pointer))
 	{
 		void *pointer = malloc(size);
 
-		if(pointer == (void *)0)
+		if(!pointer)
 		{
 			fprintf(stderr, "Error in function c_utils_mem_allocate (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
-			return (void *)0;
+			return C_UTILS_FAILURE;
 		}
 
 		if(c_utils_mem_regist_to_free(pointer) != C_UTILS_SUCCESS)
@@ -771,27 +778,32 @@ void *c_utils_mem_allocate(const void *const old_pointer, const size_t size)
 			fprintf(stderr, "Error in function c_utils_mem_allocate (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
 			free(pointer);
-			pointer = (void *)0;
+
+			return C_UTILS_FAILURE;
 		}
 
-		return pointer;
+		*address_pointer = pointer;
+
+		return C_UTILS_SUCCESS;
 	}
 
 	else
 	{
-		size_t saved_address  = (size_t)old_pointer;
-		const void *const new_pointer = realloc((void *)old_pointer, size);
+		size_t saved_address  = (size_t)(*address_pointer);
+		const void *const new_pointer = realloc((void *)*address_pointer, size);
 
-		if(new_pointer == (void *)0)
+		if(!new_pointer)
 		{
 			fprintf(stderr, "Error in function c_utils_mem_allocate (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
-			return ((void *)0);
+			return C_UTILS_FAILURE;
 		}
 
 		if(new_pointer == (void *)saved_address)
 		{
-			return (void *)new_pointer;
+			*address_pointer = new_pointer;
+
+			return C_UTILS_SUCCESS;
 		}
 
 		else
@@ -804,7 +816,9 @@ void *c_utils_mem_allocate(const void *const old_pointer, const size_t size)
 				{
 					c_utils_addresses_to_free[index] = (void *)new_pointer;
 
-					return (void *)new_pointer;
+					*address_pointer = new_pointer;
+
+					return C_UTILS_SUCCESS;
 				}
 			}
 
@@ -814,11 +828,13 @@ void *c_utils_mem_allocate(const void *const old_pointer, const size_t size)
 
 				free((void *)new_pointer);
 
-				return (void *)0;
+				return C_UTILS_FAILURE;
 			}
 		}
 
-		return (void *)new_pointer;
+		*address_pointer = new_pointer;
+
+		return C_UTILS_SUCCESS;
 	}
 }
 
@@ -836,7 +852,7 @@ const c_utils_char_t *c_utils_read_file(const c_utils_char_t *const path)
 		return (c_utils_char_t *)0;
 	}
 
-	if(path == (c_utils_char_t *)0)
+	if(!path)
 	{
 		fprintf(stderr, "Error in function c_utils_read_file, invalid path (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
@@ -847,7 +863,7 @@ const c_utils_char_t *c_utils_read_file(const c_utils_char_t *const path)
 	{
 		FILE *const file = fopen(path, "rb");
 
-		if(file == (FILE *)0)
+		if(!file)
 		{
 			const int error = errno;
 
@@ -904,7 +920,7 @@ const c_utils_char_t *c_utils_read_file(const c_utils_char_t *const path)
 				{
 					c_utils_char_t *buffer = (c_utils_char_t *)malloc((size_t)size + 1U);
 
-					if(buffer == (c_utils_char_t *)0)
+					if(!buffer)
 					{
 						if(fclose(file) != 0)
 						{
@@ -919,7 +935,7 @@ const c_utils_char_t *c_utils_read_file(const c_utils_char_t *const path)
 					{
 						fprintf(stderr, "Error in function fseek (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
-						free(buffer);
+						free((void *)buffer);
 
 						if(fclose(file) != 0)
 						{
@@ -932,9 +948,9 @@ const c_utils_char_t *c_utils_read_file(const c_utils_char_t *const path)
 
 					clearerr(file);
 
-					if(fread(buffer, 1U, (size_t)size, file) != (size_t)size)
+					if(fread((void *)buffer, 1U, (size_t)size, file) != (size_t)size)
 					{
-						free(buffer);
+						free((void *)buffer);
 
 						if(fclose(file) != 0)
 						{
