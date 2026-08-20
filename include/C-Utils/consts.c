@@ -39,15 +39,15 @@ const c_utils_char_t *const C_UTILS_FOREGROUND_WHITE_CLR = "\x1B[37m";
 /* C Utils errors handlers: */
 /****************************/
 
-const c_utils_int16_t C_UTILS_SUCCESS = 0;
-const c_utils_int16_t C_UTILS_FAILURE = 1;
+const c_utils_int16_t C_UTILS_RESULT_SUCCESS = 0;
+const c_utils_int16_t C_UTILS_RESULT_FAILURE = 1;
 
 /*********************************/
 /* Recommended precision values: */
 /*********************************/
 
-const signed int C_UTILS_MIN_RPV = 0;
-const signed int C_UTILS_MAX_RPV = 18;
+const signed int C_UTILS_MINIMUM_RPV = 0;
+const signed int C_UTILS_MAXIMUM_RPV = 18;
 
 /********************/
 /* Standardization: */
@@ -61,18 +61,21 @@ const c_utils_uint16_t C_UTILS_MACHINE_BITS =
 #elif defined(M_I86)
 16u
 #else
-0u
+#error "Unknown architecture"
 #endif
 ;
+
+const c_utils_bool_t C_UTILS_TRUE = 1;
+const c_utils_bool_t C_UTILS_FALSE = 0;
 
 /******************************/
 /* C-Utils version constants: */
 /******************************/
 
-const c_utils_int32_t C_UTILS_VERSION_FULL = 20260719L;
+const c_utils_int32_t C_UTILS_VERSION_FULL = 20260820L;
 const c_utils_int32_t C_UTILS_VERSION_YEAR = 2026L;
-const c_utils_int32_t C_UTILS_VERSION_MONTH = 7L;
-const c_utils_int32_t C_UTILS_VERSION_DAY = 19L;
+const c_utils_int32_t C_UTILS_VERSION_MONTH = 8L;
+const c_utils_int32_t C_UTILS_VERSION_DAY = 20L;
 
 /*****************************/
 /* End C to C++ importation: */

@@ -14,4 +14,5 @@ Compatible with:
 
 ## Credits
 
-**Created by: @paulao255 (Paulo Renato)**.
+**Entire C-Utils created by: @paulao255 (Paulo Renato)**.
+**Cryptorand (cryptrnd) created by: @mackron (Mackron)**.

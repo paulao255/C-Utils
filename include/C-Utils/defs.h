@@ -11,13 +11,13 @@
 
 #ifndef __STDC__
 #ifndef __cplusplus
-#error "FATAL ERROR: !__STDC__ && !__cplusplus (Not C90 or C++98)."
+#error "FATAL ERROR: !__STDC__ && !__cplusplus (Not C90 or C++98 compiler)."
 #endif
 #endif
 
-/******************************/
-/* Solve some systems issues: */
-/******************************/
+/**********************************************/
+/* Activate __USE_MINGW_ANSI_STDIO for MinGW: */
+/**********************************************/
 
 #if defined(__MINGW32__) && !defined(__USE_MINGW_ANSI_STDIO)
 #define __USE_MINGW_ANSI_STDIO 1
@@ -50,6 +50,13 @@
 #error "FATAL ERROR: CHAR_BIT != 8."
 #endif
 
+/****************/
+/* 0 Byte type: */
+/****************/
+
+/* C-Utils void type (0 bits). */
+typedef void c_utils_void_t;
+
 /*****************/
 /* 1 Byte types: */
 /*****************/
@@ -80,6 +87,9 @@ typedef unsigned char c_utils_uint8_t;
 
 /* C-Utils 8 bit unsigned integer maximum value. */
 #define C_UTILS_UINT8_MAX UCHAR_MAX
+
+/* C-Utils 1 byte boolean type (7 bit for numbers and 1 bit for signal). */
+typedef c_utils_int8_t c_utils_bool_t;
 
 /******************/
 /* 2 bytes types: */
@@ -259,6 +269,12 @@ typedef double c_utils_float64_t;
 #error "FATAL ERROR: IEEE 754 (Double precision float) not detected."
 #endif
 
+/**************************/
+/* C-Utils special types: */
+/**************************/
+
+typedef c_utils_int16_t c_utils_result;
+
 /********************/
 /* Import C to C++: */
 /********************/
@@ -311,32 +327,53 @@ extern const c_utils_char_t *const C_UTILS_FOREGROUND_CYAN_CLR;
 /* White terminal text constant. */
 extern const c_utils_char_t *const C_UTILS_FOREGROUND_WHITE_CLR;
 
-/****************************/
-/* C Utils errors handlers: */
-/****************************/
+/*****************************/
+/* C-Utils types of results: */
+/*****************************/
 
 /* C-Utils simple success code (0). */
-extern const c_utils_int16_t C_UTILS_SUCCESS;
+extern const c_utils_int16_t C_UTILS_RESULT_SUCCESS;
 
 /* C-Utils simple error code (1). */
-extern const c_utils_int16_t C_UTILS_FAILURE;
+extern const c_utils_int16_t C_UTILS_RESULT_FAILURE;
 
 /*********************************/
 /* Recommended precision values: */
 /*********************************/
 
 /* Minimum recommended precision value constant. */
-extern const signed int C_UTILS_MIN_RPV;
+extern const signed int C_UTILS_MINIMUM_RPV;
 
 /* Maximum recommended precision value constant. */
-extern const signed int C_UTILS_MAX_RPV;
+extern const signed int C_UTILS_MAXIMUM_RPV;
 
 /********************/
 /* Standardization: */
 /********************/
 
+/* C-Utils null pointer constant. */
+#ifndef C_UTILS_NULL_POINTER
+#define C_UTILS_NULL_POINTER 0
+#endif
+
+/* C-Utils null pointer constant (alternative name). */
+#ifndef C_UTILS_NULL_PTR
+#define C_UTILS_NULL_PTR 0
+#endif
+
+/* C-Utils null constant (alternative name). */
+#ifndef C_UTILS_NULL
+#define C_UTILS_NULL 0
+#endif
+
 /* C-Utils machine bits constant. */
 extern const c_utils_uint16_t C_UTILS_MACHINE_BITS;
+
+/* C-Utils true value constant (1). */
+extern const c_utils_bool_t C_UTILS_TRUE;
+
+/* C-Utils false value constant (0). */
+extern const c_utils_bool_t C_UTILS_FALSE;
 
 /******************************/
 /* C-Utils version constants: */

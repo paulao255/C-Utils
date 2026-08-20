@@ -20,20 +20,20 @@ extern "C"
 /* Functions definitions: */
 /**************************/
 
-c_utils_int16_t c_utils_generic_array_is_sorted(const void *const array, const size_t count, const size_t element_size, const c_utils_uint8_t type)
+extern c_utils_result c_utils_generic_array_is_sorted(const c_utils_void_t *const array, const size_t count, const size_t element_size, const c_utils_uint8_t type)
 {
 	if(!array)
 	{
 		fprintf(stderr, "Error in function c_utils_generic_array_is_sorted (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
-		return C_UTILS_FAILURE;
+		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(element_size == 0u || element_size > 8u)
 	{
 		fprintf(stderr, "Error in function c_utils_generic_array_is_sorted (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
-		return C_UTILS_FAILURE;
+		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(type == 0u)
@@ -45,7 +45,7 @@ c_utils_int16_t c_utils_generic_array_is_sorted(const void *const array, const s
 		{
 			if(type_array[index] > type_array[index + 1u])
 			{
-				return C_UTILS_FAILURE;
+				return C_UTILS_RESULT_FAILURE;
 			}
 		}
 	}
@@ -59,7 +59,7 @@ c_utils_int16_t c_utils_generic_array_is_sorted(const void *const array, const s
 		{
 			if(strcmp(type_array[index], type_array[index + 1u]) > 0)
 			{
-				return C_UTILS_FAILURE;
+				return C_UTILS_RESULT_FAILURE;
 			}
 		}
 	}
@@ -75,7 +75,7 @@ c_utils_int16_t c_utils_generic_array_is_sorted(const void *const array, const s
 			{
 				if(type_array[index] > type_array[index + 1u])
 				{
-					return C_UTILS_FAILURE;
+					return C_UTILS_RESULT_FAILURE;
 				}
 			}
 		}
@@ -89,7 +89,7 @@ c_utils_int16_t c_utils_generic_array_is_sorted(const void *const array, const s
 			{
 				if(type_array[index] > type_array[index + 1u])
 				{
-					return C_UTILS_FAILURE;
+					return C_UTILS_RESULT_FAILURE;
 				}
 			}
 		}
@@ -103,7 +103,7 @@ c_utils_int16_t c_utils_generic_array_is_sorted(const void *const array, const s
 			{
 				if(type_array[index] > type_array[index + 1u])
 				{
-					return C_UTILS_FAILURE;
+					return C_UTILS_RESULT_FAILURE;
 				}
 			}
 		}
@@ -119,7 +119,7 @@ defined(C_UTILS_ENABLE_INT64) || defined(C_UTILS_ENABLE_ALL_EXTENSIONS)
 			{
 				if(type_array[index] > type_array[index + 1u])
 				{
-					return C_UTILS_FAILURE;
+					return C_UTILS_RESULT_FAILURE;
 				}
 			}
 		}
@@ -129,7 +129,7 @@ defined(C_UTILS_ENABLE_INT64) || defined(C_UTILS_ENABLE_ALL_EXTENSIONS)
 		{
 			fprintf(stderr, "Error in function c_utils_generic_array_is_sorted (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
-			return C_UTILS_FAILURE;
+			return C_UTILS_RESULT_FAILURE;
 		}
 	}
 
@@ -144,7 +144,7 @@ defined(C_UTILS_ENABLE_INT64) || defined(C_UTILS_ENABLE_ALL_EXTENSIONS)
 			{
 				if(type_array[index] > type_array[index + 1u])
 				{
-					return C_UTILS_FAILURE;
+					return C_UTILS_RESULT_FAILURE;
 				}
 			}
 		}
@@ -158,7 +158,7 @@ defined(C_UTILS_ENABLE_INT64) || defined(C_UTILS_ENABLE_ALL_EXTENSIONS)
 			{
 				if(type_array[index] > type_array[index + 1u])
 				{
-					return C_UTILS_FAILURE;
+					return C_UTILS_RESULT_FAILURE;
 				}
 			}
 		}
@@ -172,7 +172,7 @@ defined(C_UTILS_ENABLE_INT64) || defined(C_UTILS_ENABLE_ALL_EXTENSIONS)
 			{
 				if(type_array[index] > type_array[index + 1u])
 				{
-					return C_UTILS_FAILURE;
+					return C_UTILS_RESULT_FAILURE;
 				}
 			}
 		}
@@ -188,7 +188,7 @@ defined(C_UTILS_ENABLE_INT64) || defined(C_UTILS_ENABLE_ALL_EXTENSIONS)
 			{
 				if(type_array[index] > type_array[index + 1u])
 				{
-					return C_UTILS_FAILURE;
+					return C_UTILS_RESULT_FAILURE;
 				}
 			}
 		}
@@ -198,7 +198,7 @@ defined(C_UTILS_ENABLE_INT64) || defined(C_UTILS_ENABLE_ALL_EXTENSIONS)
 		{
 			fprintf(stderr, "Error in function c_utils_generic_array_is_sorted (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
-			return C_UTILS_FAILURE;
+			return C_UTILS_RESULT_FAILURE;
 		}
 
 	}
@@ -214,7 +214,7 @@ defined(C_UTILS_ENABLE_INT64) || defined(C_UTILS_ENABLE_ALL_EXTENSIONS)
 			{
 				if(type_array[index] > type_array[index + 1u])
 				{
-					return C_UTILS_FAILURE;
+					return C_UTILS_RESULT_FAILURE;
 				}
 			}
 		}
@@ -228,7 +228,7 @@ defined(C_UTILS_ENABLE_INT64) || defined(C_UTILS_ENABLE_ALL_EXTENSIONS)
 			{
 				if(type_array[index] > type_array[index + 1u])
 				{
-					return C_UTILS_FAILURE;
+					return C_UTILS_RESULT_FAILURE;
 				}
 			}
 		}
@@ -237,7 +237,7 @@ defined(C_UTILS_ENABLE_INT64) || defined(C_UTILS_ENABLE_ALL_EXTENSIONS)
 		{
 			fprintf(stderr, "Error in function c_utils_generic_array_is_sorted (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
-			return C_UTILS_FAILURE;
+			return C_UTILS_RESULT_FAILURE;
 		}
 	}
 
@@ -245,26 +245,26 @@ defined(C_UTILS_ENABLE_INT64) || defined(C_UTILS_ENABLE_ALL_EXTENSIONS)
 	{
 		fprintf(stderr, "Error in function c_utils_generic_array_is_sorted (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
-		return C_UTILS_FAILURE;
+		return C_UTILS_RESULT_FAILURE;
 	}
 
-	return C_UTILS_SUCCESS;
+	return C_UTILS_RESULT_SUCCESS;
 }
 
-c_utils_int16_t c_utils_generic_insertion_sort(const void *const array, const size_t count, const size_t element_size, const c_utils_uint8_t type)
+extern c_utils_result c_utils_generic_insertion_sort(const c_utils_void_t *const array, const size_t count, const size_t element_size, const c_utils_uint8_t type)
 {
 	if(!array)
 	{
 		fprintf(stderr, "Error in function c_utils_generic_insertion_sort (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
-		return C_UTILS_FAILURE;
+		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(element_size == 0u || element_size > 8u)
 	{
 		fprintf(stderr, "Error in function c_utils_generic_insertion_sort (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
-		return C_UTILS_FAILURE;
+		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(type == 0u)
@@ -396,7 +396,7 @@ c_utils_int16_t c_utils_generic_insertion_sort(const void *const array, const si
 		{
 			fprintf(stderr, "Error in function c_utils_generic_insertion_sort (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
-			return C_UTILS_FAILURE;
+			return C_UTILS_RESULT_FAILURE;
 		}
 	}
 
@@ -489,7 +489,7 @@ c_utils_int16_t c_utils_generic_insertion_sort(const void *const array, const si
 		{
 			fprintf(stderr, "Error in function c_utils_generic_insertion_sort (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
-			return C_UTILS_FAILURE;
+			return C_UTILS_RESULT_FAILURE;
 		}
 	}
 
@@ -539,7 +539,7 @@ c_utils_int16_t c_utils_generic_insertion_sort(const void *const array, const si
 		{
 			fprintf(stderr, "Error in function c_utils_generic_insertion_sort (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
-			return C_UTILS_FAILURE;
+			return C_UTILS_RESULT_FAILURE;
 		}
 	}
 
@@ -547,26 +547,26 @@ c_utils_int16_t c_utils_generic_insertion_sort(const void *const array, const si
 	{
 		fprintf(stderr, "Error in function c_utils_generic_insertion_sort (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
-		return C_UTILS_FAILURE;
+		return C_UTILS_RESULT_FAILURE;
 	}
 
-	return C_UTILS_SUCCESS;
+	return C_UTILS_RESULT_SUCCESS;
 }
 
-c_utils_int16_t c_utils_generic_merge_sort(const void *const array, const size_t count, const size_t element_size, const c_utils_uint8_t type)
+extern c_utils_result c_utils_generic_merge_sort(const c_utils_void_t *const array, const size_t count, const size_t element_size, const c_utils_uint8_t type)
 {
 	if(!array)
 	{
 		fprintf(stderr, "Error in function c_utils_generic_merge_sort (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
-		return C_UTILS_FAILURE;
+		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(element_size == 0u || element_size > 8u)
 	{
 		fprintf(stderr, "Error in function c_utils_generic_merge_sort (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
-		return C_UTILS_FAILURE;
+		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(count > 1u)
@@ -580,7 +580,7 @@ c_utils_int16_t c_utils_generic_merge_sort(const void *const array, const size_t
 			{
 				fprintf(stderr, "Error in function c_utils_generic_merge_sort (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
-				return C_UTILS_FAILURE;
+				return C_UTILS_RESULT_FAILURE;
 			}
 
 			else
@@ -626,7 +626,7 @@ c_utils_int16_t c_utils_generic_merge_sort(const void *const array, const size_t
 					}
 				}
 
-				free((void *)temporary_array);
+				free((c_utils_void_t *)temporary_array);
 			}
 		}
 
@@ -639,7 +639,7 @@ c_utils_int16_t c_utils_generic_merge_sort(const void *const array, const size_t
 			{
 				fprintf(stderr, "Error in function c_utils_generic_merge_sort (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
-				return C_UTILS_FAILURE;
+				return C_UTILS_RESULT_FAILURE;
 			}
 
 			else
@@ -685,7 +685,7 @@ c_utils_int16_t c_utils_generic_merge_sort(const void *const array, const size_t
 					}
 				}
 
-				free((void *)temporary_array);
+				free((c_utils_void_t *)temporary_array);
 			}
 		}
 
@@ -700,7 +700,7 @@ c_utils_int16_t c_utils_generic_merge_sort(const void *const array, const size_t
 				{
 					fprintf(stderr, "Error in function c_utils_generic_merge_sort (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
-					return C_UTILS_FAILURE;
+					return C_UTILS_RESULT_FAILURE;
 				}
 
 				else
@@ -746,7 +746,7 @@ c_utils_int16_t c_utils_generic_merge_sort(const void *const array, const size_t
 						}
 					}
 
-					free((void *)temporary_array);
+					free((c_utils_void_t *)temporary_array);
 				}
 			}
 
@@ -759,7 +759,7 @@ c_utils_int16_t c_utils_generic_merge_sort(const void *const array, const size_t
 				{
 					fprintf(stderr, "Error in function c_utils_generic_merge_sort (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
-					return C_UTILS_FAILURE;
+					return C_UTILS_RESULT_FAILURE;
 				}
 
 				else
@@ -805,7 +805,7 @@ c_utils_int16_t c_utils_generic_merge_sort(const void *const array, const size_t
 						}
 					}
 
-					free((void *)temporary_array);
+					free((c_utils_void_t *)temporary_array);
 				}
 			}
 
@@ -818,7 +818,7 @@ c_utils_int16_t c_utils_generic_merge_sort(const void *const array, const size_t
 				{
 					fprintf(stderr, "Error in function c_utils_generic_merge_sort (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
-					return C_UTILS_FAILURE;
+					return C_UTILS_RESULT_FAILURE;
 				}
 
 				else
@@ -864,7 +864,7 @@ c_utils_int16_t c_utils_generic_merge_sort(const void *const array, const size_t
 						}
 					}
 
-					free((void *)temporary_array);
+					free((c_utils_void_t *)temporary_array);
 				}
 			}
 #if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) || (defined(__cplusplus) && __cplusplus >= 201103L) || \
@@ -879,7 +879,7 @@ c_utils_int16_t c_utils_generic_merge_sort(const void *const array, const size_t
 				{
 					fprintf(stderr, "Error in function c_utils_generic_merge_sort (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
-					return C_UTILS_FAILURE;
+					return C_UTILS_RESULT_FAILURE;
 				}
 
 				else
@@ -925,7 +925,7 @@ c_utils_int16_t c_utils_generic_merge_sort(const void *const array, const size_t
 						}
 					}
 
-					free((void *)temporary_array);
+					free((c_utils_void_t *)temporary_array);
 				}
 			}
 #endif
@@ -934,7 +934,7 @@ c_utils_int16_t c_utils_generic_merge_sort(const void *const array, const size_t
 			{
 				fprintf(stderr, "Error in function c_utils_generic_merge_sort (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
-				return C_UTILS_FAILURE;
+				return C_UTILS_RESULT_FAILURE;
 			}
 		}
 
@@ -949,7 +949,7 @@ c_utils_int16_t c_utils_generic_merge_sort(const void *const array, const size_t
 				{
 					fprintf(stderr, "Error in function c_utils_generic_merge_sort (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
-					return C_UTILS_FAILURE;
+					return C_UTILS_RESULT_FAILURE;
 				}
 
 				else
@@ -995,7 +995,7 @@ c_utils_int16_t c_utils_generic_merge_sort(const void *const array, const size_t
 						}
 					}
 
-					free((void *)temporary_array);
+					free((c_utils_void_t *)temporary_array);
 				}
 			}
 
@@ -1008,7 +1008,7 @@ c_utils_int16_t c_utils_generic_merge_sort(const void *const array, const size_t
 				{
 					fprintf(stderr, "Error in function c_utils_generic_merge_sort (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
-					return C_UTILS_FAILURE;
+					return C_UTILS_RESULT_FAILURE;
 				}
 
 				else
@@ -1054,7 +1054,7 @@ c_utils_int16_t c_utils_generic_merge_sort(const void *const array, const size_t
 						}
 					}
 
-					free((void *)temporary_array);
+					free((c_utils_void_t *)temporary_array);
 				}
 			}
 
@@ -1067,7 +1067,7 @@ c_utils_int16_t c_utils_generic_merge_sort(const void *const array, const size_t
 				{
 					fprintf(stderr, "Error in function c_utils_generic_merge_sort (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
-					return C_UTILS_FAILURE;
+					return C_UTILS_RESULT_FAILURE;
 				}
 
 				else
@@ -1113,7 +1113,7 @@ c_utils_int16_t c_utils_generic_merge_sort(const void *const array, const size_t
 						}
 					}
 
-					free((void *)temporary_array);
+					free((c_utils_void_t *)temporary_array);
 				}
 			}
 #if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) || (defined(__cplusplus) && __cplusplus >= 201103L) || \
@@ -1128,7 +1128,7 @@ c_utils_int16_t c_utils_generic_merge_sort(const void *const array, const size_t
 				{
 					fprintf(stderr, "Error in function c_utils_generic_merge_sort (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
-					return C_UTILS_FAILURE;
+					return C_UTILS_RESULT_FAILURE;
 				}
 
 				else
@@ -1174,7 +1174,7 @@ c_utils_int16_t c_utils_generic_merge_sort(const void *const array, const size_t
 						}
 					}
 
-					free((void *)temporary_array);
+					free((c_utils_void_t *)temporary_array);
 				}
 			}
 #endif
@@ -1183,7 +1183,7 @@ c_utils_int16_t c_utils_generic_merge_sort(const void *const array, const size_t
 			{
 				fprintf(stderr, "Error in function c_utils_generic_merge_sort (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
-				return C_UTILS_FAILURE;
+				return C_UTILS_RESULT_FAILURE;
 			}
 		}
 
@@ -1198,7 +1198,7 @@ c_utils_int16_t c_utils_generic_merge_sort(const void *const array, const size_t
 				{
 					fprintf(stderr, "Error in function c_utils_generic_merge_sort (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
-					return C_UTILS_FAILURE;
+					return C_UTILS_RESULT_FAILURE;
 				}
 
 				else
@@ -1244,7 +1244,7 @@ c_utils_int16_t c_utils_generic_merge_sort(const void *const array, const size_t
 						}
 					}
 
-					free((void *)temporary_array);
+					free((c_utils_void_t *)temporary_array);
 				}
 			}
 
@@ -1257,7 +1257,7 @@ c_utils_int16_t c_utils_generic_merge_sort(const void *const array, const size_t
 				{
 					fprintf(stderr, "Error in function c_utils_generic_merge_sort (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
-					return C_UTILS_FAILURE;
+					return C_UTILS_RESULT_FAILURE;
 				}
 
 				else
@@ -1303,7 +1303,7 @@ c_utils_int16_t c_utils_generic_merge_sort(const void *const array, const size_t
 						}
 					}
 
-					free((void *)temporary_array);
+					free((c_utils_void_t *)temporary_array);
 				}
 			}
 
@@ -1311,7 +1311,7 @@ c_utils_int16_t c_utils_generic_merge_sort(const void *const array, const size_t
 			{
 				fprintf(stderr, "Error in function c_utils_generic_merge_sort (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
-				return C_UTILS_FAILURE;
+				return C_UTILS_RESULT_FAILURE;
 			}
 		}
 
@@ -1319,41 +1319,41 @@ c_utils_int16_t c_utils_generic_merge_sort(const void *const array, const size_t
 		{
 			fprintf(stderr, "Error in function c_utils_generic_merge_sort (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
-			return C_UTILS_FAILURE;
+			return C_UTILS_RESULT_FAILURE;
 		}
 	}
 
-	return C_UTILS_SUCCESS;
+	return C_UTILS_RESULT_SUCCESS;
 }
 
-c_utils_int16_t c_utils_generic_linear_search(const void *const array, const void *const target, const size_t count, const size_t element_size, const c_utils_uint8_t type, size_t *const position)
+extern c_utils_result c_utils_generic_linear_search(const c_utils_void_t *const array, const c_utils_void_t *const target, const size_t count, const size_t element_size, const c_utils_uint8_t type, size_t *const position)
 {
 	if(!array)
 	{
 		fprintf(stderr, "Error in function c_utils_generic_linear_search (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
-		return C_UTILS_FAILURE;
+		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!target)
 	{
 		fprintf(stderr, "Error in function c_utils_generic_linear_search (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
-		return C_UTILS_FAILURE;
+		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!position)
 	{
 		fprintf(stderr, "Error in function c_utils_generic_linear_search (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
-		return C_UTILS_FAILURE;
+		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(element_size == 0u || element_size > 8u)
 	{
 		fprintf(stderr, "Error in function c_utils_generic_linear_search (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
-		return C_UTILS_FAILURE;
+		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(type == 0u)
@@ -1455,7 +1455,7 @@ defined(C_UTILS_ENABLE_INT64) || defined(C_UTILS_ENABLE_ALL_EXTENSIONS)
 		{
 			fprintf(stderr, "Error in function c_utils_generic_linear_search (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
-			return C_UTILS_FAILURE;
+			return C_UTILS_RESULT_FAILURE;
 		}
 	}
 
@@ -1528,7 +1528,7 @@ defined(C_UTILS_ENABLE_INT64) || defined(C_UTILS_ENABLE_ALL_EXTENSIONS)
 		{
 			fprintf(stderr, "Error in function c_utils_generic_linear_search (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
-			return C_UTILS_FAILURE;
+			return C_UTILS_RESULT_FAILURE;
 		}
 	}
 
@@ -1580,7 +1580,7 @@ defined(C_UTILS_ENABLE_INT64) || defined(C_UTILS_ENABLE_ALL_EXTENSIONS)
 		{
 			fprintf(stderr, "Error in function c_utils_generic_linear_search (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
-			return C_UTILS_FAILURE;
+			return C_UTILS_RESULT_FAILURE;
 		}
 	}
 
@@ -1588,40 +1588,40 @@ defined(C_UTILS_ENABLE_INT64) || defined(C_UTILS_ENABLE_ALL_EXTENSIONS)
 	{
 		fprintf(stderr, "Error in function c_utils_generic_linear_search (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
-		return C_UTILS_FAILURE;
+		return C_UTILS_RESULT_FAILURE;
 	}
 
-	return C_UTILS_SUCCESS;
+	return C_UTILS_RESULT_SUCCESS;
 }
 
-c_utils_int16_t c_utils_generic_binary_search(const void *const array, const void *const target, const size_t count, const size_t element_size, const c_utils_uint8_t type, size_t *const position)
+extern c_utils_result c_utils_generic_binary_search(const c_utils_void_t *const array, const c_utils_void_t *const target, const size_t count, const size_t element_size, const c_utils_uint8_t type, size_t *const position)
 {
 	if(!array)
 	{
 		fprintf(stderr, "Error in function c_utils_generic_binary_search (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
-		return C_UTILS_FAILURE;
+		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!target)
 	{
 		fprintf(stderr, "Error in function c_utils_generic_binary_search (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
-		return C_UTILS_FAILURE;
+		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!position)
 	{
 		fprintf(stderr, "Error in function c_utils_generic_binary_search (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
-		return C_UTILS_FAILURE;
+		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(element_size == 0u || element_size > 8u)
 	{
 		fprintf(stderr, "Error in function c_utils_generic_binary_search (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
-		return C_UTILS_FAILURE;
+		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(type == 0u)
@@ -1809,7 +1809,7 @@ defined(C_UTILS_ENABLE_INT64) || defined(C_UTILS_ENABLE_ALL_EXTENSIONS)
 		{
 			fprintf(stderr, "Error in function c_utils_generic_binary_search (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
-			return C_UTILS_FAILURE;
+			return C_UTILS_RESULT_FAILURE;
 		}
 	}
 
@@ -1938,7 +1938,7 @@ defined(C_UTILS_ENABLE_INT64) || defined(C_UTILS_ENABLE_ALL_EXTENSIONS)
 		{
 			fprintf(stderr, "Error in function c_utils_generic_binary_search (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
-			return C_UTILS_FAILURE;
+			return C_UTILS_RESULT_FAILURE;
 		}
 	}
 
@@ -2026,7 +2026,7 @@ defined(C_UTILS_ENABLE_INT64) || defined(C_UTILS_ENABLE_ALL_EXTENSIONS)
 		{
 			fprintf(stderr, "Error in function c_utils_generic_binary_search (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
-			return C_UTILS_FAILURE;
+			return C_UTILS_RESULT_FAILURE;
 		}
 	}
 
@@ -2034,10 +2034,10 @@ defined(C_UTILS_ENABLE_INT64) || defined(C_UTILS_ENABLE_ALL_EXTENSIONS)
 	{
 		fprintf(stderr, "Error in function c_utils_generic_binary_search (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
-		return C_UTILS_FAILURE;
+		return C_UTILS_RESULT_FAILURE;
 	}
 
-	return C_UTILS_SUCCESS;
+	return C_UTILS_RESULT_SUCCESS;
 }
 
 /*****************************/

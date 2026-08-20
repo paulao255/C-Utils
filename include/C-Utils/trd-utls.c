@@ -20,49 +20,49 @@ extern "C"
 /* Functions definitions: */
 /**************************/
 
-c_utils_int16_t c_utils_thread_create(c_utils_thread_t *const thread, c_utils_thread_function_t (*f)(void *arguments), void *arguments)
+extern c_utils_result c_utils_thread_create(c_utils_thread_t *const thread, c_utils_thread_function_t (*f)(c_utils_void_t *arguments), c_utils_void_t *arguments)
 {
 #if defined(_WIN32) || defined(_WIN64)
-	return ((*thread = CreateThread((LPSECURITY_ATTRIBUTES *)0, 0UL, (LPTHREAD_START_ROUTINE)f, arguments, 0, (LPDWORD *)0)) == (HANDLE *)0) ? C_UTILS_FAILURE : C_UTILS_SUCCESS;
+	return !(*thread = CreateThread(C_UTILS_NULL_POINTER, 0UL, (LPTHREAD_START_ROUTINE)f, arguments, 0, C_UTILS_NULL_POINTER)) ? C_UTILS_RESULT_FAILURE : C_UTILS_RESULT_SUCCESS;
 #elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
-	return (pthread_create(thread, (pthread_attr_t *)0, f, arguments) != 0) ? C_UTILS_FAILURE : C_UTILS_SUCCESS;
+	return pthread_create(thread, C_UTILS_NULL_POINTER, f, arguments) ? C_UTILS_RESULT_FAILURE : C_UTILS_RESULT_SUCCESS;
 #endif
 }
 
-c_utils_int16_t c_utils_thread_join(c_utils_thread_t thread)
+extern c_utils_result c_utils_thread_join(c_utils_thread_t thread)
 {
 #if defined(_WIN32) || defined(_WIN64)
 	if(WaitForSingleObject(thread, INFINITE) != WAIT_OBJECT_0)
 	{
 		if(!CloseHandle(thread))
 		{
-			return C_UTILS_FAILURE;
+			return C_UTILS_RESULT_FAILURE;
 		}
 
-		return C_UTILS_FAILURE;
+		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!CloseHandle(thread))
 	{
-		return C_UTILS_FAILURE;
+		return C_UTILS_RESULT_FAILURE;
 	}
 
-	return C_UTILS_SUCCESS;
+	return C_UTILS_RESULT_SUCCESS;
 #elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
-	return (pthread_join(thread, (void **)0) != 0) ? C_UTILS_FAILURE : C_UTILS_SUCCESS;
+	return pthread_join(thread, C_UTILS_NULL_POINTER) ? C_UTILS_RESULT_FAILURE : C_UTILS_RESULT_SUCCESS;
 #endif
 }
 
-c_utils_int16_t c_utils_thread_detach(c_utils_thread_t thread)
+extern c_utils_result c_utils_thread_detach(c_utils_thread_t thread)
 {
 #if defined(_WIN32) || defined(_WIN64)
-	return (CloseHandle(thread) == 0) ? C_UTILS_FAILURE : C_UTILS_SUCCESS;
+	return (!CloseHandle(thread)) ? C_UTILS_RESULT_FAILURE : C_UTILS_RESULT_SUCCESS;
 #elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
-	return (pthread_detach(thread) != 0) ? C_UTILS_FAILURE : C_UTILS_SUCCESS;
+	return (pthread_detach(thread)) ? C_UTILS_RESULT_FAILURE : C_UTILS_RESULT_SUCCESS;
 #endif
 }
 
-c_utils_int32_t c_utils_get_maximum_threads(void)
+extern c_utils_int32_t c_utils_get_maximum_threads(c_utils_void_t)
 {
 #if defined(_WIN32) || defined(_WIN64)
 	return (c_utils_int32_t)GetActiveProcessorCount(ALL_PROCESSOR_GROUPS);

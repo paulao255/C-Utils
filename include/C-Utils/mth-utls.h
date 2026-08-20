@@ -43,16 +43,19 @@ extern const c_utils_float64_t C_UTILS_MATH_E_FLOAT64;
 /*************************/
 
 /* Function to calculate the summation of a sequence. */
-c_utils_int16_t c_utils_generic_summation(const void *const lower_bound, const void *const upper_bound, const void *(*const f)(const void *const i, const size_t f_element_size), const size_t element_size, const void *const result);
+extern c_utils_result c_utils_generic_summation(const c_utils_void_t *const lower_bound, const c_utils_void_t *const upper_bound, const c_utils_void_t *(*const f)(const c_utils_void_t *const i, const size_t f_element_size), const size_t element_size, const c_utils_void_t *const result);
 
 /* Function to calculate the product of a sequence. */
-c_utils_int16_t c_utils_generic_product(const void *const lower_bound, const void *const upper_bound, const void *(*const f)(const void *const i, const size_t f_element_size), const size_t element_size, const void *const result);
+extern c_utils_result c_utils_generic_product(const c_utils_void_t *const lower_bound, const c_utils_void_t *const upper_bound, const c_utils_void_t *(*const f)(const c_utils_void_t *const i, const size_t f_element_size), const size_t element_size, const c_utils_void_t *const result);
+
+/* Function to calculate the termial of a number. */
+extern c_utils_result c_utils_generic_termial(const c_utils_void_t *const value, const size_t element_size, const c_utils_void_t *const result);
 
 /* Function to calculate the factorial of a number. */
-c_utils_int16_t c_utils_factorial(const void *const value, const size_t element_size, const void *const result);
+extern c_utils_result c_utils_generic_factorial(const c_utils_void_t *const value, const size_t element_size, const c_utils_void_t *const result);
 
 /* Function to calculate the logarithm of a number in a given base. */
-c_utils_int16_t c_utils_generic_log_base(const void *const base, const void *const value, const size_t element_size, void *const result);
+extern c_utils_result c_utils_generic_log_base(const c_utils_void_t *const base, const c_utils_void_t *const value, const size_t element_size, c_utils_void_t *const result);
 
 /*****************************/
 /* End C to C++ importation: */

@@ -27,8 +27,8 @@
 #define C_UTILS_THREAD_FUNCTION_RETURN 0UL
 typedef HANDLE C_UTILS_THREAD_T;
 #elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
-#define C_UTILS_THREAD_FUNCTION_T void *
-#define C_UTILS_THREAD_FUNCTION_RETURN (void *)0
+#define C_UTILS_THREAD_FUNCTION_T c_utils_void_t *
+#define C_UTILS_THREAD_FUNCTION_RETURN C_UTILS_NULL_POINTER
 typedef pthread_t C_UTILS_THREAD_T;
 #endif
 
@@ -55,16 +55,16 @@ extern "C"
 /*************************/
 
 /* Function to create a thread. */
-c_utils_int16_t c_utils_thread_create(c_utils_thread_t *const thread, c_utils_thread_function_t (*f)(void *arguments), void *arguments);
+extern c_utils_result c_utils_thread_create(c_utils_thread_t *const thread, c_utils_thread_function_t (*f)(c_utils_void_t *arguments), c_utils_void_t *arguments);
 
 /* Function to join a thread. */
-c_utils_int16_t c_utils_thread_join(c_utils_thread_t thread);
+extern c_utils_result c_utils_thread_join(c_utils_thread_t thread);
 
 /* Function to detach a thread. */
-c_utils_int16_t c_utils_thread_detach(c_utils_thread_t thread);
+extern c_utils_result c_utils_thread_detach(c_utils_thread_t thread);
 
 /* Function to get the maximum number of threads and return it to the caller. */
-c_utils_int32_t c_utils_get_maximum_threads(void);
+extern c_utils_int32_t c_utils_get_maximum_threads(c_utils_void_t);
 
 /*****************************/
 /* End C to C++ importation: */
