@@ -799,14 +799,14 @@ extern c_utils_result c_utils_mem_allocate(const c_utils_void_t **const address_
 {
 	if(!size)
 	{
-		fprintf(stderr, "Error in function c_utils_mem_allocate (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		fprintf(stderr, "Error in function c_utils_mem_allocate, size is zero (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!address_pointer)
 	{
-		fprintf(stderr, "Error in function c_utils_mem_allocate (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		fprintf(stderr, "Error in function c_utils_mem_allocate, address_pointer is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -817,14 +817,14 @@ extern c_utils_result c_utils_mem_allocate(const c_utils_void_t **const address_
 
 		if(!pointer)
 		{
-			fprintf(stderr, "Error in c_utils_mem_allocate, function malloc (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+			fprintf(stderr, "Error in c_utils_mem_allocate, function malloc failed (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
 			return C_UTILS_RESULT_FAILURE;
 		}
 
 		if(c_utils_mem_regist_to_free(pointer) != C_UTILS_RESULT_SUCCESS)
 		{
-			fprintf(stderr, "Error in c_utils_mem_allocate, function c_utils_mem_regist_to_free (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+			fprintf(stderr, "Error in c_utils_mem_allocate, function c_utils_mem_regist_to_free failed (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 			free(pointer);
 
 			return C_UTILS_RESULT_FAILURE;
@@ -842,7 +842,7 @@ extern c_utils_result c_utils_mem_allocate(const c_utils_void_t **const address_
 
 		if(!new_pointer)
 		{
-			fprintf(stderr, "Error in c_utils_mem_allocate, function realloc (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+			fprintf(stderr, "Error in c_utils_mem_allocate, function realloc failed (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -872,7 +872,7 @@ extern c_utils_result c_utils_mem_allocate(const c_utils_void_t **const address_
 
 			if(c_utils_mem_regist_to_free(new_pointer) != C_UTILS_RESULT_SUCCESS)
 			{
-				fprintf(stderr, "Error in c_utils_mem_allocate, function c_utils_mem_regist_to_free (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+				fprintf(stderr, "Error in c_utils_mem_allocate, function c_utils_mem_regist_to_free failed (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
 				free(new_pointer);
 
