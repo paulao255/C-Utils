@@ -30,29 +30,30 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
-      # Linux
-      - name: Install Clang and LuaJIT (Linux)
+      # Linux (Instala Clang, LuaJIT e a LibPNG de desenvolvimento)
+      - name: Install Dependencies (Linux)
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang luajit
+          sudo apt-get install -y clang luajit libpng-dev
 
-      # macOS
-      - name: Install LuaJIT (macOS)
+      # macOS (Instala LuaJIT e LibPNG via Homebrew)
+      - name: Install Dependencies (macOS)
         if: runner.os == 'macOS'
         run: |
-          brew install luajit
+          brew install luajit libpng
 
-      # Windows
-      - name: Setup MSYS2 CLANG64 (Windows)
+      # Windows (CORRIGIDO: Atualizado para msystem UCRT64 e adicionado libpng do ecossistema UCRT)
+      - name: Setup MSYS2 UCRT64 (Windows)
         if: runner.os == 'Windows'
         uses: msys2/setup-msys2@v2
         with:
-          msystem: CLANG64
+          msystem: UCRT64
           update: true
           install: >-
             mingw-w64-ucrt-x86_64-clang
             mingw-w64-ucrt-x86_64-luajit
+            mingw-w64-ucrt-x86_64-libpng
 
       # Check Environment (Linux/macOS)
       - name: Check Clang and LuaJIT (Linux/macOS)
@@ -111,8 +112,9 @@ jobs:
         run: |
           luajit -v
 
-      # NOTA: O script Make.lua precisa ler o compilador do ambiente. 
-      # Mudamos o compilers[1] de fixo "clang" para ler a variável CC se ela existir!
+      # NOTA: O Android NDK puro não vem com a libpng padrão instalada. 
+      # Se o seu arquivo img-utls.c for usado em builds móveis, você precisará 
+      # compilar a libpng a partir do código fonte para Android ou desativar temporariamente o teste no NDK.
       - name: Run Lua Test
         shell: bash
         env:
@@ -149,7 +151,7 @@ jobs:
           SDK_PATH="$(xcrun --sdk iphoneos --show-sdk-path)"
           echo "IOS_SDK_PATH=$SDK_PATH" >> "$GITHUB_ENV"
 
-      # Passamos o target e o SDK do iOS através da variável CC para o Make.lua escutar
+      # NOTA: O macOS possui caminhos de inclusão diferentes para pacotes do Homebrew no simulador/dispositivo iOS.
       - name: Run Lua Test
         shell: bash
         env:
