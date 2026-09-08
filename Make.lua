@@ -18,7 +18,7 @@ local compilers =
 	os.getenv("CXX") or os.getenv("CC") or "clang++"
 };
 
-local include = "-Iinclude";
+local include = "-Iinclude -I/usr/include/libpng16 -I/opt/homebrew/include -I/ucrt64/include/libpng16 -I/ucrt64/include";
 
 local flags =
 {
