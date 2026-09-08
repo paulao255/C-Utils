@@ -118,9 +118,8 @@ jobs:
         shell: bash
         env:
           ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
-          CC: ${{ steps.setup-ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android35-clang
+          CC: ${{ steps.setup-ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android35-clang -I/vcpkg/vcpkg-export/installed/arm64-android/include -I/usr/local/share/vcpkg/installed/arm64-android/include
         run: luajit Make.lua test
-
 
   # ============================================================
   # iOS - ARM64
