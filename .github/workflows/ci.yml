@@ -109,19 +109,18 @@ jobs:
         run: |
           luajit -v
 
-      # Instala as duas dependências de imagem no ecossistema do celular (ARM64)
+      # Forçamos o vcpkg a usar uma pasta local controlada por nós dentro do projeto
       - name: Install libpng and libjpeg via vcpkg (Android)
         run: |
-          vcpkg install libpng:arm64-android libjpeg-turbo:arm64-android
+          vcpkg install libpng:arm64-android libjpeg-turbo:arm64-android --x-install-root=${{ github.workspace }}/vcpkg_installed
 
-      # SOLUÇÃO DEFINITIVA: Mapeamos o VCPKG_INSTALLATION_ROOT que aponta exatamente para a pasta das libs
+      # Passamos o caminho exato da nossa pasta local gerada para a flag -I do Clang
       - name: Run Lua Test
         shell: bash
         env:
           ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
-          CC: ${{ steps.setup-ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android35-clang -I${{ env.VCPKG_INSTALLATION_ROOT }}/installed/arm64-android/include
+          CC: ${{ steps.setup-ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android35-clang -I${{ github.workspace }}/vcpkg_installed/arm64-android/include
         run: luajit Make.lua test
-
 
   # ============================================================
   # iOS - ARM64
