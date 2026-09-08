@@ -79,7 +79,7 @@ static c_utils_result_t c_utils_enable_windows_console_features(c_utils_void_t)
 		DWORD error = GetLastError();
 
 		fprintf(stderr, "Error in function GetStdHandle (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-		fprintf(stderr, "Error code: %d\n", error);
+		fprintf(stderr, "Error code: %lu\n", error);
 		perror("Error");
 
 		return C_UTILS_RESULT_FAILURE;
@@ -94,7 +94,7 @@ static c_utils_result_t c_utils_enable_windows_console_features(c_utils_void_t)
 			DWORD error = GetLastError();
 
 			fprintf(stderr, "Error in function GetConsoleMode (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-			fprintf(stderr, "Error code: %d\n", error);
+			fprintf(stderr, "Error code: %lu\n", error);
 			perror("Error");
 
 			return C_UTILS_RESULT_FAILURE;
@@ -107,7 +107,7 @@ static c_utils_result_t c_utils_enable_windows_console_features(c_utils_void_t)
 			DWORD error = GetLastError();
 
 			fprintf(stderr, "Error in function SetConsoleMode (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-			fprintf(stderr, "Error code: %d\n", error);
+			fprintf(stderr, "Error code: %lu\n", error);
 			perror("Error");
 
 			return C_UTILS_RESULT_FAILURE;
@@ -118,7 +118,7 @@ static c_utils_result_t c_utils_enable_windows_console_features(c_utils_void_t)
 			DWORD error = GetLastError();
 
 			fprintf(stderr, "Error in function SetConsoleOutputCP (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-			fprintf(stderr, "Error code: %d\n", error);
+			fprintf(stderr, "Error code: %lu\n", error);
 			perror("Error");
 
 			return C_UTILS_RESULT_FAILURE;
@@ -616,10 +616,12 @@ print_invalid_time_error:
 	fprintf(stderr, "Error in function c_utils_sleep, invalid time (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
 	return C_UTILS_RESULT_FAILURE;
+#if defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
 print_errno:
 	perror("Error");
 
 	return C_UTILS_RESULT_FAILURE;
+#endif
 }
 
 extern c_utils_result_t c_utils_make_directory(const c_utils_char_t *const path, c_utils_uint32_t mode)

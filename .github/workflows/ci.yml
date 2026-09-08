@@ -30,20 +30,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
-      # Linux (Instala Clang, LuaJIT e a LibPNG de desenvolvimento)
       - name: Install Dependencies (Linux)
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang luajit libpng-dev
+          sudo apt-get install -y clang luajit libpng-dev libjpeg-dev
 
-      # macOS (Instala LuaJIT e LibPNG via Homebrew)
       - name: Install Dependencies (macOS)
         if: runner.os == 'macOS'
         run: |
-          brew install luajit libpng
+          brew install luajit libpng jpeg
 
-      # Windows (CORRIGIDO: Atualizado para msystem UCRT64 e adicionado libpng do ecossistema UCRT)
       - name: Setup MSYS2 UCRT64 (Windows)
         if: runner.os == 'Windows'
         uses: msys2/setup-msys2@v2
@@ -54,6 +51,7 @@ jobs:
             mingw-w64-ucrt-x86_64-clang
             mingw-w64-ucrt-x86_64-luajit
             mingw-w64-ucrt-x86_64-libpng
+            mingw-w64-ucrt-x86_64-libjpeg-turbo
 
       # Check Environment (Linux/macOS)
       - name: Check Clang and LuaJIT (Linux/macOS)

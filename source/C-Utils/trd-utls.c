@@ -43,7 +43,7 @@ extern c_utils_result_t c_utils_get_processor_count(c_utils_int32_t *const outpu
 			const DWORD error = GetLastError();
 
 			fprintf(stderr, "Error in function c_utils_get_processor_count, function GetActiveProcessorCount (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-			fprintf(stderr, "Error code: %lu\n", (c_utils_uint32_t)error);
+			fprintf(stderr, "Error code: %u\n", (c_utils_uint32_t)error);
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -92,7 +92,7 @@ extern c_utils_result_t c_utils_thread_create(c_utils_thread_t *const thread, c_
 			const DWORD error = GetLastError();
 
 			fprintf(stderr, "Error in function c_utils_thread_create, function CreateThread (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-			fprintf(stderr, "Error code: %lu\n", (c_utils_uint32_t)error);
+			fprintf(stderr, "Error code: %u\n", (c_utils_uint32_t)error);
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -120,14 +120,14 @@ extern c_utils_result_t c_utils_thread_join(c_utils_thread_t thread)
 		DWORD error = GetLastError();
 
 		fprintf(stderr, "Error in function c_utils_thread_join, function WaitForSingleObject (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-		fprintf(stderr, "Error code: %lu\n", (c_utils_uint32_t)error);
+		fprintf(stderr, "Error code: %u\n", (c_utils_uint32_t)error);
 
 		if(!CloseHandle(thread))
 		{
 			error = GetLastError();
 
 			fprintf(stderr, "Error in function c_utils_thread_join, function CloseHandle (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-			fprintf(stderr, "Error code: %lu\n", (c_utils_uint32_t)error);
+			fprintf(stderr, "Error code: %u\n", (c_utils_uint32_t)error);
 		}
 
 		return C_UTILS_RESULT_FAILURE;
@@ -138,7 +138,7 @@ extern c_utils_result_t c_utils_thread_join(c_utils_thread_t thread)
 		const DWORD error = GetLastError();
 
 		fprintf(stderr, "Error in function c_utils_thread_join, function CloseHandle (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-		fprintf(stderr, "Error code: %lu\n", (c_utils_uint32_t)error);
+		fprintf(stderr, "Error code: %u\n", (c_utils_uint32_t)error);
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -167,7 +167,7 @@ extern c_utils_result_t c_utils_thread_detach(c_utils_thread_t thread)
 		const DWORD error = GetLastError();
 
 		fprintf(stderr, "Error in function c_utils_thread_detach, function CloseHandle (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-		fprintf(stderr, "Error code: %lu\n", (c_utils_uint32_t)error);
+		fprintf(stderr, "Error code: %u\n", (c_utils_uint32_t)error);
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -469,7 +469,7 @@ extern c_utils_result_t c_utils_condition_variable_wait(c_utils_condition_variab
 			const DWORD error = GetLastError();
 
 			fprintf(stderr, "Error in function c_utils_condition_variable_wait, function SleepConditionVariableCS (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-			fprintf(stderr, "Error code: %lu\n", (c_utils_uint32_t)error);
+			fprintf(stderr, "Error code: %u\n", (c_utils_uint32_t)error);
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -893,7 +893,7 @@ extern c_utils_result_t c_utils_tls_create(c_utils_tls_key_t *const key)
 			const DWORD error = GetLastError();
 
 			fprintf(stderr, "Error in function c_utils_tls_create, function TlsAlloc failed (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-			fprintf(stderr, "Error code: %lu\n", (c_utils_uint32_t)error);
+			fprintf(stderr, "Error code: %u\n", (c_utils_uint32_t)error);
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -921,7 +921,7 @@ extern c_utils_result_t c_utils_tls_set(c_utils_tls_key_t key, c_utils_void_t *c
 		const DWORD error = GetLastError();
 
 		fprintf(stderr, "Error in function c_utils_tls_set, function TlsSetValue (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-		fprintf(stderr, "Error code: %lu\n", (c_utils_uint32_t)error);
+		fprintf(stderr, "Error code: %u\n", (c_utils_uint32_t)error);
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -964,7 +964,7 @@ extern c_utils_result_t c_utils_tls_get(c_utils_tls_key_t key, c_utils_void_t *c
 		if(value == C_UTILS_NULL_POINTER && error != ERROR_SUCCESS)
 		{
 			fprintf(stderr, "Error in function c_utils_tls_get, function TlsGetValue (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-			fprintf(stderr, "Error code: %lu\n", (c_utils_uint32_t)error);
+			fprintf(stderr, "Error code: %u\n", (c_utils_uint32_t)error);
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -987,7 +987,7 @@ extern c_utils_result_t c_utils_tls_destroy(c_utils_tls_key_t key)
 		const DWORD error = GetLastError();
 
 		fprintf(stderr, "Error in function c_utils_tls_destroy, function TlsFree (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-		fprintf(stderr, "Error code: %lu\n", (c_utils_uint32_t)error);
+		fprintf(stderr, "Error code: %u\n", (c_utils_uint32_t)error);
 
 		return C_UTILS_RESULT_FAILURE;
 	}
