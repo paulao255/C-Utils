@@ -110,9 +110,10 @@ jobs:
         run: |
           luajit -v
 
-      # NOTA: O Android NDK puro não vem com a libpng padrão instalada. 
-      # Se o seu arquivo img-utls.c for usado em builds móveis, você precisará 
-      # compilar a libpng a partir do código fonte para Android ou desativar temporariamente o teste no NDK.
+      - name: Install libpng via vcpkg (Android)
+        run: |
+          vcpkg install libpng:arm64-android
+
       - name: Run Lua Test
         shell: bash
         env:
