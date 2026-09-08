@@ -2,7 +2,7 @@
 /* Library importations: */
 /*************************/
 
-#include "defs.h"
+#include "C-Utils/defs.h"
 
 /********************/
 /* Import C to C++: */
@@ -20,11 +20,7 @@ extern "C"
 const c_utils_char_t *const C_UTILS_BASE_TERMINAL = "\x1B[0m";
 const c_utils_char_t *const C_UTILS_BOLD_TERMINAL = "\x1B[1m";
 const c_utils_char_t *const C_UTILS_BASE_BOLD_TERMINAL = "\x1B[0m\x1B[1m";
-#if defined(__DOS__) || defined(MSDOS) || defined(_MSDOS) || defined (__MSDOS__) || defined(__DOS_386__) || defined(__DJGPP__)
-const c_utils_char_t *const C_UTILS_ITALIC_TERMINAL = "";
-#else
 const c_utils_char_t *const C_UTILS_ITALIC_TERMINAL = "\x1B[3m";
-#endif
 const c_utils_char_t *const C_UTILS_UNDERLINE_TERMINAL = "\x1B[4m";
 const c_utils_char_t *const C_UTILS_FOREGROUND_BLACK_CLR = "\x1B[30m";
 const c_utils_char_t *const C_UTILS_FOREGROUND_RED_CLR = "\x1B[31m";
@@ -58,24 +54,22 @@ const c_utils_uint16_t C_UTILS_MACHINE_BITS =
 64u
 #elif defined(_WIN32) || defined(__i386__) || defined(__arm__) || defined(ESP_PLATFORM) || defined(__386__)
 32u
-#elif defined(M_I86)
-16u
 #else
 #error "Unknown architecture"
 #endif
 ;
 
-const c_utils_bool_t C_UTILS_TRUE = 1;
-const c_utils_bool_t C_UTILS_FALSE = 0;
+const c_utils_bool_t C_UTILS_TRUE = 1u;
+const c_utils_bool_t C_UTILS_FALSE = 0u;
 
 /******************************/
 /* C-Utils version constants: */
 /******************************/
 
-const c_utils_int32_t C_UTILS_VERSION_FULL = 20260820L;
+const c_utils_int32_t C_UTILS_VERSION_FULL = 20260908L;
 const c_utils_int32_t C_UTILS_VERSION_YEAR = 2026L;
-const c_utils_int32_t C_UTILS_VERSION_MONTH = 8L;
-const c_utils_int32_t C_UTILS_VERSION_DAY = 20L;
+const c_utils_int32_t C_UTILS_VERSION_MONTH = 9L;
+const c_utils_int32_t C_UTILS_VERSION_DAY = 8L;
 
 /*****************************/
 /* End C to C++ importation: */

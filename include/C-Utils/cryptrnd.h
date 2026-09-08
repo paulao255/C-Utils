@@ -1,91 +1,38 @@
-/*
-Cryptographically Secure Pseudo-Random Number Generator. Choice of public domain or MIT-0. See license statements at the end of this file.
-
-David Reid - mackron@gmail.com
-*/
-
-/*
-This uses the operating system's random number generation. If you're looking for a CSPRNG from
-scratch you'll need to look elsewhere.
-
-Supported generation methods are Win32's BCryptGenRandom() with CryptGenRandom() as a fallback. On
-platforms that support /dev/urandom, that will be used. OpenBSD will use arc4random().
-
-There is no need to link to anything with this library. You can use CRYPTORAND_IMPLEMENTATION to
-define the implementation section, or you can use cryptorand.c if you prefer a traditional
-header/source pair.
-
-There's only three functions, all of which should be self explanatory and easy to figure out:
-
-    ```
-    cryptorand_result cryptorand_init(cryptorand* pRNG);
-    void cryptorand_uninit(cryptorand* pRNG);
-    cryptorand_result cryptorand_generate(cryptorand* pRNG, void* pBufferOut, size_t byteCount);
-    ```
-
-Call `cryptorand_init()` to initialize the random number generator. On Windows, this is where
-libraries are linked at runtime so avoid calling this in high performance scenarios. It's best to
-just create one instance and then read from it multiple times.
-
-To generate random bytes you need only call `cryptorand_generate()`. You just specify a pointer to
-a buffer that will receive the random data and the number of bytes you want. If this fails, the
-content of the buffer will be cleared to zero.
-
-Uninitialize the random number generator with `cryptorand_uninit()`.
-
-Thread safety depends on the backend.
-*/
-
 #ifndef cryptorand_h
 #define cryptorand_h
 
 #ifdef __cplusplus
-extern "C" {
-#endif
-
-/* Win32. */
-#if defined(_WIN32)
-    #define CRYPTORAND_WIN32
-#endif
-
-/* /dev/urandom. Add platforms to this list as required. */
-#if defined(__linux__) || defined(__APPLE__) || defined(__DragonFly__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__ANDROID__)
-    #define CRYPTORAND_URANDOM
-#endif
-
-/*
-OpenBSD recommends using arc4random() over /dev/urandom:
-
-    The urandom device is intended to be used in scripts. In C programs, use the arc4random(3)
-    family of functions instead ...
-*/
-#if defined(__OpenBSD__)
-    #define CRYPTORAND_ARC4RANDOM
-#endif
-
-#include <stddef.h> /* For size_t. */
-
-#if !defined(CRYPTORAND_API)
-    #define CRYPTORAND_API
-#endif
-
-typedef enum
+extern "C"
 {
-    CRYPTORAND_SUCCESS           =  0,
-    CRYPTORAND_ERROR             = -1,
-    CRYPTORAND_INVALID_ARGS      = -2,
-    CRYPTORAND_INVALID_OPERATION = -3,
-    CRYPTORAND_TOO_BIG           = -11,
-    CRYPTORAND_NOT_IMPLEMENTED   = -29
+#endif
+
+#if defined(_WIN32)
+#define CRYPTORAND_WIN32
+#elif defined(__linux__) || defined(__APPLE__) || defined(__DragonFly__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__ANDROID__)
+#define CRYPTORAND_URANDOM
+#elif defined(__OpenBSD__)
+#define CRYPTORAND_ARC4RANDOM
+#endif
+
+#include <stddef.h>
+
+typedef enum cryptorand_result
+{
+	CRYPTORAND_SUCCESS = 0,
+	CRYPTORAND_ERROR = -1,
+	CRYPTORAND_INVALID_ARGS = -2,
+	CRYPTORAND_INVALID_OPERATION = -3,
+	CRYPTORAND_TOO_BIG = -11,
+	CRYPTORAND_NOT_IMPLEMENTED = -29
 } cryptorand_result;
 
-typedef void (* cryptorand_proc)(void);
+typedef void (*cryptorand_proc)(void);
 
-typedef struct
+typedef struct cryptorand
 {
-#if defined(CRYPTORAND_WIN32)
     struct
     {
+#if defined(CRYPTORAND_WIN32)
         void* hBcryptDLL;   /* If set, using BCryptGenRandom() */
         cryptorand_proc BCryptOpenAlgorithmProvider;
         cryptorand_proc BCryptCloseAlgorithmProvider;
@@ -98,24 +45,18 @@ typedef struct
         cryptorand_proc CryptGenRandom;
         void* hProvider;    /* Used with CryptGenRandom() */
     } win32;
-#endif
-#if defined(CRYPTORAND_URANDOM)
-    struct
-    {
+#elif defined(CRYPTORAND_URANDOM)
         /*FILE**/ void* pFile;  /* The file handle returned by open(). */
     } urandom;
-#endif
-#if defined(CRYPTORAND_ARC4RANDOM)
-    struct
-    {
+#elif defined(CRYPTORAND_ARC4RANDOM)
         int __unused;
     } arc4;
 #endif
 } cryptorand;
 
-CRYPTORAND_API cryptorand_result cryptorand_init(cryptorand* pRNG);
-CRYPTORAND_API void cryptorand_uninit(cryptorand* pRNG);
-CRYPTORAND_API cryptorand_result cryptorand_generate(cryptorand* pRNG, void* pBufferOut, size_t byteCount);
+extern cryptorand_result cryptorand_init(cryptorand* pRNG);
+extern void cryptorand_uninit(cryptorand* pRNG);
+extern cryptorand_result cryptorand_generate(cryptorand* pRNG, void* pBufferOut, size_t byteCount);
 
 #ifdef __cplusplus
 }
@@ -127,8 +68,6 @@ CRYPTORAND_API cryptorand_result cryptorand_generate(cryptorand* pRNG, void* pBu
 #define cryptorand_c
 
 #include <string.h>
-#define CRYPTORAND_ZERO_MEMORY(p, sz)      memset((p), 0, (sz))
-#define CRYPTORAND_ZERO_OBJECT(o)          CRYPTORAND_ZERO_MEMORY((o), sizeof(*o))
 
 #if defined(CRYPTORAND_WIN32)
 #include <windows.h>    /* For LoadLibrary(). */
@@ -154,7 +93,7 @@ static cryptorand_result cryptorand_init__win32(cryptorand* pRNG)
     We first need to try using BCrypt which is the most modern version. If this fails it might mean
     we're running on Windows XP in which case we'll fall back to CryptGenRandom().
     */
-    CRYPTORAND_ZERO_OBJECT(&pRNG->win32);   /* For safety. */
+    memset(&pRNG->win32, 0, sizeof(*&pRNG->win32));
     {
         HMODULE hBcryptDLL;
 
@@ -181,7 +120,7 @@ static cryptorand_result cryptorand_init__win32(cryptorand* pRNG)
 
 
     /* Getting here means we're falling back to the old method. */
-    CRYPTORAND_ZERO_OBJECT(&pRNG->win32);   /* For safety. */
+    memset(&pRNG->win32, 0, sizeof(*&pRNG->win32));
     {
         HMODULE hAdvapiDLL;
 
@@ -208,7 +147,8 @@ static cryptorand_result cryptorand_init__win32(cryptorand* pRNG)
 
 
     /* Getting here means both BCryptGenRandom() and CryptGenRandom() are unusable. */
-    CRYPTORAND_ZERO_OBJECT(&pRNG->win32);
+    memset(&pRNG->win32, 0, sizeof(*&pRNG->win32));
+
     return CRYPTORAND_ERROR;
 }
 
@@ -255,32 +195,28 @@ static cryptorand_result cryptorand_generate__win32(cryptorand* pRNG, void* pBuf
 static cryptorand_result cryptorand_init__urandom(cryptorand* pRNG)
 {
     pRNG->urandom.pFile = fopen("/dev/urandom", "rb");
-    if (pRNG->urandom.pFile == NULL) {
+
+    if(!pRNG->urandom.pFile)
+    {
         return CRYPTORAND_ERROR;
     }
 
     return CRYPTORAND_SUCCESS;
 }
 
-static void cryptorand_uninit__urandom(cryptorand* pRNG)
-{
-    if (pRNG->urandom.pFile == NULL) {
-        return;
-    }
-
-    fclose((FILE*)pRNG->urandom.pFile);
-}
-
 static cryptorand_result cryptorand_generate__urandom(cryptorand* pRNG, void* pBufferOut, size_t byteCount)
 {
     size_t bytesRead;
 
-    if (pRNG->urandom.pFile == NULL) {
+    if(!pRNG->urandom.pFile)
+    {
         return CRYPTORAND_INVALID_OPERATION;
     }
 
-    bytesRead = fread(pBufferOut, 1, byteCount, (FILE*)pRNG->urandom.pFile);
-    if (bytesRead < byteCount) {
+    bytesRead = fread(pBufferOut, 1u, byteCount, (FILE*)pRNG->urandom.pFile);
+
+    if(bytesRead < byteCount)
+    {
         return CRYPTORAND_ERROR;    /* Wasn't able to read all the data. Should never happen. */
     }
 
@@ -290,99 +226,84 @@ static cryptorand_result cryptorand_generate__urandom(cryptorand* pRNG, void* pB
 
 #if defined(CRYPTORAND_ARC4RANDOM)
 #include <stdlib.h>
-
-static cryptorand_result cryptorand_init__arc4random(cryptorand* pRNG)
-{
-    (void)pRNG;
-    return CRYPTORAND_SUCCESS;
-}
-
-static void cryptorand_uninit__arc4random(cryptorand* pRNG)
-{
-    (void)pRNG;
-}
-
-static cryptorand_result cryptorand_generate__arc4random(cryptorand* pRNG, void* pBufferOut, size_t byteCount)
-{
-    /* The arc4random() family is always successful. */
-    arc4random_buf(pBufferOut, byteCount);
-
-    (void)pRNG;
-    return CRYPTORAND_SUCCESS;
-}
 #endif
 
-
-CRYPTORAND_API cryptorand_result cryptorand_init(cryptorand* pRNG)
+extern cryptorand_result cryptorand_init(cryptorand* pRNG)
 {
     cryptorand_result result;
 
-    if (pRNG == NULL) {
+    if(!pRNG)
+    {
         return CRYPTORAND_INVALID_ARGS;
     }
 
-    CRYPTORAND_ZERO_OBJECT(pRNG);
+    memset(pRNG, 0, sizeof(*pRNG));
 
+    result =
 #if defined(CRYPTORAND_WIN32)
-    result = cryptorand_init__win32(pRNG);
+    cryptorand_init__win32(pRNG);
 #elif defined(CRYPTORAND_URANDOM)
-    result = cryptorand_init__urandom(pRNG);
+    cryptorand_init__urandom(pRNG);
 #elif defined(CRYPTORAND_ARC4RANDOM)
-    result = cryptorand_init__arc4random(pRNG);
+    CRYPTORAND_SUCCESS;
 #else
-    result = CRYPTORAND_NOT_IMPLEMENTED;
+    CRYPTORAND_NOT_IMPLEMENTED;
 #endif
 
-    if (result != CRYPTORAND_SUCCESS) {
-        CRYPTORAND_ZERO_OBJECT(pRNG);   /* Make sure the caller is given a blank object on failure. */
+    if(result != CRYPTORAND_SUCCESS)
+    {
+	memset(pRNG, 0, sizeof(*pRNG));
     }
 
     return result;
 }
 
-CRYPTORAND_API void cryptorand_uninit(cryptorand* pRNG)
+extern void cryptorand_uninit(cryptorand* pRNG)
 {
-    if (pRNG == NULL) {
+    if(!pRNG)
+    {
         return;
     }
 
 #if defined(CRYPTORAND_WIN32)
     cryptorand_uninit__win32(pRNG);
 #elif defined(CRYPTORAND_URANDOM)
-    cryptorand_uninit__urandom(pRNG);
+    if(!pRNG->urandom.pFile);
+
+    else
+    {
+	fclose((FILE*)pRNG->urandom.pFile);
+    }
 #elif defined(CRYPTORAND_ARC4RANDOM)
-    cryptorand_uninit__arc4random(pRNG);
-#else
-    /* Not implemented. */
 #endif
 
-    CRYPTORAND_ZERO_OBJECT(pRNG);
+    memset(pRNG, 0, sizeof(*pRNG));
 }
 
-CRYPTORAND_API cryptorand_result cryptorand_generate(cryptorand* pRNG, void* pBufferOut, size_t byteCount)
+extern cryptorand_result cryptorand_generate(cryptorand* pRNG, void* pBufferOut, size_t byteCount)
 {
     cryptorand_result result;
 
-    if (pRNG == NULL || pBufferOut == NULL) {
+    if(!pRNG || !pBufferOut)
+    {
         return CRYPTORAND_INVALID_ARGS;
     }
 
+    result = 
 #if defined(CRYPTORAND_WIN32)
-    result = cryptorand_generate__win32(pRNG, pBufferOut, byteCount);
+    cryptorand_generate__win32(pRNG, pBufferOut, byteCount);
 #elif defined(CRYPTORAND_URANDOM)
-    result = cryptorand_generate__urandom(pRNG, pBufferOut, byteCount);
+    cryptorand_generate__urandom(pRNG, pBufferOut, byteCount);
 #elif defined(CRYPTORAND_ARC4RANDOM)
-    result = cryptorand_generate__arc4random(pRNG, pBufferOut, byteCount);
+    CRYPTORAND_SUCCESS;
+    acr4random_buf(pBufferOut, byteCount);
 #else
-    result = CRYPTORAND_NOT_IMPLEMENTED;
+    CRYPTORAND_NOT_IMPLEMENTED;
 #endif
 
-    /*
-    If an error occurred, make sure everything is cleared to zero to make it clear to the caller that
-    the content in the buffer is not valid.
-    */
-    if (result != CRYPTORAND_SUCCESS) {
-        CRYPTORAND_ZERO_MEMORY(pBufferOut, byteCount);
+    if(result != CRYPTORAND_SUCCESS)
+    {
+	memset(pBufferOut, 0, byteCount);
     }
 
     return result;
@@ -390,53 +311,3 @@ CRYPTORAND_API cryptorand_result cryptorand_generate(cryptorand* pRNG, void* pBu
 
 #endif  /* cryptorand_c */
 #endif  /* CRYPTORAND_IMPLEMENTATION */
-
-/*
-This software is available as a choice of the following licenses. Choose
-whichever you prefer.
-
-===============================================================================
-ALTERNATIVE 1 - Public Domain (www.unlicense.org)
-===============================================================================
-This is free and unencumbered software released into the public domain.
-
-Anyone is free to copy, modify, publish, use, compile, sell, or distribute this
-software, either in source code form or as a compiled binary, for any purpose,
-commercial or non-commercial, and by any means.
-
-In jurisdictions that recognize copyright laws, the author or authors of this
-software dedicate any and all copyright interest in the software to the public
-domain. We make this dedication for the benefit of the public at large and to
-the detriment of our heirs and successors. We intend this dedication to be an
-overt act of relinquishment in perpetuity of all present and future rights to
-this software under copyright law.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
-ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-For more information, please refer to <http://unlicense.org/>
-
-===============================================================================
-ALTERNATIVE 2 - MIT No Attribution
-===============================================================================
-Copyright 2022 David Reid
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of
-this software and associated documentation files (the "Software"), to deal in
-the Software without restriction, including without limitation the rights to
-use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
-of the Software, and to permit persons to whom the Software is furnished to do
-so.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-*/

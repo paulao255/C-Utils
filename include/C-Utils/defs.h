@@ -35,8 +35,9 @@
 /* Library importations: */
 /*************************/
 
-#include <limits.h>
 #include <float.h>
+#include <limits.h>
+#include <stddef.h>
 
 /**********************************/
 /* Machine types standardization: */
@@ -89,7 +90,7 @@ typedef unsigned char c_utils_uint8_t;
 #define C_UTILS_UINT8_MAX UCHAR_MAX
 
 /* C-Utils 1 byte boolean type (7 bit for numbers and 1 bit for signal). */
-typedef c_utils_int8_t c_utils_bool_t;
+typedef c_utils_uint8_t c_utils_bool_t;
 
 /******************/
 /* 2 bytes types: */
@@ -273,7 +274,14 @@ typedef double c_utils_float64_t;
 /* C-Utils special types: */
 /**************************/
 
-typedef c_utils_int16_t c_utils_result;
+/* C-Utils size type (implementation defined) */
+typedef size_t c_utils_size_t;
+
+/* C-Utils pointer type (implementation defined): */
+typedef c_utils_size_t c_utils_uintptr_t;
+
+/* C-Utils function result type (16 bits signed integer): */
+typedef c_utils_int16_t c_utils_result_t;
 
 /********************/
 /* Import C to C++: */

@@ -2,10 +2,8 @@
 /* Library importations: */
 /*************************/
 
-#include "c-utils.h"
-#include "defs.h"
+#include "C-Utils/c-utils.h"
 #include <errno.h>
-#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -15,14 +13,14 @@
 #include <shellapi.h>
 #include <direct.h>
 #include <conio.h>
-#include "cryptrnd.h"
+#include "C-Utils/cryptrnd.h"
 #elif defined(__linux__) || defined(__ANDROID__)
 #include <termios.h>
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include "cryptrnd.h"
+#include "C-Utils/cryptrnd.h"
 #elif defined(__APPLE__)
 #include <TargetConditionals.h>
 #include <termios.h>
@@ -30,10 +28,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include "cryptrnd.h"
-#elif defined(__DOS__) || defined(MSDOS) || defined(_MSDOS) || defined (__MSDOS__) || defined(__DOS_386__) || defined(__DJGPP__)
-#include <DIRECT.H>
-#include <CONIO.H>
+#include "C-Utils/cryptrnd.h"
 #elif defined(ESP_PLATFORM)
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
@@ -75,7 +70,7 @@ extern c_utils_void_t c_utils_clear_standard_output(c_utils_void_t)
 }
 #if defined(_WIN32) || defined(_WIN64)
 
-static c_utils_result c_utils_enable_windows_console_features(c_utils_void_t)
+static c_utils_result_t c_utils_enable_windows_console_features(c_utils_void_t)
 {
 	HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
 
@@ -134,7 +129,7 @@ static c_utils_result c_utils_enable_windows_console_features(c_utils_void_t)
 }
 #endif
 
-extern c_utils_result c_utils_mem_free_and_unregist(const c_utils_void_t *const address)
+extern c_utils_result_t c_utils_mem_free_and_unregist(const c_utils_void_t *const address)
 {
 	if(!c_utils_is_initialized)
 	{
@@ -174,7 +169,7 @@ extern c_utils_result c_utils_mem_free_and_unregist(const c_utils_void_t *const 
 	return C_UTILS_RESULT_FAILURE;
 }
 
-extern c_utils_result c_utils_get_current_time(struct tm *const time_struct)
+extern c_utils_result_t c_utils_get_current_time(struct tm *const time_struct)
 {
 	if(!time_struct)
 	{
@@ -231,7 +226,7 @@ extern c_utils_result c_utils_get_current_time(struct tm *const time_struct)
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result c_utils_validate_date(const c_utils_int32_t year, const c_utils_uint8_t month, const c_utils_uint8_t day, const c_utils_bool_t is_future_date_valid)
+extern c_utils_result_t c_utils_validate_date(const c_utils_int32_t year, const c_utils_uint8_t month, const c_utils_uint8_t day, const c_utils_bool_t is_future_date_valid)
 {
 	if(year < 1L)
 	{
@@ -316,7 +311,7 @@ extern c_utils_result c_utils_validate_date(const c_utils_int32_t year, const c_
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result c_utils_clear_standard_input(c_utils_void_t)
+extern c_utils_result_t c_utils_clear_standard_input(c_utils_void_t)
 {
 #if defined(ESP_PLATFORM)
 	fprintf(stderr, "Error in function c_utils_clear_standard_input, %s does not support this function (File: %s, Line: %d)...\n", c_utils_verify_os(), __FILE__, __LINE__);
@@ -334,7 +329,7 @@ extern c_utils_result c_utils_clear_standard_input(c_utils_void_t)
 #endif
 }
 
-extern c_utils_result c_utils_initialize(c_utils_void_t)
+extern c_utils_result_t c_utils_initialize(c_utils_void_t)
 {
 	if(c_utils_is_initialized)
 	{
@@ -374,7 +369,7 @@ extern c_utils_result c_utils_initialize(c_utils_void_t)
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result c_utils_terminate(c_utils_void_t)
+extern c_utils_result_t c_utils_terminate(c_utils_void_t)
 {
 	if(!c_utils_is_initialized)
 	{
@@ -414,7 +409,7 @@ extern c_utils_result c_utils_terminate(c_utils_void_t)
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result c_utils_mem_regist_to_free(const c_utils_void_t *const address)
+extern c_utils_result_t c_utils_mem_regist_to_free(const c_utils_void_t *const address)
 {
 	if(!c_utils_is_initialized)
 	{
@@ -480,7 +475,7 @@ extern c_utils_result c_utils_mem_regist_to_free(const c_utils_void_t *const add
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result c_utils_scan_enter(c_utils_void_t)
+extern c_utils_result_t c_utils_scan_enter(c_utils_void_t)
 {
 #if defined(ESP_PLATFORM)
 	fprintf(stderr, "Error in function c_utils_scan_enter, %s does not support this function (File: %s, Line: %d)...\n", c_utils_verify_os(), __FILE__, __LINE__);
@@ -505,13 +500,9 @@ extern c_utils_result c_utils_scan_enter(c_utils_void_t)
 #endif
 }
 
-extern c_utils_result c_utils_url_opener(const c_utils_char_t *const url)
+extern c_utils_result_t c_utils_url_open(const c_utils_char_t *const url)
 {
-#if defined(__DOS__) || defined(MSDOS) || defined(_MSDOS) || defined (__MSDOS__) || defined(__DOS_386__) || defined(__DJGPP__)
-	fprintf(stderr, "Error in function c_utils_url_opener, DOS does not support this function (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-
-	return C_UTILS_RESULT_FAILURE;
-#elif defined(ESP_PLATFORM)
+#ifdef ESP_PLATFORM
 	fprintf(stderr, "Error in function c_utils_url_opener, %s does not support this function (File: %s, Line: %d)...\n", c_utils_verify_os(), __FILE__, __LINE__);
 
 	return C_UTILS_RESULT_FAILURE;
@@ -577,13 +568,8 @@ extern c_utils_result c_utils_url_opener(const c_utils_char_t *const url)
 #endif
 }
 
-extern c_utils_result c_utils_sleep(const c_utils_uint32_t seconds, const c_utils_uint16_t milliseconds)
+extern c_utils_result_t c_utils_sleep(const c_utils_uint32_t seconds, const c_utils_uint16_t milliseconds)
 {
-#if defined(__DOS__) || defined(MSDOS) || defined(_MSDOS) || defined (__MSDOS__) || defined(__DOS_386__) || defined(__DJGPP__)
-	fprintf(stderr, "Error in function c_utils_sleep, DOS does not support this function (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-
-	return C_UTILS_RESULT_FAILURE;
-#else
 	if(!seconds && !milliseconds)
 	{
 		goto print_invalid_time_error;
@@ -634,10 +620,9 @@ print_errno:
 	perror("Error");
 
 	return C_UTILS_RESULT_FAILURE;
-#endif
 }
 
-extern c_utils_result c_utils_make_directory(const c_utils_char_t *const path, c_utils_uint32_t mode)
+extern c_utils_result_t c_utils_make_directory(const c_utils_char_t *const path, c_utils_uint32_t mode)
 {
 #if defined(ESP_PLATFORM)
 	fprintf(stderr, "Error in function c_utils_make_directory, %s does not support this function (File: %s, Line: %d)...\n", c_utils_verify_os(), __FILE__, __LINE__);
@@ -653,20 +638,12 @@ extern c_utils_result c_utils_make_directory(const c_utils_char_t *const path, c
 
 	else
 	{
-#if defined(_WIN32) || defined(_WIN64) \
- || defined(__DOS__) || defined(MSDOS) || defined(_MSDOS) || defined (__MSDOS__) || defined(__DOS_386__) || defined(__DJGPP__)
+#if defined(_WIN32) || defined(_WIN64)
 		(c_utils_void_t)mode;
-#if !defined(_WIN32) && !defined(_WIN64)
-		if(mkdir(path))
-#else
+
 		if(_mkdir(path))
-#endif
 		{
-#if !defined(_WIN32) && !defined(_WIN64)
-			fprintf(stderr, "Error in function c_utils_make_directory, function mkdir (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-#else
 			fprintf(stderr, "Error in function c_utils_make_directory, function _mkdir (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-#endif
 			perror("Error");
 
 			return C_UTILS_RESULT_FAILURE;
@@ -691,7 +668,7 @@ extern c_utils_result c_utils_make_directory(const c_utils_char_t *const path, c
 #endif
 }
 
-extern c_utils_result c_utils_scan_character(signed int *const character_output)
+extern c_utils_result_t c_utils_scan_character(signed int *const character_output)
 {
 #if defined(ESP_PLATFORM)
 	fprintf(stderr, "Error in function c_utils_scan_character, %s does not support this function (File: %s, Line: %d)...\n", c_utils_verify_os(), __FILE__, __LINE__);
@@ -707,14 +684,8 @@ extern c_utils_result c_utils_scan_character(signed int *const character_output)
 
 	else
 	{
-#if defined(_WIN32) || defined(_WIN64) || defined(__DOS__) || defined(MSDOS) || defined(_MSDOS) || defined (__MSDOS__) || defined(__DOS_386__) || defined(__DJGPP__)
-		*character_output =
-#if !defined(_WIN32) && !defined(_WIN64)
-			getch()
-#else
-			_getch()
-#endif
-		;
+#if defined(_WIN32) || defined(_WIN64)
+		*character_output = _getch();
 #elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
 		struct termios old_terminal;
 
@@ -779,7 +750,7 @@ extern c_utils_result c_utils_scan_character(signed int *const character_output)
 			}
 		}
 #else
-	return C_UTILS_RESULT_FAILURE;
+		return C_UTILS_RESULT_FAILURE;
 #endif
 	}
 
@@ -795,7 +766,7 @@ print_errno:
 #endif
 }
 
-extern c_utils_result c_utils_mem_allocate(const c_utils_void_t **const address_pointer, const size_t size)
+extern c_utils_result_t c_utils_mem_allocate(const c_utils_void_t *const address_pointer, const size_t size)
 {
 	if(!size)
 	{
@@ -811,88 +782,88 @@ extern c_utils_result c_utils_mem_allocate(const c_utils_void_t **const address_
 		return C_UTILS_RESULT_FAILURE;
 	}
 
-	if(!(*address_pointer))
-	{
-		c_utils_void_t *const pointer = malloc(size);
-
-		if(!pointer)
-		{
-			fprintf(stderr, "Error in c_utils_mem_allocate, function malloc failed (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-
-			return C_UTILS_RESULT_FAILURE;
-		}
-
-		if(c_utils_mem_regist_to_free(pointer) != C_UTILS_RESULT_SUCCESS)
-		{
-			fprintf(stderr, "Error in c_utils_mem_allocate, function c_utils_mem_regist_to_free failed (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-			free(pointer);
-
-			return C_UTILS_RESULT_FAILURE;
-		}
-
-		*address_pointer = pointer;
-
-		return C_UTILS_RESULT_SUCCESS;
-	}
-
 	else
 	{
-		size_t saved_address = (size_t)(*address_pointer);
-		c_utils_void_t *const new_pointer = realloc((c_utils_void_t *)*address_pointer, size);
+		c_utils_void_t **const type_address_pointer = (c_utils_void_t **)address_pointer;
 
-		if(!new_pointer)
+		if(!(*type_address_pointer))
 		{
-			fprintf(stderr, "Error in c_utils_mem_allocate, function realloc failed (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+			c_utils_void_t *const pointer = malloc(size);
 
-			return C_UTILS_RESULT_FAILURE;
-		}
+			if(!pointer)
+			{
+				fprintf(stderr, "Error in c_utils_mem_allocate, function malloc failed (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
-		if(new_pointer == (c_utils_void_t *)saved_address)
-		{
-			*address_pointer = new_pointer;
+				return C_UTILS_RESULT_FAILURE;
+			}
+
+			if(c_utils_mem_regist_to_free(pointer) != C_UTILS_RESULT_SUCCESS)
+			{
+				fprintf(stderr, "Error in c_utils_mem_allocate, function c_utils_mem_regist_to_free failed (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+				free(pointer);
+
+				return C_UTILS_RESULT_FAILURE;
+			}
+
+			*type_address_pointer = pointer;
 
 			return C_UTILS_RESULT_SUCCESS;
 		}
 
 		else
 		{
-			c_utils_uint32_t index;
+			size_t saved_address = (size_t)(*type_address_pointer);
+			c_utils_void_t *const new_pointer = realloc(*type_address_pointer, size);
 
-			for(index = 0u; index < c_utils_addresses_to_free_count; index++)
+			if(!new_pointer)
 			{
-				if((size_t)c_utils_addresses_to_free[index] == saved_address)
-				{
-					c_utils_addresses_to_free[index] = new_pointer;
-
-					*address_pointer = new_pointer;
-
-					return C_UTILS_RESULT_SUCCESS;
-				}
-			}
-
-			if(c_utils_mem_regist_to_free(new_pointer) != C_UTILS_RESULT_SUCCESS)
-			{
-				fprintf(stderr, "Error in c_utils_mem_allocate, function c_utils_mem_regist_to_free failed (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-
-				free(new_pointer);
+				fprintf(stderr, "Error in c_utils_mem_allocate, function realloc failed (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
 				return C_UTILS_RESULT_FAILURE;
 			}
+
+			if(new_pointer == (c_utils_void_t *)saved_address)
+			{
+				*type_address_pointer = new_pointer;
+
+				return C_UTILS_RESULT_SUCCESS;
+			}
+
+			else
+			{
+				c_utils_uint32_t index;
+
+				for(index = 0u; index < c_utils_addresses_to_free_count; index++)
+				{
+					if((size_t)c_utils_addresses_to_free[index] == saved_address)
+					{
+						c_utils_addresses_to_free[index] = new_pointer;
+
+						*type_address_pointer = new_pointer;
+
+						return C_UTILS_RESULT_SUCCESS;
+					}
+				}
+
+				if(c_utils_mem_regist_to_free(new_pointer) != C_UTILS_RESULT_SUCCESS)
+				{
+					fprintf(stderr, "Error in c_utils_mem_allocate, function c_utils_mem_regist_to_free failed (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+					free(new_pointer);
+
+					return C_UTILS_RESULT_FAILURE;
+				}
+			}
+
+			*type_address_pointer = new_pointer;
+
+			return C_UTILS_RESULT_SUCCESS;
 		}
-
-		*address_pointer = new_pointer;
-
-		return C_UTILS_RESULT_SUCCESS;
 	}
 }
 
-extern c_utils_result c_utils_random_integer(c_utils_int32_t minimum, c_utils_int32_t maximum, c_utils_int32_t *const output)
+extern c_utils_result_t c_utils_random_integer(c_utils_int32_t minimum, c_utils_int32_t maximum, c_utils_int32_t *const output)
 {
-#if defined(__DOS__) || defined(MSDOS) || defined(_MSDOS) || defined (__MSDOS__) || defined(__DOS_386__) || defined(__DJGPP__)
-	fprintf(stderr, "Error in c_utils_random_integer, DOS does not support this function (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-
-	return C_UTILS_RESULT_FAILURE;
-#else
 	if(!output)
 	{
 		fprintf(stderr, "Error in c_utils_random_integer, the output is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
@@ -960,10 +931,9 @@ extern c_utils_result c_utils_random_integer(c_utils_int32_t minimum, c_utils_in
 	}
 
 	return C_UTILS_RESULT_SUCCESS;
-#endif
 }
 
-extern c_utils_result c_utils_read_file(const c_utils_char_t *const path, const c_utils_char_t **const output)
+extern c_utils_result_t c_utils_read_file(const c_utils_char_t *const path, const c_utils_char_t **const output)
 {
 #if defined(ESP_PLATFORM)
 	fprintf(stderr, "Error in c_utils_read_file, %s does not support this function (File: %s, Line: %d)...\n", c_utils_verify_os(), __FILE__, __LINE__);
@@ -1140,7 +1110,7 @@ extern c_utils_result c_utils_read_file(const c_utils_char_t *const path, const 
 #endif
 }
 
-extern c_utils_result c_utils_verify_os(const c_utils_char_t **const output)
+extern c_utils_result_t c_utils_verify_os(const c_utils_char_t *const output)
 {
 	if(!output)
 	{
@@ -1151,8 +1121,9 @@ extern c_utils_result c_utils_verify_os(const c_utils_char_t **const output)
 
 	else
 	{
+		const c_utils_char_t **const type_output = (const c_utils_char_t **const)(const c_utils_void_t *const)output;
 #if defined(_WIN32) || defined(_WIN64)
-		*output = "Windows";
+		*type_output = "Windows";
 
 		return C_UTILS_RESULT_SUCCESS;
 #elif defined(__linux__)
@@ -1163,104 +1134,100 @@ extern c_utils_result c_utils_verify_os(const c_utils_char_t **const output)
 		{
 			if(is_x11)
 			{
-				*output = "Linux, Wayland and XWayland";
+				*type_output = "Linux, Wayland and XWayland";
 			}
 
 			else
 			{
-				*output = "Linux, Wayland";
+				*type_output = "Linux, Wayland";
 			}
 		}
 
 		else if(is_x11)
 		{
-			*output = "Linux, X11";
+			*type_output = "Linux, X11";
 		}
 
 		else
 		{
-			*output = "Linux (No graphics)";
+			*type_output = "Linux (No graphics)";
 		}
 
 		return C_UTILS_RESULT_SUCCESS;
 #elif defined(__ANDROID__)
-		*output = "Android";
+		*type_output = "Android";
 
 		return C_UTILS_RESULT_SUCCESS;
 #elif defined(__APPLE__)
 #if TARGET_OS_OSX
-		*output = "macOS";
+		*type_output = "macOS";
 
 		return C_UTILS_RESULT_SUCCESS;
 #elif TARGET_OS_IOS
-		*output = "iOS";
+		*type_output = "iOS";
 
 		return C_UTILS_RESULT_SUCCESS;
 #elif TARGET_OS_TV
-		*output = "tvOS";
+		*type_output = "tvOS";
 
 		return C_UTILS_RESULT_SUCCESS;
 #elif TARGET_OS_WATCH
-		*output = "watchOS";
+		*type_output = "watchOS";
 
 		return C_UTILS_RESULT_SUCCESS;
 #else
-		*output = "Apple (unknown OS)";
+		*type_output = "Apple (unknown OS)";
 
 		return C_UTILS_RESULT_FAILURE;
 #endif
-#elif defined(__DOS__) || defined(MSDOS) || defined(_MSDOS) || defined (__MSDOS__) || defined(__DOS_386__) || defined(__DJGPP__)
-		*output = "DOS";
-
-		return C_UTILS_RESULT_SUCCESS;
 #elif defined(ESP_PLATFORM)
 #if defined(CONFIG_IDF_TARGET_ESP32)
-		*output = "ESP32";
+		*type_output = "ESP32";
 
 		return C_UTILS_RESULT_SUCCESS;
 #elif defined(CONFIG_IDF_TARGET_ESP32S2)
-		*output = "ESP32-S2";
+		*type_output = "ESP32-S2";
 
 		return C_UTILS_RESULT_SUCCESS;
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
-		*output = "ESP32-S3";
+		*type_output = "ESP32-S3";
 
 		return C_UTILS_RESULT_SUCCESS;
 #elif defined(CONFIG_IDF_TARGET_ESP32C2)
-		*output = "ESP32-C2";
+		*type_output = "ESP32-C2";
 
 		return C_UTILS_RESULT_SUCCESS;
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
-		*output = "ESP32-C3";
+		*type_output = "ESP32-C3";
 
 		return C_UTILS_RESULT_SUCCESS;
 #elif defined(CONFIG_IDF_TARGET_ESP32C5)
-		*output = "ESP32-C5";
+		*type_output = "ESP32-C5";
 
 		return C_UTILS_RESULT_SUCCESS;
 #elif defined(CONFIG_IDF_TARGET_ESP32C6)
-		*output = "ESP32-C6";
+		*type_output = "ESP32-C6";
 
 		return C_UTILS_RESULT_SUCCESS;
 #elif defined(CONFIG_IDF_TARGET_ESP32C61)
-		*output = "ESP32-C61";
+		*type_output = "ESP32-C61";
 
 		return C_UTILS_RESULT_SUCCESS;
 #elif defined(CONFIG_IDF_TARGET_ESP32H2)
-		*output = "ESP32-H2";
+		*type_output = "ESP32-H2";
 
 		return C_UTILS_RESULT_SUCCESS;
 #elif defined(CONFIG_IDF_TARGET_ESP32P4)
-		*output = "ESP32-P4";
+		*type_output = "ESP32-P4";
 
 		return C_UTILS_RESULT_SUCCESS;
 #else
-		*output = "ESP (unknown model)";
+		*type_output = "ESP (unknown model)";
 
 		return C_UTILS_RESULT_FAILURE;
 #endif
 #else
-		*output = "Unknown OS";
+		*type_output = "Unknown OS";
 
 		return C_UTILS_RESULT_FAILURE;
 #endif

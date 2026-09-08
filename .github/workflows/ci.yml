@@ -1,0 +1,157 @@
+name: Lua Build Test
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - '**'
+
+jobs:
+
+  # ============================================================
+  # Linux / macOS / Windows
+  # ============================================================
+
+  test:
+    name: Lua Test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      # Linux
+      - name: Install Clang and LuaJIT (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang luajit
+
+      # macOS
+      - name: Install LuaJIT (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          brew install luajit
+
+      # Windows
+      - name: Setup MSYS2 CLANG64 (Windows)
+        if: runner.os == 'Windows'
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: CLANG64
+          update: true
+          install: >-
+            mingw-w64-ucrt-x86_64-clang
+            mingw-w64-ucrt-x86_64-luajit
+
+      # Check Environment (Linux/macOS)
+      - name: Check Clang and LuaJIT (Linux/macOS)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          clang --version
+          luajit -v
+
+      # Check Environment (Windows)
+      - name: Check Clang and LuaJIT (Windows)
+        if: runner.os == 'Windows'
+        shell: msys2 {0}
+        run: |
+          clang --version
+          luajit -v
+
+      # Run Lua Script (Linux/macOS)
+      - name: Run Lua Test (Linux/macOS)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: luajit Make.lua test
+
+      # Run Lua Script (Windows)
+      - name: Run Lua Test (Windows)
+        if: runner.os == 'Windows'
+        shell: msys2 {0}
+        run: luajit Make.lua test
+
+
+  # ============================================================
+  # Android - ARM64
+  # ============================================================
+
+  android:
+    name: Lua Test (Android ARM64)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Android NDK
+        uses: nttld/setup-ndk@v1
+        id: setup-ndk
+        with:
+          ndk-version: r29
+
+      - name: Install LuaJIT
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y luajit
+
+      - name: Check Android Environment
+        shell: bash
+        run: |
+          luajit -v
+
+      # NOTA: O script Make.lua precisa ler o compilador do ambiente. 
+      # Mudamos o compilers[1] de fixo "clang" para ler a variável CC se ela existir!
+      - name: Run Lua Test
+        shell: bash
+        env:
+          ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+          CC: ${{ steps.setup-ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android35-clang
+        run: luajit Make.lua test
+
+
+  # ============================================================
+  # iOS - ARM64
+  # ============================================================
+
+  ios:
+    name: Lua Test (iOS ARM64)
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Install LuaJIT (macOS)
+        run: |
+          brew install luajit
+
+      - name: Check iOS Environment
+        shell: bash
+        run: |
+          luajit -v
+          xcodebuild -version
+
+      - name: Get iOS SDK
+        shell: bash
+        run: |
+          SDK_PATH="$(xcrun --sdk iphoneos --show-sdk-path)"
+          echo "IOS_SDK_PATH=$SDK_PATH" >> "$GITHUB_ENV"
+
+      # Passamos o target e o SDK do iOS através da variável CC para o Make.lua escutar
+      - name: Run Lua Test
+        shell: bash
+        env:
+          CC: clang -target arm64-apple-ios26.0 -isysroot ${{ env.IOS_SDK_PATH }}
+        run: luajit Make.lua test

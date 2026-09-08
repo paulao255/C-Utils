@@ -2,7 +2,7 @@
 /* Library importations: */
 /*************************/
 
-#include "tmp-utls.h"
+#include "C-Utils/tmp-utls.h"
 #include <stdio.h>
 
 /********************/
@@ -29,7 +29,7 @@ const c_utils_float64_t C_UTILS_MIN_KELVIN_FLOAT64     =    0.0  ;
 /* Functions definitions: */
 /**************************/
 
-extern c_utils_result c_utils_generic_kelvin_to_celsius(const c_utils_void_t *const kelvin_value_pointer, c_utils_void_t *const celsius_value_pointer, size_t size)
+extern c_utils_result_t c_utils_generic_kelvin_to_celsius(const c_utils_void_t *const kelvin_value_pointer, c_utils_void_t *const celsius_value_pointer, size_t size)
 {
 	if(!kelvin_value_pointer)
 	{
@@ -67,7 +67,7 @@ extern c_utils_result c_utils_generic_kelvin_to_celsius(const c_utils_void_t *co
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result c_utils_generic_kelvin_to_fahrenheit(const c_utils_void_t *const kelvin_value_pointer, c_utils_void_t *const fahrenheit_value_pointer, size_t size)
+extern c_utils_result_t c_utils_generic_kelvin_to_fahrenheit(const c_utils_void_t *const kelvin_value_pointer, c_utils_void_t *const fahrenheit_value_pointer, size_t size)
 {
 	if(!kelvin_value_pointer)
 	{
@@ -105,7 +105,7 @@ extern c_utils_result c_utils_generic_kelvin_to_fahrenheit(const c_utils_void_t 
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result c_utils_generic_celsius_to_fahrenheit(const c_utils_void_t *const celsius_value_pointer, c_utils_void_t *const fahrenheit_value_pointer, size_t size)
+extern c_utils_result_t c_utils_generic_celsius_to_fahrenheit(const c_utils_void_t *const celsius_value_pointer, c_utils_void_t *const fahrenheit_value_pointer, size_t size)
 {
 	if(!celsius_value_pointer)
 	{
@@ -143,7 +143,7 @@ extern c_utils_result c_utils_generic_celsius_to_fahrenheit(const c_utils_void_t
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result c_utils_generic_celsius_to_kelvin(const c_utils_void_t *const celsius_value_pointer, c_utils_void_t *const kelvin_value_pointer, size_t size)
+extern c_utils_result_t c_utils_generic_celsius_to_kelvin(const c_utils_void_t *const celsius_value_pointer, c_utils_void_t *const kelvin_value_pointer, size_t size)
 {
 	if(!celsius_value_pointer)
 	{
@@ -181,7 +181,7 @@ extern c_utils_result c_utils_generic_celsius_to_kelvin(const c_utils_void_t *co
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result c_utils_generic_fahrenheit_to_celsius(const c_utils_void_t *const fahrenheit_value_pointer, c_utils_void_t *const celsius_value_pointer, size_t size)
+extern c_utils_result_t c_utils_generic_fahrenheit_to_celsius(const c_utils_void_t *const fahrenheit_value_pointer, c_utils_void_t *const celsius_value_pointer, size_t size)
 {
 	if(!fahrenheit_value_pointer)
 	{
@@ -219,7 +219,7 @@ extern c_utils_result c_utils_generic_fahrenheit_to_celsius(const c_utils_void_t
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result c_utils_generic_fahrenheit_to_kelvin(const c_utils_void_t *const fahrenheit_value_pointer, c_utils_void_t *const kelvin_value_pointer, size_t size)
+extern c_utils_result_t c_utils_generic_fahrenheit_to_kelvin(const c_utils_void_t *const fahrenheit_value_pointer, c_utils_void_t *const kelvin_value_pointer, size_t size)
 {
 	if(!fahrenheit_value_pointer)
 	{
