@@ -1,5 +1,5 @@
 local application_name = "C-Utils";
-local application_version = "2026-09-08";
+local application_version = "2026-09-11";
 local application_standards =
 {
 	"c90",
@@ -41,7 +41,8 @@ local flags =
 		"-Oz",
 		"-funroll-loops",
 		"-fstack-protector-strong",
-		"-v"
+		"-v",
+		"-DC_UTILS_COMPILE"
 	}
 };
 
@@ -64,6 +65,7 @@ local sources =
 	"source/C-Utils/tmp-utls.c",
 	"source/C-Utils/trd-utls.c",
 	"source/C-Utils/cryptrnd.c",
+	"source/C-Utils/dl-utils.c"
 };
 
 local function help()

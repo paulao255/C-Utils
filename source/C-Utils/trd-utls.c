@@ -1,11 +1,17 @@
 /*************************/
 /* Library importations: */
 /*************************/
-
+#ifndef C_UTILS_COMPILE
+#include "../../include/C-Utils/trd-utls.h"
+#else
 #include "C-Utils/trd-utls.h"
+#endif
 #include <errno.h>
 #include <stdio.h>
-#if defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
+#include <stdlib.h>
+#if defined(_WIN32) || defined(_WIN64)
+#include <process.h>
+#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
 #include <unistd.h>
 #include <sched.h>
 #endif
@@ -23,7 +29,7 @@ extern "C"
 /* Functions definitions: */
 /**************************/
 
-extern c_utils_result_t c_utils_get_processor_count(c_utils_int32_t *const output)
+C_UTILS_API c_utils_result_t c_utils_get_processor_count(c_utils_int32_t *const output)
 {
 	if(!output)
 	{
@@ -66,7 +72,7 @@ extern c_utils_result_t c_utils_get_processor_count(c_utils_int32_t *const outpu
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result_t c_utils_thread_create(c_utils_thread_t *const thread, c_utils_thread_function_t (*f)(c_utils_void_t *arguments), c_utils_void_t *arguments)
+C_UTILS_API c_utils_result_t c_utils_thread_create(c_utils_thread_t *const thread, c_utils_thread_function_t (*f)(c_utils_void_t *arguments), c_utils_void_t *arguments)
 {
 	if(!thread)
 	{
@@ -85,13 +91,13 @@ extern c_utils_result_t c_utils_thread_create(c_utils_thread_t *const thread, c_
 	else
 	{
 #if defined(_WIN32) || defined(_WIN64)
-		*thread = CreateThread(C_UTILS_NULL_POINTER, 0UL, (LPTHREAD_START_ROUTINE)f, arguments, 0, C_UTILS_NULL_POINTER);
+		*thread = (HANDLE)_beginthreadex(C_UTILS_NULL_POINTER, 0U, (unsigned (__stdcall *)(void *))f, arguments, 0U, C_UTILS_NULL_POINTER);
 
 		if(!*thread)
 		{
 			const DWORD error = GetLastError();
 
-			fprintf(stderr, "Error in function c_utils_thread_create, function CreateThread (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+			fprintf(stderr, "Error in function c_utils_thread_create, function _beginthreadex (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 			fprintf(stderr, "Error code: %u\n", (c_utils_uint32_t)error);
 
 			return C_UTILS_RESULT_FAILURE;
@@ -112,7 +118,7 @@ extern c_utils_result_t c_utils_thread_create(c_utils_thread_t *const thread, c_
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result_t c_utils_thread_join(c_utils_thread_t thread)
+C_UTILS_API c_utils_result_t c_utils_thread_join(c_utils_thread_t thread)
 {
 #if defined(_WIN32) || defined(_WIN64)
 	if(WaitForSingleObject(thread, INFINITE) != WAIT_OBJECT_0)
@@ -157,7 +163,7 @@ extern c_utils_result_t c_utils_thread_join(c_utils_thread_t thread)
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result_t c_utils_thread_detach(c_utils_thread_t thread)
+C_UTILS_API c_utils_result_t c_utils_thread_detach(c_utils_thread_t thread)
 {
 #if defined(_WIN32) || defined(_WIN64)
 	const BOOL result = CloseHandle(thread);
@@ -188,7 +194,7 @@ extern c_utils_result_t c_utils_thread_detach(c_utils_thread_t thread)
 #endif
 }
 
-extern c_utils_result_t c_utils_thread_get_id(c_utils_thread_id_t *const thread_id)
+C_UTILS_API c_utils_result_t c_utils_thread_get_id(c_utils_thread_id_t *const thread_id)
 {
 	if(!thread_id)
 	{
@@ -206,7 +212,7 @@ extern c_utils_result_t c_utils_thread_get_id(c_utils_thread_id_t *const thread_
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result_t c_utils_thread_yield(c_utils_void_t)
+C_UTILS_API c_utils_result_t c_utils_thread_yield(c_utils_void_t)
 {
 #if defined(_WIN32) || defined(_WIN64)
 	SwitchToThread();
@@ -225,7 +231,7 @@ extern c_utils_result_t c_utils_thread_yield(c_utils_void_t)
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_void_t c_utils_thread_exit(const c_utils_int32_t exit_code, c_utils_thread_arguments_t *const arguments)
+C_UTILS_API c_utils_void_t c_utils_thread_exit(const c_utils_int32_t exit_code, c_utils_thread_arguments_t *const arguments)
 {
 	if(arguments)
 	{
@@ -244,7 +250,7 @@ extern c_utils_void_t c_utils_thread_exit(const c_utils_int32_t exit_code, c_uti
 	return;
 }
 
-extern c_utils_result_t c_utils_mutex_create(c_utils_mutex_t *const mutex)
+C_UTILS_API c_utils_result_t c_utils_mutex_create(c_utils_mutex_t *const mutex)
 {
 	if(!mutex)
 	{
@@ -273,7 +279,7 @@ extern c_utils_result_t c_utils_mutex_create(c_utils_mutex_t *const mutex)
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result_t c_utils_mutex_lock(c_utils_mutex_t *const mutex)
+C_UTILS_API c_utils_result_t c_utils_mutex_lock(c_utils_mutex_t *const mutex)
 {
 	if(!mutex)
 	{
@@ -302,7 +308,7 @@ extern c_utils_result_t c_utils_mutex_lock(c_utils_mutex_t *const mutex)
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result_t c_utils_mutex_trylock(c_utils_mutex_t *const mutex, c_utils_bool_t *const is_locked)
+C_UTILS_API c_utils_result_t c_utils_mutex_trylock(c_utils_mutex_t *const mutex, c_utils_bool_t *const is_locked)
 {
 	if(!mutex)
 	{
@@ -358,7 +364,7 @@ extern c_utils_result_t c_utils_mutex_trylock(c_utils_mutex_t *const mutex, c_ut
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result_t c_utils_mutex_unlock(c_utils_mutex_t *const mutex)
+C_UTILS_API c_utils_result_t c_utils_mutex_unlock(c_utils_mutex_t *const mutex)
 {
 	if(!mutex)
 	{
@@ -387,7 +393,7 @@ extern c_utils_result_t c_utils_mutex_unlock(c_utils_mutex_t *const mutex)
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result_t c_utils_mutex_destroy(c_utils_mutex_t *const mutex)
+C_UTILS_API c_utils_result_t c_utils_mutex_destroy(c_utils_mutex_t *const mutex)
 {
 	if(!mutex)
 	{
@@ -416,7 +422,7 @@ extern c_utils_result_t c_utils_mutex_destroy(c_utils_mutex_t *const mutex)
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result_t c_utils_condition_variable_create(c_utils_condition_variable_t *const condition_variable)
+C_UTILS_API c_utils_result_t c_utils_condition_variable_create(c_utils_condition_variable_t *const condition_variable)
 {
 	if(!condition_variable)
 	{
@@ -445,7 +451,7 @@ extern c_utils_result_t c_utils_condition_variable_create(c_utils_condition_vari
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result_t c_utils_condition_variable_wait(c_utils_condition_variable_t *const condition_variable, c_utils_mutex_t *const mutex)
+C_UTILS_API c_utils_result_t c_utils_condition_variable_wait(c_utils_condition_variable_t *const condition_variable, c_utils_mutex_t *const mutex)
 {
 	if(!condition_variable)
 	{
@@ -488,7 +494,7 @@ extern c_utils_result_t c_utils_condition_variable_wait(c_utils_condition_variab
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result_t c_utils_condition_variable_signal(c_utils_condition_variable_t *const condition_variable)
+C_UTILS_API c_utils_result_t c_utils_condition_variable_signal(c_utils_condition_variable_t *const condition_variable)
 {
 	if(!condition_variable)
 	{
@@ -517,7 +523,7 @@ extern c_utils_result_t c_utils_condition_variable_signal(c_utils_condition_vari
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result_t c_utils_condition_variable_broadcast(c_utils_condition_variable_t *const condition_variable)
+C_UTILS_API c_utils_result_t c_utils_condition_variable_broadcast(c_utils_condition_variable_t *const condition_variable)
 {
 	if(!condition_variable)
 	{
@@ -546,7 +552,7 @@ extern c_utils_result_t c_utils_condition_variable_broadcast(c_utils_condition_v
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result_t c_utils_condition_variable_destroy(c_utils_condition_variable_t *const condition_variable)
+C_UTILS_API c_utils_result_t c_utils_condition_variable_destroy(c_utils_condition_variable_t *const condition_variable)
 {
 	if(!condition_variable)
 	{
@@ -575,7 +581,7 @@ extern c_utils_result_t c_utils_condition_variable_destroy(c_utils_condition_var
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result_t c_utils_semaphore_create(c_utils_semaphore_t *const semaphore, c_utils_uint32_t initial_value)
+C_UTILS_API c_utils_result_t c_utils_semaphore_create(c_utils_semaphore_t *const semaphore, c_utils_uint32_t initial_value)
 {
 	if(!semaphore)
 	{
@@ -608,7 +614,7 @@ extern c_utils_result_t c_utils_semaphore_create(c_utils_semaphore_t *const sema
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result_t c_utils_semaphore_wait(c_utils_semaphore_t *const semaphore)
+C_UTILS_API c_utils_result_t c_utils_semaphore_wait(c_utils_semaphore_t *const semaphore)
 {
 	if(!semaphore)
 	{
@@ -649,7 +655,7 @@ extern c_utils_result_t c_utils_semaphore_wait(c_utils_semaphore_t *const semaph
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result_t c_utils_semaphore_post(c_utils_semaphore_t *const semaphore)
+C_UTILS_API c_utils_result_t c_utils_semaphore_post(c_utils_semaphore_t *const semaphore)
 {
 	if(!semaphore)
 	{
@@ -661,6 +667,18 @@ extern c_utils_result_t c_utils_semaphore_post(c_utils_semaphore_t *const semaph
 	if(c_utils_mutex_lock(&semaphore->mutex))
 	{
 		fprintf(stderr, "Error in function c_utils_semaphore_post, function c_utils_mutex_lock failed (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		return C_UTILS_RESULT_FAILURE;
+	}
+
+	if(semaphore->value == 0xFFFFFFFFu)
+	{
+		fprintf(stderr, "Error in function c_utils_semaphore_post, the semaphore value is 0xFFFFFFFF (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		if(c_utils_mutex_unlock(&semaphore->mutex))
+		{
+			fprintf(stderr, "Error in function c_utils_semaphore_post, function c_utils_mutex_unlock failed (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		}
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -687,7 +705,7 @@ extern c_utils_result_t c_utils_semaphore_post(c_utils_semaphore_t *const semaph
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result_t c_utils_semaphore_destroy(c_utils_semaphore_t *const semaphore)
+C_UTILS_API c_utils_result_t c_utils_semaphore_destroy(c_utils_semaphore_t *const semaphore)
 {
 	if(!semaphore)
 	{
@@ -720,7 +738,7 @@ extern c_utils_result_t c_utils_semaphore_destroy(c_utils_semaphore_t *const sem
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result_t c_utils_rwlock_create(c_utils_rwlock_t *const rwlock)
+C_UTILS_API c_utils_result_t c_utils_rwlock_create(c_utils_rwlock_t *const rwlock)
 {
 	if(!rwlock)
 	{
@@ -749,7 +767,7 @@ extern c_utils_result_t c_utils_rwlock_create(c_utils_rwlock_t *const rwlock)
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result_t c_utils_rwlock_read_lock(c_utils_rwlock_t *const rwlock)
+C_UTILS_API c_utils_result_t c_utils_rwlock_read_lock(c_utils_rwlock_t *const rwlock)
 {
 	if(!rwlock)
 	{
@@ -778,7 +796,7 @@ extern c_utils_result_t c_utils_rwlock_read_lock(c_utils_rwlock_t *const rwlock)
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result_t c_utils_rwlock_write_lock(c_utils_rwlock_t *const rwlock)
+C_UTILS_API c_utils_result_t c_utils_rwlock_write_lock(c_utils_rwlock_t *const rwlock)
 {
 	if(!rwlock)
 	{
@@ -807,7 +825,7 @@ extern c_utils_result_t c_utils_rwlock_write_lock(c_utils_rwlock_t *const rwlock
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result_t c_utils_rwlock_unlock(c_utils_rwlock_t *const rwlock, const c_utils_bool_t is_write_lock)
+C_UTILS_API c_utils_result_t c_utils_rwlock_unlock(c_utils_rwlock_t *const rwlock, const c_utils_bool_t is_write_lock)
 {
 	if(!rwlock)
 	{
@@ -845,7 +863,7 @@ extern c_utils_result_t c_utils_rwlock_unlock(c_utils_rwlock_t *const rwlock, co
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result_t c_utils_rwlock_destroy(c_utils_rwlock_t *const rwlock)
+C_UTILS_API c_utils_result_t c_utils_rwlock_destroy(c_utils_rwlock_t *const rwlock)
 {
 	if(!rwlock)
 	{
@@ -874,7 +892,7 @@ extern c_utils_result_t c_utils_rwlock_destroy(c_utils_rwlock_t *const rwlock)
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result_t c_utils_tls_create(c_utils_tls_key_t *const key)
+C_UTILS_API c_utils_result_t c_utils_tls_create(c_utils_tls_key_t *const key)
 {
 	if(!key)
 	{
@@ -913,7 +931,7 @@ extern c_utils_result_t c_utils_tls_create(c_utils_tls_key_t *const key)
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result_t c_utils_tls_set(c_utils_tls_key_t key, c_utils_void_t *const value)
+C_UTILS_API c_utils_result_t c_utils_tls_set(c_utils_tls_key_t key, c_utils_void_t *const value)
 {
 #if defined(_WIN32) || defined(_WIN64)
 	if(!TlsSetValue(key, value))
@@ -940,7 +958,7 @@ extern c_utils_result_t c_utils_tls_set(c_utils_tls_key_t key, c_utils_void_t *c
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result_t c_utils_tls_get(c_utils_tls_key_t key, c_utils_void_t *const output)
+C_UTILS_API c_utils_result_t c_utils_tls_get(c_utils_tls_key_t key, c_utils_void_t *const output)
 {
 	if(!output)
 	{
@@ -979,7 +997,7 @@ extern c_utils_result_t c_utils_tls_get(c_utils_tls_key_t key, c_utils_void_t *c
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result_t c_utils_tls_destroy(c_utils_tls_key_t key)
+C_UTILS_API c_utils_result_t c_utils_tls_destroy(c_utils_tls_key_t key)
 {
 #if defined(_WIN32) || defined(_WIN64)
 	if(!TlsFree(key))
@@ -1006,7 +1024,7 @@ extern c_utils_result_t c_utils_tls_destroy(c_utils_tls_key_t key)
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result_t c_utils_barrier_create(c_utils_barrier_t *const barrier, c_utils_uint32_t count)
+C_UTILS_API c_utils_result_t c_utils_barrier_create(c_utils_barrier_t *const barrier, c_utils_uint32_t count)
 {
 	if(!barrier)
 	{
@@ -1048,7 +1066,7 @@ extern c_utils_result_t c_utils_barrier_create(c_utils_barrier_t *const barrier,
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result_t c_utils_barrier_wait(c_utils_barrier_t *const barrier)
+C_UTILS_API c_utils_result_t c_utils_barrier_wait(c_utils_barrier_t *const barrier)
 {
 	if(!barrier)
 	{
@@ -1121,7 +1139,7 @@ extern c_utils_result_t c_utils_barrier_wait(c_utils_barrier_t *const barrier)
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result_t c_utils_barrier_destroy(c_utils_barrier_t *const barrier)
+C_UTILS_API c_utils_result_t c_utils_barrier_destroy(c_utils_barrier_t *const barrier)
 {
 	if(!barrier)
 	{
@@ -1147,6 +1165,665 @@ extern c_utils_result_t c_utils_barrier_destroy(c_utils_barrier_t *const barrier
 		fprintf(stderr, "Error in function c_utils_barrier_destroy, function c_utils_mutex_destroy (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 
 		return C_UTILS_RESULT_FAILURE;
+	}
+
+	return C_UTILS_RESULT_SUCCESS;
+}
+
+static c_utils_thread_function_t c_utils_thread_pool_worker(c_utils_void_t *arguments)
+{
+	c_utils_thread_pool_t *const pool = (c_utils_thread_pool_t *)arguments;
+
+	while(1)
+	{
+		if(c_utils_mutex_lock(&pool->mutex))
+		{
+			fprintf(stderr, "Error in function c_utils_thread_pool_worker, function c_utils_mutex_lock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+			return c_utils_thread_function_return;
+		}
+
+		else
+		{
+			c_utils_task_node_t *task;
+
+			while(!pool->head && !pool->stop)
+			{
+				if(c_utils_condition_variable_wait(&pool->condition_has_tasks, &pool->mutex))
+				{
+					fprintf(stderr, "Error in function c_utils_thread_pool_worker, function c_utils_condition_variable_wait (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+					if(c_utils_mutex_unlock(&pool->mutex))
+					{
+						fprintf(stderr, "Error in function c_utils_thread_pool_worker, function c_utils_mutex_unlock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+					}
+
+					return c_utils_thread_function_return;
+				}
+			}
+
+			if(pool->stop && !pool->head)
+			{
+				if(c_utils_mutex_unlock(&pool->mutex))
+				{
+					fprintf(stderr, "Error in function c_utils_thread_pool_worker, function c_utils_mutex_unlock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+				}
+
+				return c_utils_thread_function_return;
+			}
+
+			task = pool->head;
+			pool->head = task->next;
+
+			if(!pool->head)
+			{
+				pool->tail = C_UTILS_NULL_POINTER;
+			}
+
+			--pool->pending_tasks;
+			++pool->active_tasks;
+
+			if(c_utils_mutex_unlock(&pool->mutex))
+			{
+				fprintf(stderr, "Error in function c_utils_thread_pool_worker, function c_utils_mutex_unlock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+				free((void *)task);
+
+				return c_utils_thread_function_return;
+			}
+
+			task->function(task->arguments);
+
+			free((void *)task);
+
+			if(c_utils_mutex_lock(&pool->mutex))
+			{
+				fprintf(stderr, "Error in function c_utils_thread_pool_worker, function c_utils_mutex_lock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+				return c_utils_thread_function_return;
+			}
+
+			--pool->active_tasks;
+
+			if(pool->pending_tasks == 0 && pool->active_tasks == 0)
+			{
+				if(c_utils_condition_variable_broadcast(&pool->condition_idle))
+				{
+					fprintf(stderr, "Error in function c_utils_thread_pool_worker, function c_utils_condition_variable_broadcast (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+				}
+			}
+
+			if(c_utils_mutex_unlock(&pool->mutex))
+			{
+				fprintf(stderr, "Error in function c_utils_thread_pool_worker, function c_utils_mutex_unlock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+			}
+		}
+	}
+
+	return c_utils_thread_function_return;
+}
+
+C_UTILS_API c_utils_result_t c_utils_thread_pool_create(c_utils_thread_pool_t *const pool, c_utils_size_t thread_count)
+{
+	if(!pool)
+	{
+		fprintf(stderr, "Error in function c_utils_thread_pool_create, the thread pool is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		return C_UTILS_RESULT_FAILURE;
+	}
+
+	if(!thread_count)
+	{
+		fprintf(stderr, "Error in function c_utils_thread_pool_create, the thread count is zero (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		return C_UTILS_RESULT_FAILURE;
+	}
+
+	if(thread_count > ((c_utils_size_t)-1) / sizeof(c_utils_thread_t))
+	{
+		fprintf(stderr, "Error in function c_utils_thread_pool_create, the thread count causes a size overflow (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		return C_UTILS_RESULT_FAILURE;
+	}
+
+	pool->thread_count = thread_count;
+	pool->head = C_UTILS_NULL_POINTER;
+	pool->tail = C_UTILS_NULL_POINTER;
+	pool->pending_tasks = 0;
+	pool->active_tasks = 0;
+	pool->stop = C_UTILS_FALSE;
+
+	if(c_utils_mutex_create(&pool->mutex))
+	{
+		fprintf(stderr, "Error in function c_utils_thread_pool_create, function c_utils_mutex_create (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		return C_UTILS_RESULT_FAILURE;
+	}
+
+	if(c_utils_condition_variable_create(&pool->condition_has_tasks))
+	{
+		fprintf(stderr, "Error in function c_utils_thread_pool_create, function c_utils_condition_variable_create (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		if(c_utils_mutex_destroy(&pool->mutex))
+		{
+			fprintf(stderr, "Error in function c_utils_thread_pool_create, function c_utils_mutex_destroy (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		}
+
+		return C_UTILS_RESULT_FAILURE;
+	}
+
+	if(c_utils_condition_variable_create(&pool->condition_idle))
+	{
+		fprintf(stderr, "Error in function c_utils_thread_pool_create, function c_utils_condition_variable_create (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		if(c_utils_condition_variable_destroy(&pool->condition_has_tasks))
+		{
+			fprintf(stderr, "Error in function c_utils_thread_pool_create, function c_utils_condition_variable_destroy (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		}
+
+		if(c_utils_mutex_destroy(&pool->mutex))
+		{
+			fprintf(stderr, "Error in function c_utils_thread_pool_create, function c_utils_mutex_destroy (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		}
+
+		return C_UTILS_RESULT_FAILURE;
+	}
+
+	pool->threads = (c_utils_thread_t *)malloc(sizeof(c_utils_thread_t) * thread_count);
+
+	if(!pool->threads)
+	{
+		fprintf(stderr, "Error in function c_utils_thread_pool_create, malloc (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		if(c_utils_condition_variable_destroy(&pool->condition_idle))
+		{
+			fprintf(stderr, "Error in function c_utils_thread_pool_create, function c_utils_condition_variable_destroy (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		}
+
+		if(c_utils_condition_variable_destroy(&pool->condition_has_tasks))
+		{
+			fprintf(stderr, "Error in function c_utils_thread_pool_create, function c_utils_condition_variable_destroy (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		}
+
+		if(c_utils_mutex_destroy(&pool->mutex))
+		{
+			fprintf(stderr, "Error in function c_utils_thread_pool_create, function c_utils_mutex_destroy (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		}
+
+		return C_UTILS_RESULT_FAILURE;
+	}
+
+	else
+	{
+		c_utils_size_t created_threads = 0u;
+		c_utils_size_t i;
+		c_utils_size_t j;
+
+		for(i = 0u; i < thread_count; ++i)
+		{
+			if(c_utils_thread_create(&pool->threads[i], c_utils_thread_pool_worker, pool))
+			{
+				fprintf(stderr, "Error in function c_utils_thread_pool_create, function c_utils_thread_create (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+				if(!c_utils_mutex_lock(&pool->mutex))
+				{
+					pool->stop = C_UTILS_TRUE;
+
+					if(c_utils_condition_variable_broadcast(&pool->condition_has_tasks))
+					{
+						fprintf(stderr, "Error in function c_utils_thread_pool_create, function c_utils_condition_variable_broadcast (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+					}
+
+					if(c_utils_mutex_unlock(&pool->mutex))
+					{
+						fprintf(stderr, "Error in function c_utils_thread_pool_create, function c_utils_mutex_unlock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+					}
+				}
+				else
+				{
+					fprintf(stderr, "Error in function c_utils_thread_pool_create, function c_utils_mutex_lock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+				}
+
+				for(j = 0u; j < created_threads; ++j)
+				{
+					if(c_utils_thread_join(pool->threads[j]))
+					{
+						fprintf(stderr, "Error in function c_utils_thread_pool_create, function c_utils_thread_join (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+					}
+				}
+
+				free((void *)pool->threads);
+
+				if(c_utils_condition_variable_destroy(&pool->condition_idle))
+				{
+					fprintf(stderr, "Error in function c_utils_thread_pool_create, function c_utils_condition_variable_destroy (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+				}
+
+				if(c_utils_condition_variable_destroy(&pool->condition_has_tasks))
+				{
+					fprintf(stderr, "Error in function c_utils_thread_pool_create, function c_utils_condition_variable_destroy (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+				}
+
+				if(c_utils_mutex_destroy(&pool->mutex))
+				{
+					fprintf(stderr, "Error in function c_utils_thread_pool_create, function c_utils_mutex_destroy (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+				}
+
+				return C_UTILS_RESULT_FAILURE;
+			}
+
+			++created_threads;
+		}
+	}
+
+	return C_UTILS_RESULT_SUCCESS;
+}
+
+C_UTILS_API c_utils_result_t c_utils_thread_pool_add_task(c_utils_thread_pool_t *const pool, c_utils_task_function_pointer function, c_utils_void_t *arguments)
+{
+	if(!pool)
+	{
+		fprintf(stderr, "Error in function c_utils_thread_pool_add_task, the thread pool is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		return C_UTILS_RESULT_FAILURE;
+	}
+
+	if(!function)
+	{
+		fprintf(stderr, "Error in function c_utils_thread_pool_add_task, the function is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		return C_UTILS_RESULT_FAILURE;
+	}
+
+	else
+	{
+		c_utils_task_node_t *node = (c_utils_task_node_t *)malloc(sizeof(c_utils_task_node_t));
+
+		if(!node)
+		{
+			fprintf(stderr, "Error in function c_utils_thread_pool_add_task, malloc (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+			return C_UTILS_RESULT_FAILURE;
+		}
+
+		node->function = function;
+		node->arguments = arguments;
+		node->next = C_UTILS_NULL_POINTER;
+
+		if(c_utils_mutex_lock(&pool->mutex))
+		{
+			fprintf(stderr, "Error in function c_utils_thread_pool_add_task, function c_utils_mutex_lock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+			free((void *)node);
+
+			return C_UTILS_RESULT_FAILURE;
+		}
+
+		if(pool->stop)
+		{
+			if(c_utils_mutex_unlock(&pool->mutex))
+			{
+				fprintf(stderr, "Error in function c_utils_thread_pool_add_task, function c_utils_mutex_unlock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+			}
+
+			free((void *)node);
+
+			return C_UTILS_RESULT_FAILURE;
+		}
+
+		if(!pool->tail)
+		{
+			pool->head = node;
+			pool->tail = node;
+		}
+
+		else
+		{
+			pool->tail->next = node;
+			pool->tail = node;
+		}
+
+		++pool->pending_tasks;
+
+		if(c_utils_condition_variable_signal(&pool->condition_has_tasks))
+		{
+			c_utils_task_node_t *current = pool->head;
+
+			fprintf(stderr, "Error in function c_utils_thread_pool_add_task, function c_utils_condition_variable_signal (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+			if(current == node)
+			{
+				pool->head = C_UTILS_NULL_POINTER;
+				pool->tail = C_UTILS_NULL_POINTER;
+			}
+
+			else
+			{
+				while(current->next != node)
+				{
+					current = current->next;
+				}
+
+				current->next = C_UTILS_NULL_POINTER;
+				pool->tail = current;
+			}
+
+			--pool->pending_tasks;
+
+			if(c_utils_mutex_unlock(&pool->mutex))
+			{
+				fprintf(stderr, "Error in function c_utils_thread_pool_add_task, function c_utils_mutex_unlock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+			}
+
+			free((void *)node);
+
+			return C_UTILS_RESULT_FAILURE;
+		}
+
+		if(c_utils_mutex_unlock(&pool->mutex))
+		{
+			fprintf(stderr, "Error in function c_utils_thread_pool_add_task, function c_utils_mutex_unlock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+			free((void *)node);
+
+			return C_UTILS_RESULT_FAILURE;
+		}
+	}
+
+	return C_UTILS_RESULT_SUCCESS;
+}
+
+C_UTILS_API c_utils_result_t c_utils_thread_pool_wait(c_utils_thread_pool_t *const pool)
+{
+	if(!pool)
+	{
+		fprintf(stderr, "Error in function c_utils_thread_pool_wait, the thread pool is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		return C_UTILS_RESULT_FAILURE;
+	}
+
+	if(c_utils_mutex_lock(&pool->mutex))
+	{
+		fprintf(stderr, "Error in function c_utils_thread_pool_wait, function c_utils_mutex_lock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		return C_UTILS_RESULT_FAILURE;
+	}
+
+	while((pool->pending_tasks > 0 || pool->active_tasks > 0) && !pool->stop)
+	{
+		if(c_utils_condition_variable_wait(&pool->condition_idle, &pool->mutex))
+		{
+			fprintf(stderr, "Error in function c_utils_thread_pool_wait, function c_utils_condition_variable_wait (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+			if(c_utils_mutex_unlock(&pool->mutex))
+			{
+				fprintf(stderr, "Error in function c_utils_thread_pool_wait, function c_utils_mutex_unlock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+			}
+
+			return C_UTILS_RESULT_FAILURE;
+		}
+	}
+
+	if(c_utils_mutex_unlock(&pool->mutex))
+	{
+		fprintf(stderr, "Error in function c_utils_thread_pool_wait, function c_utils_mutex_unlock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		return C_UTILS_RESULT_FAILURE;
+	}
+
+	return C_UTILS_RESULT_SUCCESS;
+}
+
+C_UTILS_API c_utils_result_t c_utils_thread_pool_clear(c_utils_thread_pool_t *const pool)
+{
+	if(!pool)
+	{
+		fprintf(stderr, "Error in function c_utils_thread_pool_clear, the thread pool is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		return C_UTILS_RESULT_FAILURE;
+	}
+
+	if(c_utils_mutex_lock(&pool->mutex))
+	{
+		fprintf(stderr, "Error in function c_utils_thread_pool_clear, function c_utils_mutex_lock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		return C_UTILS_RESULT_FAILURE;
+	}
+
+	else
+	{
+		c_utils_task_node_t *current = pool->head;
+
+		while(current)
+		{
+			c_utils_task_node_t *temporary = current;
+			current = current->next;
+
+			free((void *)temporary);
+		}
+
+		pool->head = C_UTILS_NULL_POINTER;
+		pool->tail = C_UTILS_NULL_POINTER;
+		pool->pending_tasks = 0;
+
+		if(pool->active_tasks == 0)
+		{
+			if(c_utils_condition_variable_broadcast(&pool->condition_idle))
+			{
+				fprintf(stderr, "Error in function c_utils_thread_pool_clear, function c_utils_condition_variable_broadcast (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+				if(c_utils_mutex_unlock(&pool->mutex))
+				{
+					fprintf(stderr, "Error in function c_utils_thread_pool_clear, function c_utils_mutex_unlock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+				}
+
+				return C_UTILS_RESULT_FAILURE;
+			}
+		}
+
+		if(c_utils_mutex_unlock(&pool->mutex))
+		{
+			fprintf(stderr, "Error in function c_utils_thread_pool_clear, function c_utils_mutex_unlock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+			return C_UTILS_RESULT_FAILURE;
+		}
+	}
+
+	return C_UTILS_RESULT_SUCCESS;
+}
+
+C_UTILS_API c_utils_result_t c_utils_thread_pool_get_pending_tasks(c_utils_thread_pool_t *const pool, c_utils_size_t *const output)
+{
+	if(!pool)
+	{
+		fprintf(stderr, "Error in function c_utils_thread_pool_get_pending_tasks, the thread pool is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		return C_UTILS_RESULT_FAILURE;
+	}
+
+	if(!output)
+	{
+		fprintf(stderr, "Error in function c_utils_thread_pool_get_pending_tasks, the output is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		return C_UTILS_RESULT_FAILURE;
+	}
+
+	if(c_utils_mutex_lock(&pool->mutex))
+	{
+		fprintf(stderr, "Error in function c_utils_thread_pool_get_pending_tasks, function c_utils_mutex_lock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		return C_UTILS_RESULT_FAILURE;
+	}
+
+	*output = pool->pending_tasks;
+
+	if(c_utils_mutex_unlock(&pool->mutex))
+	{
+		fprintf(stderr, "Error in function c_utils_thread_pool_get_pending_tasks, function c_utils_mutex_unlock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		return C_UTILS_RESULT_FAILURE;
+	}
+
+	return C_UTILS_RESULT_SUCCESS;
+}
+
+C_UTILS_API c_utils_result_t c_utils_thread_pool_get_active_tasks(c_utils_thread_pool_t *const pool, c_utils_size_t *const output)
+{
+	if(!pool)
+	{
+		fprintf(stderr, "Error in function c_utils_thread_pool_get_active_tasks, the thread pool is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		return C_UTILS_RESULT_FAILURE;
+	}
+
+	if(!output)
+	{
+		fprintf(stderr, "Error in function c_utils_thread_pool_get_active_tasks, the output is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		return C_UTILS_RESULT_FAILURE;
+	}
+
+	if(c_utils_mutex_lock(&pool->mutex))
+	{
+		fprintf(stderr, "Error in function c_utils_thread_pool_get_active_tasks, function c_utils_mutex_lock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		return C_UTILS_RESULT_FAILURE;
+	}
+
+	*output = pool->active_tasks;
+
+	if(c_utils_mutex_unlock(&pool->mutex))
+	{
+		fprintf(stderr, "Error in function c_utils_thread_pool_get_active_tasks, function c_utils_mutex_unlock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		return C_UTILS_RESULT_FAILURE;
+	}
+
+	return C_UTILS_RESULT_SUCCESS;
+}
+
+C_UTILS_API c_utils_result_t c_utils_thread_pool_get_thread_count(c_utils_thread_pool_t *const pool, c_utils_size_t *const output)
+{
+	if(!pool)
+	{
+		fprintf(stderr, "Error in function c_utils_thread_pool_get_thread_count, the thread pool is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		return C_UTILS_RESULT_FAILURE;
+	}
+
+	if(!output)
+	{
+		fprintf(stderr, "Error in function c_utils_thread_pool_get_thread_count, the output is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		return C_UTILS_RESULT_FAILURE;
+	}
+
+	if(c_utils_mutex_lock(&pool->mutex))
+	{
+		fprintf(stderr, "Error in function c_utils_thread_pool_get_thread_count, function c_utils_mutex_lock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		return C_UTILS_RESULT_FAILURE;
+	}
+
+	*output = pool->thread_count;
+
+	if(c_utils_mutex_unlock(&pool->mutex))
+	{
+		fprintf(stderr, "Error in function c_utils_thread_pool_get_thread_count, function c_utils_mutex_unlock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		return C_UTILS_RESULT_FAILURE;
+	}
+
+	return C_UTILS_RESULT_SUCCESS;
+}
+
+C_UTILS_API c_utils_result_t c_utils_thread_pool_destroy(c_utils_thread_pool_t *const pool)
+{
+	if(!pool)
+	{
+		fprintf(stderr, "Error in function c_utils_thread_pool_destroy, the thread pool is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		return C_UTILS_RESULT_FAILURE;
+	}
+
+	if(c_utils_mutex_lock(&pool->mutex))
+	{
+		fprintf(stderr, "Error in function c_utils_thread_pool_destroy, function c_utils_mutex_lock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		return C_UTILS_RESULT_FAILURE;
+	}
+
+	pool->stop = C_UTILS_TRUE;
+
+	if(c_utils_condition_variable_broadcast(&pool->condition_has_tasks))
+	{
+		fprintf(stderr, "Error in function c_utils_thread_pool_destroy, function c_utils_condition_variable_broadcast (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		if(c_utils_mutex_unlock(&pool->mutex))
+		{
+			fprintf(stderr, "Error in function c_utils_thread_pool_destroy, function c_utils_mutex_unlock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		}
+
+		return C_UTILS_RESULT_FAILURE;
+	}
+
+	if(c_utils_mutex_unlock(&pool->mutex))
+	{
+		fprintf(stderr, "Error in function c_utils_thread_pool_destroy, function c_utils_mutex_unlock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		return C_UTILS_RESULT_FAILURE;
+	}
+
+	else
+	{
+		c_utils_size_t i;
+		c_utils_task_node_t *current;
+
+		for(i = 0; i < pool->thread_count; ++i)
+		{
+			if(c_utils_thread_join(pool->threads[i]))
+			{
+				fprintf(stderr, "Error in function c_utils_thread_pool_destroy, function c_utils_thread_join (File: %s, Line: %d)...\n", __FILE__, __LINE__);	
+			}
+		}
+
+		free((void *)pool->threads);
+		pool->threads = C_UTILS_NULL_POINTER;
+
+		current = pool->head;
+
+		while(current)
+		{
+			c_utils_task_node_t *temporary = current;
+			current = current->next;
+			free((void *)temporary);
+		}
+
+		pool->head = C_UTILS_NULL_POINTER;
+		pool->tail = C_UTILS_NULL_POINTER;
+		pool->pending_tasks = 0u;
+		pool->active_tasks = 0u;
+
+		if(c_utils_condition_variable_destroy(&pool->condition_idle))
+		{
+			fprintf(stderr, "Error in function c_utils_thread_pool_destroy, function c_utils_condition_variable_destroy (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+			return C_UTILS_RESULT_FAILURE;
+		}
+
+		if(c_utils_condition_variable_destroy(&pool->condition_has_tasks))
+		{
+			fprintf(stderr, "Error in function c_utils_thread_pool_destroy, function c_utils_condition_variable_destroy (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+			return C_UTILS_RESULT_FAILURE;
+		}
+
+		if(c_utils_mutex_destroy(&pool->mutex))
+		{
+			fprintf(stderr, "Error in function c_utils_thread_pool_destroy, function c_utils_mutex_destroy (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+			return C_UTILS_RESULT_FAILURE;
+		}
 	}
 
 	return C_UTILS_RESULT_SUCCESS;

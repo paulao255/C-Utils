@@ -2,7 +2,11 @@
 /* Library importations: */
 /*************************/
 
+#ifndef C_UTILS_COMPILE
+#include "../../include/C-Utils/c-utils.h"
+#else
 #include "C-Utils/c-utils.h"
+#endif
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,14 +17,22 @@
 #include <shellapi.h>
 #include <direct.h>
 #include <conio.h>
+#ifndef C_UTILS_COMPILE
+#include "../../include/C-Utils/cryptrnd.h"
+#else
 #include "C-Utils/cryptrnd.h"
+#endif
 #elif defined(__linux__) || defined(__ANDROID__)
 #include <termios.h>
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#ifndef C_UTILS_COMPILE
+#include "../../include/C-Utils/cryptrnd.h"
+#else
 #include "C-Utils/cryptrnd.h"
+#endif
 #elif defined(__APPLE__)
 #include <TargetConditionals.h>
 #include <termios.h>
@@ -28,7 +40,11 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#ifndef C_UTILS_COMPILE
+#include "../../include/C-Utils/cryptrnd.h"
+#else
 #include "C-Utils/cryptrnd.h"
+#endif
 #elif defined(ESP_PLATFORM)
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
@@ -62,7 +78,7 @@ extern "C"
 /* Functions definitions: */
 /**************************/
 
-extern c_utils_void_t c_utils_clear_standard_output(c_utils_void_t)
+C_UTILS_API c_utils_void_t c_utils_clear_standard_output(c_utils_void_t)
 {
 	fputs("\033[2J\033[3J\033[H", stdout);
 
@@ -129,7 +145,7 @@ static c_utils_result_t c_utils_enable_windows_console_features(c_utils_void_t)
 }
 #endif
 
-extern c_utils_result_t c_utils_mem_free_and_unregist(const c_utils_void_t *const address)
+C_UTILS_API c_utils_result_t c_utils_mem_free_and_unregist(const c_utils_void_t *const address)
 {
 	if(!c_utils_is_initialized)
 	{
@@ -169,7 +185,7 @@ extern c_utils_result_t c_utils_mem_free_and_unregist(const c_utils_void_t *cons
 	return C_UTILS_RESULT_FAILURE;
 }
 
-extern c_utils_result_t c_utils_get_current_time(struct tm *const time_struct)
+C_UTILS_API c_utils_result_t c_utils_get_current_time(struct tm *const time_struct)
 {
 	if(!time_struct)
 	{
@@ -226,7 +242,7 @@ extern c_utils_result_t c_utils_get_current_time(struct tm *const time_struct)
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result_t c_utils_validate_date(const c_utils_int32_t year, const c_utils_uint8_t month, const c_utils_uint8_t day, const c_utils_bool_t is_future_date_valid)
+C_UTILS_API c_utils_result_t c_utils_validate_date(const c_utils_int32_t year, const c_utils_uint8_t month, const c_utils_uint8_t day, const c_utils_bool_t is_future_date_valid)
 {
 	if(year < 1L)
 	{
@@ -311,7 +327,7 @@ extern c_utils_result_t c_utils_validate_date(const c_utils_int32_t year, const 
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result_t c_utils_clear_standard_input(c_utils_void_t)
+C_UTILS_API c_utils_result_t c_utils_clear_standard_input(c_utils_void_t)
 {
 #if defined(ESP_PLATFORM)
 	fprintf(stderr, "Error in function c_utils_clear_standard_input, %s does not support this function (File: %s, Line: %d)...\n", c_utils_verify_os(), __FILE__, __LINE__);
@@ -329,7 +345,7 @@ extern c_utils_result_t c_utils_clear_standard_input(c_utils_void_t)
 #endif
 }
 
-extern c_utils_result_t c_utils_initialize(c_utils_void_t)
+C_UTILS_API c_utils_result_t c_utils_initialize(c_utils_void_t)
 {
 	if(c_utils_is_initialized)
 	{
@@ -369,7 +385,7 @@ extern c_utils_result_t c_utils_initialize(c_utils_void_t)
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result_t c_utils_terminate(c_utils_void_t)
+C_UTILS_API c_utils_result_t c_utils_terminate(c_utils_void_t)
 {
 	if(!c_utils_is_initialized)
 	{
@@ -409,7 +425,7 @@ extern c_utils_result_t c_utils_terminate(c_utils_void_t)
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result_t c_utils_mem_regist_to_free(const c_utils_void_t *const address)
+C_UTILS_API c_utils_result_t c_utils_mem_regist_to_free(const c_utils_void_t *const address)
 {
 	if(!c_utils_is_initialized)
 	{
@@ -475,7 +491,7 @@ extern c_utils_result_t c_utils_mem_regist_to_free(const c_utils_void_t *const a
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result_t c_utils_scan_enter(c_utils_void_t)
+C_UTILS_API c_utils_result_t c_utils_scan_enter(c_utils_void_t)
 {
 #if defined(ESP_PLATFORM)
 	fprintf(stderr, "Error in function c_utils_scan_enter, %s does not support this function (File: %s, Line: %d)...\n", c_utils_verify_os(), __FILE__, __LINE__);
@@ -500,7 +516,7 @@ extern c_utils_result_t c_utils_scan_enter(c_utils_void_t)
 #endif
 }
 
-extern c_utils_result_t c_utils_url_open(const c_utils_char_t *const url)
+C_UTILS_API c_utils_result_t c_utils_url_open(const c_utils_char_t *const url)
 {
 #ifdef ESP_PLATFORM
 	fprintf(stderr, "Error in function c_utils_url_opener, %s does not support this function (File: %s, Line: %d)...\n", c_utils_verify_os(), __FILE__, __LINE__);
@@ -568,7 +584,7 @@ extern c_utils_result_t c_utils_url_open(const c_utils_char_t *const url)
 #endif
 }
 
-extern c_utils_result_t c_utils_sleep(const c_utils_uint32_t seconds, const c_utils_uint16_t milliseconds)
+C_UTILS_API c_utils_result_t c_utils_sleep(const c_utils_uint32_t seconds, const c_utils_uint16_t milliseconds)
 {
 	if(!seconds && !milliseconds)
 	{
@@ -624,7 +640,7 @@ print_errno:
 #endif
 }
 
-extern c_utils_result_t c_utils_make_directory(const c_utils_char_t *const path, c_utils_uint32_t mode)
+C_UTILS_API c_utils_result_t c_utils_make_directory(const c_utils_char_t *const path, c_utils_uint32_t mode)
 {
 #if defined(ESP_PLATFORM)
 	fprintf(stderr, "Error in function c_utils_make_directory, %s does not support this function (File: %s, Line: %d)...\n", c_utils_verify_os(), __FILE__, __LINE__);
@@ -670,7 +686,7 @@ extern c_utils_result_t c_utils_make_directory(const c_utils_char_t *const path,
 #endif
 }
 
-extern c_utils_result_t c_utils_scan_character(signed int *const character_output)
+C_UTILS_API c_utils_result_t c_utils_scan_character(signed int *const character_output)
 {
 #if defined(ESP_PLATFORM)
 	fprintf(stderr, "Error in function c_utils_scan_character, %s does not support this function (File: %s, Line: %d)...\n", c_utils_verify_os(), __FILE__, __LINE__);
@@ -768,7 +784,7 @@ print_errno:
 #endif
 }
 
-extern c_utils_result_t c_utils_mem_allocate(const c_utils_void_t *const address_pointer, const size_t size)
+C_UTILS_API c_utils_result_t c_utils_mem_allocate(const c_utils_void_t *const address_pointer, const size_t size)
 {
 	if(!size)
 	{
@@ -864,7 +880,7 @@ extern c_utils_result_t c_utils_mem_allocate(const c_utils_void_t *const address
 	}
 }
 
-extern c_utils_result_t c_utils_random_integer(c_utils_int32_t minimum, c_utils_int32_t maximum, c_utils_int32_t *const output)
+C_UTILS_API c_utils_result_t c_utils_random_integer(c_utils_int32_t minimum, c_utils_int32_t maximum, c_utils_int32_t *const output)
 {
 	if(!output)
 	{
@@ -935,7 +951,7 @@ extern c_utils_result_t c_utils_random_integer(c_utils_int32_t minimum, c_utils_
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result_t c_utils_read_file(const c_utils_char_t *const path, const c_utils_char_t **const output)
+C_UTILS_API c_utils_result_t c_utils_read_file(const c_utils_char_t *const path, const c_utils_char_t **const output)
 {
 #if defined(ESP_PLATFORM)
 	fprintf(stderr, "Error in c_utils_read_file, %s does not support this function (File: %s, Line: %d)...\n", c_utils_verify_os(), __FILE__, __LINE__);
@@ -1112,7 +1128,7 @@ extern c_utils_result_t c_utils_read_file(const c_utils_char_t *const path, cons
 #endif
 }
 
-extern c_utils_result_t c_utils_verify_os(const c_utils_char_t *const output)
+C_UTILS_API c_utils_result_t c_utils_verify_os(const c_utils_char_t *const output)
 {
 	if(!output)
 	{

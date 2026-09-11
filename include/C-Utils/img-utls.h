@@ -37,19 +37,19 @@ extern "C"
 /*************************/
 
 /* C-Utils save PNG function. */
-extern c_utils_result_t c_utils_save_png(const c_utils_char_t *const filename, struct c_utils_image image);
+C_UTILS_API c_utils_result_t c_utils_save_png(const c_utils_char_t *const filename, struct c_utils_image image);
 
 /* C-Utils load PNG function. */
-extern c_utils_result_t c_utils_load_png(const c_utils_char_t *const filename, struct c_utils_image *const image);
+C_UTILS_API c_utils_result_t c_utils_load_png(const c_utils_char_t *const filename, struct c_utils_image *const image);
 
 /* C-Utils save JPG function. */
-extern c_utils_result_t c_utils_save_jpg(const c_utils_char_t *const filename, struct c_utils_image image, c_utils_int8_t quality);
+C_UTILS_API c_utils_result_t c_utils_save_jpg(const c_utils_char_t *const filename, struct c_utils_image image, c_utils_int8_t quality);
 
 /* C-Utils load JPG function. */
-extern c_utils_result_t c_utils_load_jpg(const c_utils_char_t *const filename, struct c_utils_image *const image);
+C_UTILS_API c_utils_result_t c_utils_load_jpg(const c_utils_char_t *const filename, struct c_utils_image *const image);
 
 /* C-Utils vertical image flip function. */
-extern c_utils_result_t c_utils_image_flip_vertical(struct c_utils_image *const image);
+C_UTILS_API c_utils_result_t c_utils_image_flip_vertical(struct c_utils_image *const image);
 
 /*****************************/
 /* End C to C++ importation: */

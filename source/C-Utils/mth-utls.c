@@ -2,7 +2,11 @@
 /* Library importations: */
 /*************************/
 
+#ifndef C_UTILS_COMPILE
+#include "../../include/C-Utils/mth-utls.h"
+#else
 #include "C-Utils/mth-utls.h"
+#endif
 #include <math.h>
 #include <stdio.h>
 
@@ -28,7 +32,7 @@ const c_utils_float64_t C_UTILS_MATH_E_FLOAT64  = 2.718281828459045;
 /* Functions definitions: */
 /**************************/
 
-extern c_utils_result_t c_utils_generic_summation(const c_utils_void_t *const lower_bound, const c_utils_void_t *const upper_bound, const c_utils_void_t *(*const f)(const c_utils_void_t *const i, const size_t f_element_size), const size_t element_size, const c_utils_void_t *const result)
+C_UTILS_API c_utils_result_t c_utils_generic_summation(const c_utils_void_t *const lower_bound, const c_utils_void_t *const upper_bound, const c_utils_void_t *(*const f)(const c_utils_void_t *const i, const size_t f_element_size), const size_t element_size, const c_utils_void_t *const result)
 {
 	if(!lower_bound)
 	{
@@ -184,7 +188,7 @@ extern c_utils_result_t c_utils_generic_summation(const c_utils_void_t *const lo
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result_t c_utils_generic_product(const c_utils_void_t *const lower_bound, const c_utils_void_t *const upper_bound, const c_utils_void_t *(*const f)(const c_utils_void_t *const i, const size_t f_element_size), const size_t element_size, const c_utils_void_t *const result)
+C_UTILS_API c_utils_result_t c_utils_generic_product(const c_utils_void_t *const lower_bound, const c_utils_void_t *const upper_bound, const c_utils_void_t *(*const f)(const c_utils_void_t *const i, const size_t f_element_size), const size_t element_size, const c_utils_void_t *const result)
 {
 	if(!lower_bound)
 	{
@@ -338,7 +342,7 @@ extern c_utils_result_t c_utils_generic_product(const c_utils_void_t *const lowe
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result_t c_utils_generic_termial(const c_utils_void_t *const value, const size_t element_size, const c_utils_void_t *const result)
+C_UTILS_API c_utils_result_t c_utils_generic_termial(const c_utils_void_t *const value, const size_t element_size, const c_utils_void_t *const result)
 {
 	if(!value)
 	{
@@ -434,7 +438,7 @@ extern c_utils_result_t c_utils_generic_termial(const c_utils_void_t *const valu
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result_t c_utils_generic_factorial(const c_utils_void_t *const value, const size_t element_size, const c_utils_void_t *const result)
+C_UTILS_API c_utils_result_t c_utils_generic_factorial(const c_utils_void_t *const value, const size_t element_size, const c_utils_void_t *const result)
 {
 	if(!value)
 	{
@@ -544,7 +548,7 @@ extern c_utils_result_t c_utils_generic_factorial(const c_utils_void_t *const va
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result_t c_utils_generic_log_base(const c_utils_void_t *const base, const c_utils_void_t *const value, const size_t element_size, c_utils_void_t *const result)
+C_UTILS_API c_utils_result_t c_utils_generic_log_base(const c_utils_void_t *const base, const c_utils_void_t *const value, const size_t element_size, c_utils_void_t *const result)
 {
 	if(!base)
 	{

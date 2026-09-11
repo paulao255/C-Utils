@@ -399,6 +399,16 @@ extern const c_utils_int32_t C_UTILS_VERSION_MONTH;
 /* C-Utils version day constant. */
 extern const c_utils_int32_t C_UTILS_VERSION_DAY;
 
+/***************/
+/* C-Utils API */
+/***************/
+
+#if defined(_WIN32) || defined(_WIN64)
+#define C_UTILS_API __declspec(dllexport) extern
+#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__) || defined(ESP_PLATFORM)
+#define C_UTILS_API extern
+#endif
+
 /*****************************/
 /* End C to C++ importation: */
 /*****************************/

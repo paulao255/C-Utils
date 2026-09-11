@@ -2,7 +2,11 @@
 /* Library importations: */
 /*************************/
 
+#ifndef C_UTILS_COMPILE
+#include "../../include/C-Utils/big-data.h"
+#else
 #include "C-Utils/big-data.h"
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -20,7 +24,7 @@ extern "C"
 /* Functions definitions: */
 /**************************/
 
-extern c_utils_result_t c_utils_generic_array_is_sorted(const c_utils_void_t *const array, const size_t count, const size_t element_size, const c_utils_uint8_t type)
+C_UTILS_API c_utils_result_t c_utils_generic_array_is_sorted(const c_utils_void_t *const array, const size_t count, const size_t element_size, const c_utils_uint8_t type)
 {
 	if(!array)
 	{
@@ -251,7 +255,7 @@ defined(C_UTILS_ENABLE_INT64) || defined(C_UTILS_ENABLE_ALL_EXTENSIONS)
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result_t c_utils_generic_insertion_sort(const c_utils_void_t *const array, const size_t count, const size_t element_size, const c_utils_uint8_t type)
+C_UTILS_API c_utils_result_t c_utils_generic_insertion_sort(const c_utils_void_t *const array, const size_t count, const size_t element_size, const c_utils_uint8_t type)
 {
 	if(!array)
 	{
@@ -553,7 +557,7 @@ extern c_utils_result_t c_utils_generic_insertion_sort(const c_utils_void_t *con
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result_t c_utils_generic_merge_sort(const c_utils_void_t *const array, const size_t count, const size_t element_size, const c_utils_uint8_t type)
+C_UTILS_API c_utils_result_t c_utils_generic_merge_sort(const c_utils_void_t *const array, const size_t count, const size_t element_size, const c_utils_uint8_t type)
 {
 	if(!array)
 	{
@@ -1326,7 +1330,7 @@ extern c_utils_result_t c_utils_generic_merge_sort(const c_utils_void_t *const a
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result_t c_utils_generic_linear_search(const c_utils_void_t *const array, const c_utils_void_t *const target, const size_t count, const size_t element_size, const c_utils_uint8_t type, size_t *const position)
+C_UTILS_API c_utils_result_t c_utils_generic_linear_search(const c_utils_void_t *const array, const c_utils_void_t *const target, const size_t count, const size_t element_size, const c_utils_uint8_t type, size_t *const position)
 {
 	if(!array)
 	{
@@ -1594,7 +1598,7 @@ defined(C_UTILS_ENABLE_INT64) || defined(C_UTILS_ENABLE_ALL_EXTENSIONS)
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result_t c_utils_generic_binary_search(const c_utils_void_t *const array, const c_utils_void_t *const target, const size_t count, const size_t element_size, const c_utils_uint8_t type, size_t *const position)
+C_UTILS_API c_utils_result_t c_utils_generic_binary_search(const c_utils_void_t *const array, const c_utils_void_t *const target, const size_t count, const size_t element_size, const c_utils_uint8_t type, size_t *const position)
 {
 	if(!array)
 	{

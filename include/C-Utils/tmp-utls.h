@@ -25,44 +25,44 @@ extern "C"
 /*********************************/
 
 /* Minimum Celsius temperature constant (in float32_t). */
-extern const c_utils_float32_t C_UTILS_MIN_CELSIUS_FLOAT32;
+C_UTILS_API const c_utils_float32_t C_UTILS_MIN_CELSIUS_FLOAT32;
 
 /* Minimum Fahrenheit temperature constant (in float32_t). */
-extern const c_utils_float32_t C_UTILS_MIN_FAHRENHEIT_FLOAT32;
+C_UTILS_API const c_utils_float32_t C_UTILS_MIN_FAHRENHEIT_FLOAT32;
 
 /* Minimum Kelvin temperature constant (in float32_t). */
-extern const c_utils_float32_t C_UTILS_MIN_KELVIN_FLOAT32;
+C_UTILS_API const c_utils_float32_t C_UTILS_MIN_KELVIN_FLOAT32;
 
 /* Minimum Celsius temperature constant (in float64_t). */
-extern const c_utils_float64_t C_UTILS_MIN_CELSIUS_FLOAT64;
+C_UTILS_API const c_utils_float64_t C_UTILS_MIN_CELSIUS_FLOAT64;
 
 /* Minimum Fahrenheit temperature constant (in float64_t). */
-extern const c_utils_float64_t C_UTILS_MIN_FAHRENHEIT_FLOAT64;
+C_UTILS_API const c_utils_float64_t C_UTILS_MIN_FAHRENHEIT_FLOAT64;
 
 /* Minimum Kelvin temperature constant (in float64_t). */
-extern const c_utils_float64_t C_UTILS_MIN_KELVIN_FLOAT64;
+C_UTILS_API const c_utils_float64_t C_UTILS_MIN_KELVIN_FLOAT64;
 
 /*************************/
 /* Functions prototypes: */
 /*************************/
 
 /* Generic Kelvin to Celsius conversion function. */
-extern c_utils_result_t c_utils_generic_kelvin_to_celsius(const c_utils_void_t *const kelvin_value_pointer, c_utils_void_t *const celsius_value_pointer, size_t size);
+C_UTILS_API c_utils_result_t c_utils_generic_kelvin_to_celsius(const c_utils_void_t *const kelvin_value_pointer, c_utils_void_t *const celsius_value_pointer, size_t size);
 
 /* Generic Kelvin to Fahrenheit conversion function. */
-extern c_utils_result_t c_utils_generic_kelvin_to_fahrenheit(const c_utils_void_t *const kelvin_value_pointer, c_utils_void_t *const fahrenheit_value_pointer, size_t size);
+C_UTILS_API c_utils_result_t c_utils_generic_kelvin_to_fahrenheit(const c_utils_void_t *const kelvin_value_pointer, c_utils_void_t *const fahrenheit_value_pointer, size_t size);
 
 /* Generic Celsius to Fahrenheit conversion function. */
-extern c_utils_result_t c_utils_generic_celsius_to_fahrenheit(const c_utils_void_t *const celsius_value_pointer, c_utils_void_t *const fahrenheit_value_pointer, size_t size);
+C_UTILS_API c_utils_result_t c_utils_generic_celsius_to_fahrenheit(const c_utils_void_t *const celsius_value_pointer, c_utils_void_t *const fahrenheit_value_pointer, size_t size);
 
 /* Generic Celsius to Kelvin conversion function. */
-extern c_utils_result_t c_utils_generic_celsius_to_kelvin(const c_utils_void_t *const celsius_value_pointer, c_utils_void_t *const kelvin_value_pointer, size_t size);
+C_UTILS_API c_utils_result_t c_utils_generic_celsius_to_kelvin(const c_utils_void_t *const celsius_value_pointer, c_utils_void_t *const kelvin_value_pointer, size_t size);
 
 /* Generic Fahrenheit to Celsius conversion function. */
-extern c_utils_result_t c_utils_generic_fahrenheit_to_celsius(const c_utils_void_t *const fahrenheit_value_pointer, c_utils_void_t *const celsius_value_pointer, size_t size);
+C_UTILS_API c_utils_result_t c_utils_generic_fahrenheit_to_celsius(const c_utils_void_t *const fahrenheit_value_pointer, c_utils_void_t *const celsius_value_pointer, size_t size);
 
 /* Generic Fahrenheit to Kelvin conversion function. */
-extern c_utils_result_t c_utils_generic_fahrenheit_to_kelvin(const c_utils_void_t *const fahrenheit_value_pointer, c_utils_void_t *const kelvin_value_pointer, size_t size);
+C_UTILS_API c_utils_result_t c_utils_generic_fahrenheit_to_kelvin(const c_utils_void_t *const fahrenheit_value_pointer, c_utils_void_t *const kelvin_value_pointer, size_t size);
 
 /*****************************/
 /* End C to C++ importation: */

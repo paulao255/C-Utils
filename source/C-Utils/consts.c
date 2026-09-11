@@ -2,7 +2,11 @@
 /* Library importations: */
 /*************************/
 
+#ifndef C_UTILS_COMPILE
+#include "../../include/C-Utils/defs.h"
+#else
 #include "C-Utils/defs.h"
+#endif
 
 /********************/
 /* Import C to C++: */
@@ -66,10 +70,10 @@ const c_utils_bool_t C_UTILS_FALSE = 0u;
 /* C-Utils version constants: */
 /******************************/
 
-const c_utils_int32_t C_UTILS_VERSION_FULL = 20260908L;
+const c_utils_int32_t C_UTILS_VERSION_FULL = 20260911L;
 const c_utils_int32_t C_UTILS_VERSION_YEAR = 2026L;
 const c_utils_int32_t C_UTILS_VERSION_MONTH = 9L;
-const c_utils_int32_t C_UTILS_VERSION_DAY = 8L;
+const c_utils_int32_t C_UTILS_VERSION_DAY = 11L;
 
 /*****************************/
 /* End C to C++ importation: */

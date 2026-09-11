@@ -2,8 +2,13 @@
 /* Library importations: */
 /*************************/
 
+#ifndef C_UTILS_COMPILE
+#include "../../include/C-Utils/c-utils.h"
+#include "../../include/C-Utils/img-utls.h"
+#else
 #include "C-Utils/c-utils.h"
 #include "C-Utils/img-utls.h"
+#endif
 #include <png.h>
 #include <jpeglib.h>
 #include <stdlib.h>
@@ -41,7 +46,7 @@ static c_utils_void_t c_utils_jpg_error_exit(j_common_ptr cinfo)
 	longjmp(myerr->setjmp_buffer, 1);
 }
 
-extern c_utils_result_t c_utils_save_png(const c_utils_char_t *const filename, struct c_utils_image image)
+C_UTILS_API c_utils_result_t c_utils_save_png(const c_utils_char_t *const filename, struct c_utils_image image)
 {
 	if(!filename)
 	{
@@ -208,7 +213,7 @@ extern c_utils_result_t c_utils_save_png(const c_utils_char_t *const filename, s
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result_t c_utils_load_png(const c_utils_char_t *const filename, struct c_utils_image *const image)
+C_UTILS_API c_utils_result_t c_utils_load_png(const c_utils_char_t *const filename, struct c_utils_image *const image)
 {
 	if(!filename)
 	{
@@ -451,7 +456,7 @@ extern c_utils_result_t c_utils_load_png(const c_utils_char_t *const filename, s
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result_t c_utils_save_jpg(const c_utils_char_t *const filename, struct c_utils_image image, c_utils_int8_t quality)
+C_UTILS_API c_utils_result_t c_utils_save_jpg(const c_utils_char_t *const filename, struct c_utils_image image, c_utils_int8_t quality)
 {
 	if(!filename)
 	{
@@ -616,7 +621,7 @@ extern c_utils_result_t c_utils_save_jpg(const c_utils_char_t *const filename, s
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result_t c_utils_load_jpg(const c_utils_char_t *const filename, struct c_utils_image *const image)
+C_UTILS_API c_utils_result_t c_utils_load_jpg(const c_utils_char_t *const filename, struct c_utils_image *const image)
 {
 	if(!filename)
 	{
@@ -744,7 +749,7 @@ extern c_utils_result_t c_utils_load_jpg(const c_utils_char_t *const filename, s
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-extern c_utils_result_t c_utils_image_flip_vertical(struct c_utils_image *const image)
+C_UTILS_API c_utils_result_t c_utils_image_flip_vertical(struct c_utils_image *const image)
 {
 	if(!image)
 	{
