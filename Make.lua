@@ -41,7 +41,6 @@ local flags =
 		"-Oz",
 		"-funroll-loops",
 		"-fstack-protector-strong",
-		"-v",
 		"-DC_UTILS_COMPILE"
 	}
 };

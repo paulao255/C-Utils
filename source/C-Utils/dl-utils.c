@@ -110,7 +110,7 @@ C_UTILS_API c_utils_result_t c_utils_dynamic_library_load_function(const c_utils
 
 		if(!function)
 		{
-			fprintf(stderr, "Error in function c_utils_dynamic_library_load_function, function GetProcAddress (File: %s, Line: %d)...\n", __FILE__, __FILE__);
+			fprintf(stderr, "Error in function c_utils_dynamic_library_load_function, function GetProcAddress (File: %s, Line: %d)...\n", __FILE__, __LINE__);
 			fprintf(stderr, "Error code: %u\n", (c_utils_uint32_t)GetLastError());
 
 			return C_UTILS_RESULT_FAILURE;

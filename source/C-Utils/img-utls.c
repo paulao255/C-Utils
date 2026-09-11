@@ -41,7 +41,7 @@ extern "C"
 
 static c_utils_void_t c_utils_jpg_error_exit(j_common_ptr cinfo)
 {
-	struct c_utils_jpg_error_manager *const myerr = (struct c_utils_jpg_error_manager *)cinfo->err;
+	struct c_utils_jpg_error_manager *myerr = (struct c_utils_jpg_error_manager *)(void *)cinfo->err;
 	cinfo->err->output_message(cinfo);
 	longjmp(myerr->setjmp_buffer, 1);
 }
