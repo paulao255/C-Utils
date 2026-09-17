@@ -1,5 +1,5 @@
 local application_name = "C-Utils";
-local application_version = "2026-09-11";
+local application_version = "2026-09-17.1";
 local application_standards =
 {
 	"c90",
@@ -64,7 +64,8 @@ local sources =
 	"source/C-Utils/tmp-utls.c",
 	"source/C-Utils/trd-utls.c",
 	"source/C-Utils/cryptrnd.c",
-	"source/C-Utils/dl-utils.c"
+	"source/C-Utils/dl-utils.c",
+	"source/C-Utils/rnd-utls.c"
 };
 
 local function help()

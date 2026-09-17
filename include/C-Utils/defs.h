@@ -360,28 +360,42 @@ extern const signed int C_UTILS_MAXIMUM_RPV;
 /********************/
 
 /* C-Utils null pointer constant. */
-#ifndef C_UTILS_NULL_POINTER
+#ifdef C_UTILS_NULL_POINTER
+#error "FATAL ERROR: C_UTILS_NULL_POINTER already defined."
+#else
 #define C_UTILS_NULL_POINTER 0
 #endif
 
 /* C-Utils null pointer constant (alternative name). */
-#ifndef C_UTILS_NULL_PTR
+#ifdef C_UTILS_NULL_PTR
+#error "FATAL ERROR: C_UTILS_NULL_PTR already defined."
+#else
 #define C_UTILS_NULL_PTR 0
 #endif
 
 /* C-Utils null constant (alternative name). */
-#ifndef C_UTILS_NULL
+#ifdef C_UTILS_NULL
+#error "FATAL ERROR: C_UTILS_NULL already defined."
+#else
 #define C_UTILS_NULL 0
+#endif
+
+/* C-Utils true value constant (1). */
+#ifdef C_UTILS_TRUE
+#error "FATAL ERROR: C_UTILS_TRUE already defined."
+#else
+#define C_UTILS_TRUE 1u
+#endif
+
+/* C-Utils false value constant (0). */
+#ifdef C_UTILS_FALSE
+#error "FATAL ERROR: C_UTILS_FALSE already defined."
+#else
+#define C_UTILS_FALSE 0u
 #endif
 
 /* C-Utils machine bits constant. */
 extern const c_utils_uint16_t C_UTILS_MACHINE_BITS;
-
-/* C-Utils true value constant (1). */
-extern const c_utils_bool_t C_UTILS_TRUE;
-
-/* C-Utils false value constant (0). */
-extern const c_utils_bool_t C_UTILS_FALSE;
 
 /******************************/
 /* C-Utils version constants: */
@@ -398,6 +412,9 @@ extern const c_utils_int32_t C_UTILS_VERSION_MONTH;
 
 /* C-Utils version day constant. */
 extern const c_utils_int32_t C_UTILS_VERSION_DAY;
+
+/* C-Utils version revision constant. */
+extern const c_utils_int32_t C_UTILS_VERSION_REVISION;
 
 /***************/
 /* C-Utils API */

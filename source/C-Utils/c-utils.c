@@ -17,22 +17,12 @@
 #include <shellapi.h>
 #include <direct.h>
 #include <conio.h>
-#ifndef C_UTILS_COMPILE
-#include "../../include/C-Utils/cryptrnd.h"
-#else
-#include "C-Utils/cryptrnd.h"
-#endif
 #elif defined(__linux__) || defined(__ANDROID__)
 #include <termios.h>
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#ifndef C_UTILS_COMPILE
-#include "../../include/C-Utils/cryptrnd.h"
-#else
-#include "C-Utils/cryptrnd.h"
-#endif
 #elif defined(__APPLE__)
 #include <TargetConditionals.h>
 #include <termios.h>
@@ -40,30 +30,19 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#ifndef C_UTILS_COMPILE
-#include "../../include/C-Utils/cryptrnd.h"
-#else
-#include "C-Utils/cryptrnd.h"
-#endif
 #elif defined(ESP_PLATFORM)
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
-#include <esp_random.h>
 #endif
 
 /****************************/
 /* Global static variables: */
 /****************************/
 
+static c_utils_bool_t c_utils_is_initialized = C_UTILS_FALSE;
 static c_utils_void_t **c_utils_addresses_to_free = C_UTILS_NULL_POINTER;
-static c_utils_uint8_t c_utils_is_initialized = 0u;
 static c_utils_uint32_t c_utils_addresses_to_free_count = 0u;
 static c_utils_uint32_t c_utils_addresses_to_free_cap = 0u;
-#if defined(_WIN32) || defined(_WIN64) \
- || defined(__linux__) || defined(__ANDROID__) \
- || defined(__APPLE__)
-static cryptorand c_utils_rng;
-#endif
 
 /********************/
 /* Import C to C++: */
@@ -356,20 +335,6 @@ C_UTILS_API c_utils_result_t c_utils_initialize(c_utils_void_t)
 
 	else
 	{
-#if defined(_WIN32) || defined(_WIN64) \
- || defined(__linux__) || defined(__ANDROID__) \
- || defined(__APPLE__)
-		const cryptorand_result cryptrnd_result = cryptorand_init(&c_utils_rng);
-
-		if(cryptrnd_result != CRYPTORAND_SUCCESS)
-		{
-			fprintf(stderr, "Error in function c_utils_initialize, cryptorand_init failed (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-			fprintf(stderr, "Error code: %d\n", cryptrnd_result);
-
-			return C_UTILS_RESULT_FAILURE;
-		}
-
-#endif
 #if defined(_WIN32) || defined(_WIN64)
 		if(c_utils_enable_windows_console_features() != C_UTILS_RESULT_SUCCESS)
 		{
@@ -379,7 +344,7 @@ C_UTILS_API c_utils_result_t c_utils_initialize(c_utils_void_t)
 		}
 
 #endif
-		c_utils_is_initialized = 1u;
+		c_utils_is_initialized = C_UTILS_TRUE;
 	}
 
 	return C_UTILS_RESULT_SUCCESS;
@@ -413,13 +378,7 @@ C_UTILS_API c_utils_result_t c_utils_terminate(c_utils_void_t)
 		c_utils_addresses_to_free_count = 0u;
 		c_utils_addresses_to_free_cap = 0u;
 
-#if defined(_WIN32) || defined(_WIN64) \
- || defined(__linux__) || defined(__ANDROID__) \
- || defined(__APPLE__)
-		cryptorand_uninit(&c_utils_rng);
-#endif
-
-		c_utils_is_initialized = 0u;
+		c_utils_is_initialized = C_UTILS_FALSE;
 	}
 
 	return C_UTILS_RESULT_SUCCESS;
@@ -878,77 +837,6 @@ C_UTILS_API c_utils_result_t c_utils_mem_allocate(const c_utils_void_t *const ad
 			return C_UTILS_RESULT_SUCCESS;
 		}
 	}
-}
-
-C_UTILS_API c_utils_result_t c_utils_random_integer(c_utils_int32_t minimum, c_utils_int32_t maximum, c_utils_int32_t *const output)
-{
-	if(!output)
-	{
-		fprintf(stderr, "Error in c_utils_random_integer, the output is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-
-		return C_UTILS_RESULT_FAILURE;
-	}
-
-	if(minimum >= maximum)
-	{
-		fprintf(stderr, "Error in c_utils_random_integer, the minimum is greater than or iqual to the maximum (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-
-		return C_UTILS_RESULT_FAILURE;
-	}
-
-	else
-	{
-		c_utils_uint32_t range = (c_utils_uint32_t)((c_utils_uint32_t)maximum - (c_utils_uint32_t)minimum) + 1u;
-		c_utils_uint32_t value = 0u;
-#if defined(_WIN32) || defined(_WIN64) \
- || defined(__linux__) || defined(__ANDROID__) \
- || defined(__APPLE__)
-		cryptorand_result cryptrnd_result = cryptorand_generate(&c_utils_rng, &value, sizeof(value));
-
-		if(cryptrnd_result != CRYPTORAND_SUCCESS)
-		{
-			fprintf(stderr, "Error in c_utils_random_integer, function cryptorand_generate failed (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-			fprintf(stderr, "Error code: %d\n", cryptrnd_result);
-
-			return C_UTILS_RESULT_FAILURE;
-		}
-#elif defined(ESP_PLATFORM)
-		value = esp_random();
-#endif
-
-		if(range == 0u)
-		{
-			*output = (c_utils_int32_t)value;
-		}
-
-		else
-		{
-			c_utils_uint32_t limit = C_UTILS_UINT32_MAX - (C_UTILS_UINT32_MAX % range);
-
-			while(value >= limit)
-			{
-#if defined(_WIN32) || defined(_WIN64) \
- || defined(__linux__) || defined(__ANDROID__) \
- || defined(__APPLE__)
-				cryptrnd_result = cryptorand_generate(&c_utils_rng, &value, sizeof(value));
-
-				if(cryptrnd_result != CRYPTORAND_SUCCESS)
-				{
-					fprintf(stderr, "Error in c_utils_random_integer, function cryptorand_generate failed (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-					fprintf(stderr, "Error code: %d\n", cryptrnd_result);
-
-					return C_UTILS_RESULT_FAILURE;
-				}
-#elif defined(ESP_PLATFORM)
-				value = esp_random();
-#endif
-			}
-
-			*output = minimum + (c_utils_int32_t)(value % range);
-		}
-	}
-
-	return C_UTILS_RESULT_SUCCESS;
 }
 
 C_UTILS_API c_utils_result_t c_utils_read_file(const c_utils_char_t *const path, const c_utils_char_t **const output)

@@ -63,17 +63,15 @@ const c_utils_uint16_t C_UTILS_MACHINE_BITS =
 #endif
 ;
 
-const c_utils_bool_t C_UTILS_TRUE = 1u;
-const c_utils_bool_t C_UTILS_FALSE = 0u;
-
 /******************************/
 /* C-Utils version constants: */
 /******************************/
 
-const c_utils_int32_t C_UTILS_VERSION_FULL = 20260911L;
+const c_utils_int32_t C_UTILS_VERSION_FULL = 20260917L;
 const c_utils_int32_t C_UTILS_VERSION_YEAR = 2026L;
 const c_utils_int32_t C_UTILS_VERSION_MONTH = 9L;
-const c_utils_int32_t C_UTILS_VERSION_DAY = 11L;
+const c_utils_int32_t C_UTILS_VERSION_DAY = 17L;
+const c_utils_int32_t C_UTILS_VERSION_REVISION = 1L;
 
 /*****************************/
 /* End C to C++ importation: */

@@ -67,9 +67,6 @@ C_UTILS_API c_utils_result_t c_utils_make_directory(const c_utils_char_t *const 
 /* Function to scan a character from the standard input. */
 C_UTILS_API c_utils_result_t c_utils_scan_character(signed int *const character_output);
 
-/* Function to get a random 32 bits signed integer based on the minimum and maximum values. */
-C_UTILS_API c_utils_result_t c_utils_random_integer(c_utils_int32_t minimum, c_utils_int32_t maximum, c_utils_int32_t *const output);
-
 /* Function to read a file from the Operational System and return it to the caller. */
 C_UTILS_API c_utils_result_t c_utils_read_file(const c_utils_char_t *const path, const c_utils_char_t **const output);
 
