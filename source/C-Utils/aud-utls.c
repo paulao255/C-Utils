@@ -843,7 +843,7 @@ C_UTILS_API c_utils_result_t c_utils_audio_encoder_terminate(c_utils_audio_encod
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-C_UTILS_API c_utils_result_t c_utils_audio_capture_device_initialize_for_encoder(c_utils_uint32_t sample_rate, c_utils_uint32_t channels, c_utils_audio_encoder_t *encoder, c_utils_audio_device_t *device)
+C_UTILS_API c_utils_result_t c_utils_audio_capture_device_initialize_for_encoder(const c_utils_audio_device_id_t *device_id, c_utils_uint32_t sample_rate, c_utils_uint32_t channels, c_utils_audio_encoder_t *encoder, c_utils_audio_device_t *device)
 {
 	if(!encoder)
 	{
@@ -863,6 +863,7 @@ C_UTILS_API c_utils_result_t c_utils_audio_capture_device_initialize_for_encoder
 	{
 		ma_device_config deviceConfig = ma_device_config_init(ma_device_type_capture);
 		ma_result miniaudio_result;
+		deviceConfig.capture.pDeviceID = device_id;
 		deviceConfig.capture.format = ma_format_s16;
 		deviceConfig.capture.channels = channels;
 		deviceConfig.sampleRate = sample_rate;
@@ -918,7 +919,7 @@ C_UTILS_API c_utils_result_t c_utils_audio_capture_memory_terminate(c_utils_audi
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-C_UTILS_API c_utils_result_t c_utils_audio_capture_device_initialize_for_memory(c_utils_uint32_t sample_rate, c_utils_uint32_t channels, c_utils_audio_capture_memory_t *memory_context, c_utils_audio_device_t *device)
+C_UTILS_API c_utils_result_t c_utils_audio_capture_device_initialize_for_memory(const c_utils_audio_device_id_t *device_id, c_utils_uint32_t sample_rate, c_utils_uint32_t channels, c_utils_audio_capture_memory_t *memory_context, c_utils_audio_device_t *device)
 {
 	if(!memory_context)
 	{
@@ -938,6 +939,7 @@ C_UTILS_API c_utils_result_t c_utils_audio_capture_device_initialize_for_memory(
 	{
 		ma_device_config deviceConfig = ma_device_config_init(ma_device_type_capture);
 		ma_result miniaudio_result;
+		deviceConfig.capture.pDeviceID = device_id;
 		deviceConfig.capture.format = ma_format_s16;
 		deviceConfig.capture.channels = channels;
 		deviceConfig.sampleRate = sample_rate;
@@ -981,6 +983,157 @@ C_UTILS_API c_utils_result_t c_utils_audio_sound_set_cone(c_utils_audio_sound_t 
 	}
 
 	ma_sound_set_cone(sound, inner_angle_radians, outer_angle_radians, outer_gain);
+
+	return C_UTILS_RESULT_SUCCESS;
+}
+
+C_UTILS_API c_utils_result_t c_utils_audio_context_initialize(c_utils_audio_context_t *context)
+{
+	if(!context)
+	{
+		fprintf(stderr, "Error in function c_utils_audio_context_initialize, the context is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		return C_UTILS_RESULT_FAILURE;
+	}
+
+	else
+	{
+		const ma_result miniaudio_result = ma_context_init(C_UTILS_NULL_POINTER, 0, C_UTILS_NULL_POINTER, context);
+
+		if(miniaudio_result != MA_SUCCESS)
+		{
+			fprintf(stderr, "Error: failed to initialize audio context: %s (Code: %d, File: %s, Line: %d)\n", ma_result_description(miniaudio_result), miniaudio_result, __FILE__, __LINE__);
+
+			return C_UTILS_RESULT_FAILURE;
+		}
+	}
+
+	return C_UTILS_RESULT_SUCCESS;
+}
+
+C_UTILS_API c_utils_result_t c_utils_audio_context_terminate(c_utils_audio_context_t *context)
+{
+	if(!context)
+	{
+		fprintf(stderr, "Error in function c_utils_audio_context_terminate, the context is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		return C_UTILS_RESULT_FAILURE;
+	}
+
+	ma_context_uninit(context);
+
+	return C_UTILS_RESULT_SUCCESS;
+}
+
+C_UTILS_API c_utils_result_t c_utils_audio_get_capture_devices(c_utils_audio_context_t *context, c_utils_void_t *devices, c_utils_uint32_t *devices_count)
+{
+	if(!context)
+	{
+		fprintf(stderr, "Error in function c_utils_audio_get_capture_devices, the context is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		return C_UTILS_RESULT_FAILURE;
+	}
+
+	if(!devices)
+	{
+		fprintf(stderr, "Error in function c_utils_audio_get_capture_devices, the devices is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		return C_UTILS_RESULT_FAILURE;
+	}
+
+	if(!devices_count)
+	{
+		fprintf(stderr, "Error in function c_utils_audio_get_capture_devices, the devices count is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		return C_UTILS_RESULT_FAILURE;
+	}
+
+	else
+	{
+		c_utils_audio_device_info_t **type_devices = (c_utils_audio_device_info_t **)devices;
+		const ma_result miniaudio_result = ma_context_get_devices
+		(
+			context,
+			C_UTILS_NULL_POINTER,
+			C_UTILS_NULL_POINTER,
+			type_devices,
+			devices_count
+		);
+
+		if(miniaudio_result != MA_SUCCESS)
+		{
+			fprintf(stderr, "Error: failed to get audio devices: %s (Code: %d, File: %s, Line: %d)\n", ma_result_description(miniaudio_result), miniaudio_result, __FILE__, __LINE__);
+
+			return C_UTILS_RESULT_FAILURE;
+		}
+	}
+
+	return C_UTILS_RESULT_SUCCESS;
+}
+
+C_UTILS_API c_utils_result_t c_utils_audio_engine_config_set_playback_device(c_utils_audio_engine_config_t *config, c_utils_audio_device_id_t *device_id)
+{
+	if(!config)
+	{
+		fprintf(stderr, "Error in function c_utils_audio_engine_config_set_playback_device, the config is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		return C_UTILS_RESULT_FAILURE;
+	}
+
+	if(!device_id)
+	{
+		fprintf(stderr, "Error in function c_utils_audio_engine_config_set_playback_device, the device id is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		return C_UTILS_RESULT_FAILURE;
+	}
+
+	config->pPlaybackDeviceID = device_id;
+
+	return C_UTILS_RESULT_SUCCESS;
+}
+
+C_UTILS_API c_utils_result_t c_utils_audio_get_playback_devices(c_utils_audio_context_t *context, c_utils_void_t *devices, c_utils_uint32_t *devices_count)
+{
+	if(!context)
+	{
+		fprintf(stderr, "Error in function c_utils_audio_get_playback_devices, the context is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		return C_UTILS_RESULT_FAILURE;
+	}
+
+	if(!devices)
+	{
+		fprintf(stderr, "Error in function c_utils_audio_get_playback_devices, the devices is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		return C_UTILS_RESULT_FAILURE;
+	}
+
+	if(!devices_count)
+	{
+		fprintf(stderr, "Error in function c_utils_audio_get_playback_devices, the devices count is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+
+		return C_UTILS_RESULT_FAILURE;
+	}
+
+	else
+	{
+		c_utils_audio_device_info_t **type_devices = (c_utils_audio_device_info_t **)devices;
+		const ma_result miniaudio_result = ma_context_get_devices
+		(
+			context,
+			type_devices,
+			devices_count,
+			C_UTILS_NULL_POINTER,
+			C_UTILS_NULL_POINTER
+		);
+
+		if(miniaudio_result != MA_SUCCESS)
+		{
+			fprintf(stderr, "Error: failed to get audio devices: %s (Code: %d, File: %s, Line: %d)\n", ma_result_description(miniaudio_result), miniaudio_result, __FILE__, __LINE__);
+
+			return C_UTILS_RESULT_FAILURE;
+		}
+	}
 
 	return C_UTILS_RESULT_SUCCESS;
 }

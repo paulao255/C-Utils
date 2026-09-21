@@ -67,10 +67,10 @@ const c_utils_uint16_t C_UTILS_MACHINE_BITS =
 /* C-Utils version constants: */
 /******************************/
 
-const c_utils_int32_t C_UTILS_VERSION_FULL = 20260920L;
+const c_utils_int32_t C_UTILS_VERSION_FULL = 20260921L;
 const c_utils_int32_t C_UTILS_VERSION_YEAR = 2026L;
 const c_utils_int32_t C_UTILS_VERSION_MONTH = 9L;
-const c_utils_int32_t C_UTILS_VERSION_DAY = 20L;
+const c_utils_int32_t C_UTILS_VERSION_DAY = 21L;
 const c_utils_int32_t C_UTILS_VERSION_REVISION = 1L;
 
 /*****************************/

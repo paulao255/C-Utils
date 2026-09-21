@@ -45,6 +45,15 @@ typedef ma_device c_utils_audio_device_t;
 /* C-Utils audio encoder type: */
 typedef ma_encoder c_utils_audio_encoder_t;
 
+/* C-Utils audio context type: */
+typedef ma_context c_utils_audio_context_t;
+
+/* C-Utils audio device id type: */
+typedef ma_device_id c_utils_audio_device_id_t;
+
+/* C-Utils audio device info type: */
+typedef ma_device_info c_utils_audio_device_info_t;
+
 /* C-Utils audio capture memory struct: */
 struct c_utils_audio_capture_memory_t
 {
@@ -180,7 +189,7 @@ C_UTILS_API c_utils_result_t c_utils_audio_encoder_initialize_file(const char *c
 C_UTILS_API c_utils_result_t c_utils_audio_encoder_terminate(c_utils_audio_encoder_t *encoder);
 
 /* C-Utils audio capture device initialize for encoder. */
-C_UTILS_API c_utils_result_t c_utils_audio_capture_device_initialize_for_encoder(c_utils_uint32_t sample_rate, c_utils_uint32_t channels, c_utils_audio_encoder_t *encoder, c_utils_audio_device_t *device);
+C_UTILS_API c_utils_result_t c_utils_audio_capture_device_initialize_for_encoder(const c_utils_audio_device_id_t *device_id, c_utils_uint32_t sample_rate, c_utils_uint32_t channels, c_utils_audio_encoder_t *encoder, c_utils_audio_device_t *device);
 
 /* C-Utils audio capture memory initialize. */
 C_UTILS_API c_utils_result_t c_utils_audio_capture_memory_initialize(c_utils_uint32_t channels, c_utils_audio_capture_memory_t *memory_context);
@@ -189,13 +198,28 @@ C_UTILS_API c_utils_result_t c_utils_audio_capture_memory_initialize(c_utils_uin
 C_UTILS_API c_utils_result_t c_utils_audio_capture_memory_terminate(c_utils_audio_capture_memory_t *memory_context);
 
 /* C-Utils audio capture device initialize for memory. */
-C_UTILS_API c_utils_result_t c_utils_audio_capture_device_initialize_for_memory(c_utils_uint32_t sample_rate, c_utils_uint32_t channels, c_utils_audio_capture_memory_t *memory_context, c_utils_audio_device_t *device);
+C_UTILS_API c_utils_result_t c_utils_audio_capture_device_initialize_for_memory(const c_utils_audio_device_id_t *device_id, c_utils_uint32_t sample_rate, c_utils_uint32_t channels, c_utils_audio_capture_memory_t *memory_context, c_utils_audio_device_t *device);
 
 /* C-Utils audio sound set fade in milliseconds. */
 C_UTILS_API c_utils_result_t c_utils_audio_sound_set_fade_in_milliseconds(c_utils_audio_sound_t *sound, c_utils_float32_t volume_begin, c_utils_float32_t volume_end, c_utils_uint64_t milliseconds);
 
 /* C-Utils audio sound set cone. */
 C_UTILS_API c_utils_result_t c_utils_audio_sound_set_cone(c_utils_audio_sound_t *sound, c_utils_float32_t inner_angle_radians, c_utils_float32_t outer_angle_radians, c_utils_float32_t outer_gain);
+
+/* C-Utils audio context initialize. */
+C_UTILS_API c_utils_result_t c_utils_audio_context_initialize(c_utils_audio_context_t *context);
+
+/* C-Utils audio context terminate. */
+C_UTILS_API c_utils_result_t c_utils_audio_context_terminate(c_utils_audio_context_t *context);
+
+/* C-Utils audio get capture devices. */
+C_UTILS_API c_utils_result_t c_utils_audio_get_capture_devices(c_utils_audio_context_t *context, c_utils_void_t *devices, c_utils_uint32_t *devices_count);
+
+/* C-Utils audio engine config set playback device. */
+C_UTILS_API c_utils_result_t c_utils_audio_engine_config_set_playback_device(c_utils_audio_engine_config_t *config, c_utils_audio_device_id_t *device_id);
+
+/* C-Utils audio get playback devices. */
+C_UTILS_API c_utils_result_t c_utils_audio_get_playback_devices(c_utils_audio_context_t *context, c_utils_void_t *devices, c_utils_uint32_t *devices_count);
 
 /*****************************/
 /* End C to C++ importation: */
