@@ -14,6 +14,10 @@
 #include <windows.h>
 #endif
 
+/*********************/
+/* Type definitions: */
+/*********************/
+
 #if defined(_WIN32) || defined(_WIN64)
 typedef HMODULE C_UTILS_DYNAMIC_LIBRARY_T;
 typedef FARPROC C_UTILS_DYNAMIC_LIBRARY_FUNCTION_T;
@@ -21,10 +25,6 @@ typedef FARPROC C_UTILS_DYNAMIC_LIBRARY_FUNCTION_T;
 typedef void *C_UTILS_DYNAMIC_LIBRARY_T;
 typedef void *C_UTILS_DYNAMIC_LIBRARY_FUNCTION_T;
 #endif
-
-/*********************/
-/* Type definitions: */
-/*********************/
 
 /* C-Utils dynamic library type: */
 typedef C_UTILS_DYNAMIC_LIBRARY_T c_utils_dynamic_library_t;

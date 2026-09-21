@@ -12,9 +12,9 @@
  || defined(__linux__) || defined(__ANDROID__) \
  || defined(__APPLE__)
 #ifndef C_UTILS_COMPILE
-#include "../../include/C-Utils/cryptrnd.h"
+#include "../../include/Mackron/cryptrnd.h"
 #else
-#include "C-Utils/cryptrnd.h"
+#include "Mackron/cryptrnd.h"
 #endif
 #elif defined(ESP_PLATFORM)
 #include <esp_random.h>
