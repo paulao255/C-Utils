@@ -13,5 +13,7 @@ Compatible with:
 ## Credits
 
 **Entire C-Utils created by: @paulao255 (Paulo Renato)**.
+
 **Miniaudio (audio library) created by: @mackron (Mackron)**.
+
 **Volk (Vulkan dynamic loader) created by: @zeux (Zeux)**.
