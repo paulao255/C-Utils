@@ -34,12 +34,12 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang luajit libpng-dev libjpeg-dev
+          sudo apt-get install -y clang luajit libluajit-5.1-dev luarocks libpng-dev libjpeg-dev
 
       - name: Install Dependencies (macOS)
         if: runner.os == 'macOS'
         run: |
-          brew install luajit libpng jpeg
+          brew install luajit luarocks libpng jpeg
 
       - name: Setup MSYS2 UCRT64 (Windows)
         if: runner.os == 'Windows'
@@ -52,6 +52,8 @@ jobs:
             mingw-w64-ucrt-x86_64-luajit
             mingw-w64-ucrt-x86_64-libpng
             mingw-w64-ucrt-x86_64-libjpeg-turbo
+            mingw-w64-ucrt-x86_64-lua-luarocks
+            git
 
       # Check Environment (Linux/macOS)
       - name: Check Clang and LuaJIT (Linux/macOS)
@@ -60,6 +62,7 @@ jobs:
         run: |
           clang --version
           luajit -v
+          luarocks --version
 
       # Check Environment (Windows)
       - name: Check Clang and LuaJIT (Windows)
@@ -68,18 +71,35 @@ jobs:
         run: |
           clang --version
           luajit -v
+          luarocks --version
+
+      # Install Lua-Utils (Linux/macOS)
+      - name: Install Lua-Utils (Linux/macOS)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: sudo env "PATH=$PATH" luarocks --lua-version=5.1 install --server=https://luarocks.org/manifests/paulao255 lua-utils develop-1
+
+      # Install Lua-Utils (Windows)
+      - name: Install Lua-Utils (Windows)
+        if: runner.os == 'Windows'
+        shell: msys2 {0}
+        run: luarocks --lua-version=5.1 install --server=https://luarocks.org/manifests/paulao255 lua-utils develop-1
 
       # Run Lua Script (Linux/macOS)
       - name: Run Lua Test (Linux/macOS)
         if: runner.os != 'Windows'
         shell: bash
-        run: luajit Make.lua test
+        run: |
+          eval "$(luarocks --lua-version=5.1 path)"
+          luajit Make.lua test
 
       # Run Lua Script (Windows)
       - name: Run Lua Test (Windows)
         if: runner.os == 'Windows'
         shell: msys2 {0}
-        run: luajit Make.lua test
+        run: |
+          eval "$(luarocks --lua-version=5.1 path)"
+          luajit Make.lua test
 
   # ============================================================
   # Android - ARM64
@@ -99,10 +119,14 @@ jobs:
         with:
           ndk-version: r29
 
-      - name: Install LuaJIT
+      - name: Install LuaJIT and LuaRocks
         run: |
           sudo apt-get update
-          sudo apt-get install -y luajit
+          sudo apt-get install -y luajit libluajit-5.1-dev luarocks
+
+      - name: Install Lua-Utils
+        shell: bash
+        run: sudo env "PATH=$PATH" luarocks --lua-version=5.1 install --server=https://luarocks.org/manifests/paulao255 lua-utils develop-1
 
       - name: Check Android Environment
         shell: bash
@@ -120,7 +144,9 @@ jobs:
         env:
           ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
           CC: ${{ steps.setup-ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android35-clang -I${{ github.workspace }}/vcpkg_installed/arm64-android/include
-        run: luajit Make.lua test
+        run: |
+          eval "$(luarocks --lua-version=5.1 path)"
+          luajit Make.lua test
 
   # ============================================================
   # iOS - ARM64
@@ -134,9 +160,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
-      - name: Install LuaJIT (macOS)
+      - name: Install LuaJIT and LuaRocks (macOS)
         run: |
-          brew install luajit
+          brew install luajit luarocks
+
+      - name: Install Lua-Utils
+        shell: bash
+        run: sudo env "PATH=$PATH" luarocks --lua-version=5.1 install --server=https://luarocks.org/manifests/paulao255 lua-utils develop-1
 
       - name: Check iOS Environment
         shell: bash
@@ -155,4 +185,6 @@ jobs:
         shell: bash
         env:
           CC: clang -target arm64-apple-ios26.0 -isysroot ${{ env.IOS_SDK_PATH }}
-        run: luajit Make.lua test
+        run: |
+          eval "$(luarocks --lua-version=5.1 path)"
+          luajit Make.lua test
