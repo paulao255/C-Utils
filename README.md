@@ -10,7 +10,11 @@ Compatible with:
 - [x] Android (NDK/Termux).
 - [x] IOS.
 
-## Credits
+## Testing
+
+To test the library, you will need [Lua-Utils](https://github.com/paulao255/Lua-Utils) to run the Make.lua file to compile the library and tests.
+
+### Credits
 
 **Entire C-Utils created by: @paulao255 (Paulo Renato)**.
 

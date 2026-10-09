@@ -71,7 +71,7 @@ const c_utils_int32_t C_UTILS_VERSION_FULL = 20261009L;
 const c_utils_int32_t C_UTILS_VERSION_YEAR = 2026L;
 const c_utils_int32_t C_UTILS_VERSION_MONTH = 10L;
 const c_utils_int32_t C_UTILS_VERSION_DAY = 9L;
-const c_utils_int32_t C_UTILS_VERSION_REVISION = 2L;
+const c_utils_int32_t C_UTILS_VERSION_REVISION = 3L;
 
 /*****************************/
 /* End C to C++ importation: */

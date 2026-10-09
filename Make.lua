@@ -1,7 +1,7 @@
 local lua_utils = require("Lua-Utils.Lua-Utils");
 
 local application_name = "C-Utils";
-local application_version = "2026-10-09.2";
+local application_version = "2026-10-09.3";
 local application_standards =
 {
 	"c90",
