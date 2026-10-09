@@ -98,7 +98,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: msys2 {0}
         run: |
-          eval "$(luarocks --lua-version=5.1 path)"
+          export LUA_PATH="$(luarocks --lua-version=5.1 path --lr-path);;"
           luajit Make.lua test
 
   # ============================================================
