@@ -5,19 +5,13 @@
 #include <stdio.h>
 #ifndef C_UTILS_COMPILE
 #include "../../include/C-Utils/rnd-utls.h"
+#include "../../include/C-Utils/err-utls.h"
 #else
 #include "C-Utils/rnd-utls.h"
+#include "C-Utils/err-utls.h"
 #endif
-#if defined(_WIN32) || defined(_WIN64) \
- || defined(__linux__) || defined(__ANDROID__) \
- || defined(__APPLE__)
-#ifndef C_UTILS_COMPILE
-#include "../../include/Mackron/cryptrnd.h"
-#else
-#include "Mackron/cryptrnd.h"
-#endif
-#elif defined(ESP_PLATFORM)
-#include <esp_random.h>
+#if defined(_WIN32) || defined(_WIN64)
+#include <windows.h>
 #endif
 
 /****************************/
@@ -25,10 +19,10 @@
 /****************************/
 
 static c_utils_bool_t c_utils_random_is_initialized = C_UTILS_FALSE;
-#if defined(_WIN32) || defined(_WIN64) \
- || defined(__linux__) || defined(__ANDROID__) \
- || defined(__APPLE__)
-static cryptorand c_utils_rng;
+#if defined(_WIN32) || defined(_WIN64)
+typedef BOOL (WINAPI *ProcessPrng_pointer)(PBYTE pbData, SIZE_T cbData);
+static HMODULE hMod = C_UTILS_NULL_POINTER;
+static ProcessPrng_pointer ProcessPrng = C_UTILS_NULL_POINTER;
 #endif
 
 /********************/
@@ -48,28 +42,107 @@ C_UTILS_API c_utils_result_t c_utils_random_initialize(c_utils_void_t)
 {
 	if(c_utils_random_is_initialized)
 	{
-		fprintf(stderr, "Error in function c_utils_initialize, C-Utils is already initialized (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_random_initialize, C-Utils random is already initialized");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	else
 	{
-#if defined(_WIN32) || defined(_WIN64) \
- || defined(__linux__) || defined(__ANDROID__) \
- || defined(__APPLE__)
-		const cryptorand_result cryptrnd_result = cryptorand_init(&c_utils_rng);
+#if defined(_WIN32) || defined(_WIN64)
+		hMod = LoadLibraryA("bcryptprimitives.dll");
 
-		if(cryptrnd_result != CRYPTORAND_SUCCESS)
+		if(!hMod)
 		{
-			fprintf(stderr, "Error in function c_utils_initialize, cryptorand_init failed (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-			fprintf(stderr, "Error code: %d\n", cryptrnd_result);
+			C_UTILS_REPORT_ERROR("Error in function c_utils_random_initialize, could not load the bcryptprimitives.dll library");
 
 			return C_UTILS_RESULT_FAILURE;
 		}
 
+		ProcessPrng = (ProcessPrng_pointer)GetProcAddress(hMod, "ProcessPrng");
+
+		if(!ProcessPrng)
+		{
+			C_UTILS_REPORT_ERROR("Error in function c_utils_random_initialize, could not get the ProcessPrng function pointer");
+
+			if(!FreeLibrary(hMod))
+			{
+				C_UTILS_REPORT_ERROR("Error in function c_utils_random_initialize, function FreeLibrary failed");
+
+				return C_UTILS_RESULT_FAILURE;
+			}
+
+			return C_UTILS_RESULT_FAILURE;
+		}
 #endif
+
 		c_utils_random_is_initialized = C_UTILS_TRUE;
+	}
+
+	return C_UTILS_RESULT_SUCCESS;
+}
+
+C_UTILS_API c_utils_result_t c_utils_random_buffer(c_utils_uint8_t *const buffer, c_utils_size_t size)
+{
+	if(!c_utils_random_is_initialized)
+	{
+		C_UTILS_REPORT_ERROR("Error in function c_utils_random_buffer, C-Utils random is not initialized");
+
+		return C_UTILS_RESULT_FAILURE;
+	}
+
+	if(!buffer)
+	{
+		C_UTILS_REPORT_ERROR("Error in function c_utils_random_buffer, the buffer is a null pointer");
+
+		return C_UTILS_RESULT_FAILURE;
+	}
+
+	else
+	{
+#if defined(_WIN32) || defined(_WIN64)
+		ProcessPrng(buffer, size);
+#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
+		FILE *const dev_urandom = fopen("/dev/urandom", "rb");
+
+		if(!dev_urandom)
+		{
+			C_UTILS_REPORT_ERROR("Error in function c_utils_random_integer, function fopen failed");
+
+			return C_UTILS_RESULT_FAILURE;
+		}
+
+		else
+		{
+			c_utils_size_t total = 0;
+
+			while(total < size)
+			{
+				c_utils_size_t n = fread((void *)&buffer[total], 1u, size - total, dev_urandom);
+
+				if(n == 0u)
+				{
+					C_UTILS_REPORT_ERROR("Error in function c_utils_random_integer, function fread failed");
+
+					if(fclose(dev_urandom) != 0)
+					{
+						C_UTILS_REPORT_ERROR("Error in function c_utils_random_integer, function fclose failed");
+					}
+
+					return C_UTILS_RESULT_FAILURE;
+				}
+
+				total += n;
+			}
+
+			if(fclose(dev_urandom) != 0)
+			{
+				C_UTILS_REPORT_ERROR("Error in function c_utils_random_integer, function fclose failed");
+
+				return C_UTILS_RESULT_FAILURE;
+			}
+		}
+#endif
 	}
 
 	return C_UTILS_RESULT_SUCCESS;
@@ -79,21 +152,21 @@ C_UTILS_API c_utils_result_t c_utils_random_integer(c_utils_int32_t minimum, c_u
 {
 	if(!c_utils_random_is_initialized)
 	{
-		fprintf(stderr, "Error in c_utils_random_integer, C-Utils random is not initialized (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_random_integer, C-Utils random is not initialized");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!output)
 	{
-		fprintf(stderr, "Error in c_utils_random_integer, the output is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_random_integer, the output is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(minimum >= maximum)
 	{
-		fprintf(stderr, "Error in c_utils_random_integer, the minimum is greater than or iqual to the maximum (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_random_integer, the minimum is greater than or iqual to the maximum");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -102,21 +175,13 @@ C_UTILS_API c_utils_result_t c_utils_random_integer(c_utils_int32_t minimum, c_u
 	{
 		c_utils_uint32_t range = (c_utils_uint32_t)((c_utils_uint32_t)maximum - (c_utils_uint32_t)minimum) + 1u;
 		c_utils_uint32_t value = 0u;
-#if defined(_WIN32) || defined(_WIN64) \
- || defined(__linux__) || defined(__ANDROID__) \
- || defined(__APPLE__)
-		cryptorand_result cryptrnd_result = cryptorand_generate(&c_utils_rng, &value, sizeof(value));
 
-		if(cryptrnd_result != CRYPTORAND_SUCCESS)
+		if(c_utils_random_buffer((c_utils_uint8_t *)&value, sizeof(value)))
 		{
-			fprintf(stderr, "Error in c_utils_random_integer, function cryptorand_generate failed (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-			fprintf(stderr, "Error code: %d\n", cryptrnd_result);
+			C_UTILS_REPORT_ERROR("Error in function c_utils_random_integer, function c_utils_random_buffer failed");
 
 			return C_UTILS_RESULT_FAILURE;
 		}
-#elif defined(ESP_PLATFORM)
-		value = esp_random();
-#endif
 
 		if(range == 0u)
 		{
@@ -129,21 +194,12 @@ C_UTILS_API c_utils_result_t c_utils_random_integer(c_utils_int32_t minimum, c_u
 
 			while(value >= limit)
 			{
-#if defined(_WIN32) || defined(_WIN64) \
- || defined(__linux__) || defined(__ANDROID__) \
- || defined(__APPLE__)
-				cryptrnd_result = cryptorand_generate(&c_utils_rng, &value, sizeof(value));
-
-				if(cryptrnd_result != CRYPTORAND_SUCCESS)
+				if(c_utils_random_buffer((c_utils_uint8_t *)&value, sizeof(value)))
 				{
-					fprintf(stderr, "Error in c_utils_random_integer, function cryptorand_generate failed (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-					fprintf(stderr, "Error code: %d\n", cryptrnd_result);
+					C_UTILS_REPORT_ERROR("Error in function c_utils_random_integer, function c_utils_random_buffer failed");
 
 					return C_UTILS_RESULT_FAILURE;
 				}
-#elif defined(ESP_PLATFORM)
-				value = esp_random();
-#endif
 			}
 
 			*output = minimum + (c_utils_int32_t)(value % range);
@@ -157,15 +213,18 @@ C_UTILS_API c_utils_result_t c_utils_random_terminate(c_utils_void_t)
 {
 	if(!c_utils_random_is_initialized)
 	{
-		fprintf(stderr, "Error in function c_utils_terminate, C-Utils is not even initialized (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_terminate, C-Utils random is not initialized");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
-#if defined(_WIN32) || defined(_WIN64) \
- || defined(__linux__) || defined(__ANDROID__) \
- || defined(__APPLE__)
-	cryptorand_uninit(&c_utils_rng);
+#if defined(_WIN32) || defined(_WIN64)
+	if(!FreeLibrary(hMod))
+	{
+		C_UTILS_REPORT_ERROR("Error in function c_utils_terminate, function FreeLibrary failed");
+
+		return C_UTILS_RESULT_FAILURE;
+	}
 #endif
 
 	c_utils_random_is_initialized = C_UTILS_FALSE;

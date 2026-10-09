@@ -19,6 +19,15 @@
 #error "FATAL ERROR: !defined(_WIN32) && !defined(_WIN64) && !defined(__linux__) && !defined(__ANDROID__) && !defined(__APPLE__)."
 #endif
 
+/********************/
+/* Import C to C++: */
+/********************/
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 /*****************/
 /* Thread types: */
 /*****************/
@@ -133,15 +142,6 @@ struct c_utils_thread_pool_t
 /* C-Utils typedef thread pool type: */
 typedef struct c_utils_thread_pool_t c_utils_thread_pool_t;
 
-/********************/
-/* Import C to C++: */
-/********************/
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
 /*************************/
 /* Functions prototypes: */
 /*************************/
@@ -228,7 +228,7 @@ C_UTILS_API c_utils_result_t c_utils_rwlock_destroy(c_utils_rwlock_t *const rwlo
 C_UTILS_API c_utils_result_t c_utils_tls_create(c_utils_tls_key_t *const key);
 
 /* Function to set a value in thread-local storage. */
-C_UTILS_API c_utils_result_t c_utils_tls_set(c_utils_tls_key_t key, c_utils_void_t *const value);
+C_UTILS_API c_utils_result_t c_utils_tls_set(c_utils_tls_key_t key, c_utils_void_t *const input);
 
 /* Function to get a value from thread-local storage. */
 C_UTILS_API c_utils_result_t c_utils_tls_get(c_utils_tls_key_t key, c_utils_void_t *const output);

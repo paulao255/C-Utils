@@ -1,5 +1,7 @@
+local lua_utils = require("Lua-Utils.Lua-Utils");
+
 local application_name = "C-Utils";
-local application_version = "2026-09-21.1";
+local application_version = "2026-10-08.1";
 local application_standards =
 {
 	"c90",
@@ -80,13 +82,13 @@ local function main()
 				"source/C-Utils/dl-utils.c",
 				"source/C-Utils/rnd-utls.c",
 				"source/C-Utils/aud-utls.c",
-				"source/Mackron/cryptrnd.c",
-				"source/Mackron/miniaudi.c"
+				"source/C-Utils/err-utls.c",
+				"source/Mackron/miniaudio.c"
 			};
 
-			local sys = os.getenv("OS");
+			local sys = lua_utils.get_os();
 
-			if sys == "Windows_NT" then
+			if sys == "Windows" then
 				os.execute("if not exist build mkdir build");
 
 				os.execute(compilers[1] .. " " .. table.concat(sources, " ") .. " " .. table.concat(flags[1], " ") .. " " .. include .. " -c");

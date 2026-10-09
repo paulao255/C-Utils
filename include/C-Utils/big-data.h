@@ -25,19 +25,19 @@ extern "C"
 /*************************/
 
 /* Function to verify if array is sorted. */
-C_UTILS_API c_utils_result_t c_utils_generic_array_is_sorted(const c_utils_void_t *const array, const size_t count, const size_t element_size, const c_utils_uint8_t type);
+C_UTILS_API c_utils_result_t c_utils_generic_array_is_sorted(const c_utils_void_t *const array, const c_utils_size_t count, const c_utils_size_t element_size, const c_utils_uint8_t type);
 
 /* Function to sort a generic array by insertion sorting (best case: O(n), average case: O(n^2), worst case: O(n^2)). */
-C_UTILS_API c_utils_result_t c_utils_generic_insertion_sort(const c_utils_void_t *const array, const size_t count, const size_t element_size, const c_utils_uint8_t type);
+C_UTILS_API c_utils_result_t c_utils_generic_insertion_sort(const c_utils_void_t *const array, const c_utils_size_t count, const c_utils_size_t element_size, const c_utils_uint8_t type);
 
 /* Function to sort a generic array by merge sorting (best case: O(n log(n)), average case: O(n log(n)), worst case: O(n log(n))). */
-C_UTILS_API c_utils_result_t c_utils_generic_merge_sort(const c_utils_void_t *const array, const size_t count, const size_t element_size, const c_utils_uint8_t type);
+C_UTILS_API c_utils_result_t c_utils_generic_merge_sort(const c_utils_void_t *const array, const c_utils_size_t count, const c_utils_size_t element_size, const c_utils_uint8_t type);
 
 /* Function to find an element in a generic array, by a linear search (O(n)). */
-C_UTILS_API c_utils_result_t c_utils_generic_linear_search(const c_utils_void_t *const array, const c_utils_void_t *const target, const size_t count, const size_t element_size, const c_utils_uint8_t type, size_t *const position);
+C_UTILS_API c_utils_result_t c_utils_generic_linear_search(const c_utils_void_t *const array, const c_utils_void_t *const target, const c_utils_size_t count, const c_utils_size_t element_size, const c_utils_uint8_t type, c_utils_size_t *const position);
 
 /* Function to find an element in a generic ordered array, by a binary search (O(log n)). */
-C_UTILS_API c_utils_result_t c_utils_generic_binary_search(const c_utils_void_t *const array, const c_utils_void_t *const target, const size_t count, const size_t element_size, const c_utils_uint8_t type, size_t *const position);
+C_UTILS_API c_utils_result_t c_utils_generic_binary_search(const c_utils_void_t *const array, const c_utils_void_t *const target, const c_utils_size_t count, const c_utils_size_t element_size, const c_utils_uint8_t type, c_utils_size_t *const position);
 
 /*****************************/
 /* End C to C++ importation: */

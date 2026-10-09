@@ -3,12 +3,15 @@
 /*************************/
 #ifndef C_UTILS_COMPILE
 #include "../../include/C-Utils/trd-utls.h"
+#include "../../include/C-Utils/err-utls.h"
 #else
 #include "C-Utils/trd-utls.h"
+#include "C-Utils/err-utls.h"
 #endif
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #if defined(_WIN32) || defined(_WIN64)
 #include <process.h>
 #elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
@@ -29,12 +32,104 @@ extern "C"
 /* Functions definitions: */
 /**************************/
 
+static c_utils_thread_function_t c_utils_thread_pool_worker(c_utils_void_t *arguments)
+{
+	c_utils_thread_pool_t *const pool = (c_utils_thread_pool_t *)arguments;
+
+	while(C_UTILS_TRUE)
+	{
+		if(c_utils_mutex_lock(&pool->mutex))
+		{
+			C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_worker, function c_utils_mutex_lock failed");
+
+			return c_utils_thread_function_return;
+		}
+
+		else
+		{
+			c_utils_task_node_t *task;
+
+			while(!pool->head && !pool->stop)
+			{
+				if(c_utils_condition_variable_wait(&pool->condition_has_tasks, &pool->mutex))
+				{
+					C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_worker, function c_utils_condition_variable_wait failed");
+
+					if(c_utils_mutex_unlock(&pool->mutex))
+					{
+						C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_worker, function c_utils_mutex_unlock failed");
+					}
+
+					return c_utils_thread_function_return;
+				}
+			}
+
+			if(pool->stop && !pool->head)
+			{
+				if(c_utils_mutex_unlock(&pool->mutex))
+				{
+					C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_worker, function c_utils_mutex_unlock failed");
+				}
+
+				return c_utils_thread_function_return;
+			}
+
+			task = pool->head;
+			pool->head = task->next;
+
+			if(!pool->head)
+			{
+				pool->tail = C_UTILS_NULL_POINTER;
+			}
+
+			--pool->pending_tasks;
+			++pool->active_tasks;
+
+			if(c_utils_mutex_unlock(&pool->mutex))
+			{
+				C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_worker, function c_utils_mutex_unlock failed");
+
+				free((c_utils_void_t *)task);
+
+				return c_utils_thread_function_return;
+			}
+
+			task->function(task->arguments);
+
+			free((c_utils_void_t *)task);
+
+			if(c_utils_mutex_lock(&pool->mutex))
+			{
+				C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_worker, function c_utils_mutex_lock failed");
+
+				return c_utils_thread_function_return;
+			}
+
+			--pool->active_tasks;
+
+			if(pool->pending_tasks == 0 && pool->active_tasks == 0)
+			{
+				if(c_utils_condition_variable_broadcast(&pool->condition_idle))
+				{
+					C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_worker, function c_utils_condition_variable_broadcast failed");
+				}
+			}
+
+			if(c_utils_mutex_unlock(&pool->mutex))
+			{
+				C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_worker, function c_utils_mutex_unlock failed");
+			}
+		}
+	}
+
+	return c_utils_thread_function_return;
+}
+
 C_UTILS_API c_utils_result_t c_utils_get_processor_count(c_utils_int32_t *const output)
 {
 	if(!output)
 	{
-		fprintf(stderr, "Error in function c_utils_get_processor_count, the output is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-
+		C_UTILS_REPORT_ERROR("Error in function c_utils_get_processor_count, the output is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -42,14 +137,36 @@ C_UTILS_API c_utils_result_t c_utils_get_processor_count(c_utils_int32_t *const 
 	else
 	{
 #if defined(_WIN32) || defined(_WIN64)
-		const DWORD count = GetActiveProcessorCount(ALL_PROCESSOR_GROUPS);
+		const DWORD count	= GetActiveProcessorCount(ALL_PROCESSOR_GROUPS);
 
 		if(count == 0)
 		{
 			const DWORD error = GetLastError();
+			DWORD value = error;
+			c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
+			c_utils_size_t prefix_size = strlen("Error in function c_utils_get_processor_count, function GetActiveProcessorCount failed, error code: ");
+			c_utils_size_t error_size = 1u;
 
-			fprintf(stderr, "Error in function c_utils_get_processor_count, function GetActiveProcessorCount (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-			fprintf(stderr, "Error code: %u\n", (c_utils_uint32_t)error);
+			while(value >= 10u)
+			{
+				value /= 10u;
+				error_size++;
+			}
+
+			error_buffer = (c_utils_char_t *)malloc((prefix_size + error_size + 1u) * sizeof(*error_buffer));
+
+			if(!error_buffer)
+			{
+				C_UTILS_REPORT_ERROR("Error in function c_utils_get_processor_count, function malloc failed");
+
+				return C_UTILS_RESULT_FAILURE;
+			}
+
+			sprintf(error_buffer, "Error in function c_utils_get_processor_count, function GetActiveProcessorCount failed, error code: %u", (c_utils_uint32_t)error);
+
+			C_UTILS_REPORT_ERROR(error_buffer);
+
+			free((c_utils_void_t *)error_buffer);
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -60,7 +177,7 @@ C_UTILS_API c_utils_result_t c_utils_get_processor_count(c_utils_int32_t *const 
 
 		if(count == -1)
 		{
-			fprintf(stderr, "Error in function c_utils_get_processor_count, function sysconf (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+			C_UTILS_REPORT_ERROR("Error in function c_utils_get_processor_count, function sysconf");
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -76,14 +193,14 @@ C_UTILS_API c_utils_result_t c_utils_thread_create(c_utils_thread_t *const threa
 {
 	if(!thread)
 	{
-		fprintf(stderr, "Error in function c_utils_thread_create, the thread is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_thread_create, the thread is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!f)
 	{
-		fprintf(stderr, "Error in function c_utils_thread_create, the function is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_thread_create, the function is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -96,9 +213,31 @@ C_UTILS_API c_utils_result_t c_utils_thread_create(c_utils_thread_t *const threa
 		if(!*thread)
 		{
 			const DWORD error = GetLastError();
+			DWORD value = error;
+			c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
+			c_utils_size_t prefix_size = strlen("Error in function c_utils_thread_create, function _beginthreadex failed, error code: ");
+			c_utils_size_t error_size = 1u;
 
-			fprintf(stderr, "Error in function c_utils_thread_create, function _beginthreadex (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-			fprintf(stderr, "Error code: %u\n", (c_utils_uint32_t)error);
+			while(value >= 10u)
+			{
+				value /= 10u;
+				error_size++;
+			}
+
+			error_buffer = (c_utils_char_t *)malloc((prefix_size + error_size + 1u) * sizeof(*error_buffer));
+
+			if(!error_buffer)
+			{
+				C_UTILS_REPORT_ERROR("Error in function c_utils_thread_create, function malloc failed");
+
+				return C_UTILS_RESULT_FAILURE;
+			}
+
+			sprintf(error_buffer, "Error in function c_utils_thread_create, function _beginthreadex failed, error code: %u", (c_utils_uint32_t)error);
+
+			C_UTILS_REPORT_ERROR(error_buffer);
+
+			free((c_utils_void_t *)error_buffer);
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -107,8 +246,31 @@ C_UTILS_API c_utils_result_t c_utils_thread_create(c_utils_thread_t *const threa
 
 		if(result)
 		{
-			fprintf(stderr, "Error in function c_utils_thread_create, function pthread_create (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-			fprintf(stderr, "Error code: %d\n", result);
+			unsigned int value = (unsigned int)(result < 0 ? -result : result);
+			c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
+			c_utils_size_t prefix_size = strlen("Error in function c_utils_thread_create, function pthread_create failed, error code: ");
+			c_utils_size_t error_size = (result < 0) ? 2u : 1u;
+
+			while(value >= 10u)
+			{
+				value /= 10u;
+				error_size++;
+			}
+
+			error_buffer = (c_utils_char_t *)malloc((prefix_size + error_size + 1u) * sizeof(*error_buffer));
+
+			if(!error_buffer)
+			{
+				C_UTILS_REPORT_ERROR("Error in function c_utils_thread_create, function malloc failed");
+
+				return C_UTILS_RESULT_FAILURE;
+			}
+
+			sprintf(error_buffer, "Error in function c_utils_thread_create, function pthread_create failed, error code: %d", result);
+
+			C_UTILS_REPORT_ERROR(error_buffer);
+
+			free((c_utils_void_t *)error_buffer);
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -124,16 +286,60 @@ C_UTILS_API c_utils_result_t c_utils_thread_join(c_utils_thread_t thread)
 	if(WaitForSingleObject(thread, INFINITE) != WAIT_OBJECT_0)
 	{
 		DWORD error = GetLastError();
+		DWORD value = error;
+		c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
+		c_utils_size_t prefix_size = strlen("Error in function c_utils_thread_join, function WaitForSingleObject failed, error code: ");
+		c_utils_size_t error_size = 1u;
 
-		fprintf(stderr, "Error in function c_utils_thread_join, function WaitForSingleObject (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-		fprintf(stderr, "Error code: %u\n", (c_utils_uint32_t)error);
+		while(value >= 10u)
+		{
+			value /= 10u;
+			error_size++;
+		}
+
+		error_buffer = (c_utils_char_t *)malloc((prefix_size + error_size + 1u) * sizeof(*error_buffer));
+
+		if(!error_buffer)
+		{
+			C_UTILS_REPORT_ERROR("Error in function c_utils_thread_join, function malloc failed");
+
+			return C_UTILS_RESULT_FAILURE;
+		}
+
+		sprintf(error_buffer, "Error in function c_utils_thread_join, function WaitForSingleObject failed, error code: %u", (c_utils_uint32_t)error);
+
+		C_UTILS_REPORT_ERROR(error_buffer);
+
+		free((c_utils_void_t *)error_buffer);
 
 		if(!CloseHandle(thread))
 		{
 			error = GetLastError();
+			value = error;
+			error_buffer = C_UTILS_NULL_POINTER;
+			prefix_size = strlen("Error in function c_utils_thread_join, function CloseHandle failed, error code: ");
+			error_size = 1u;
 
-			fprintf(stderr, "Error in function c_utils_thread_join, function CloseHandle (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-			fprintf(stderr, "Error code: %u\n", (c_utils_uint32_t)error);
+			while(value >= 10u)
+			{
+				value /= 10u;
+				error_size++;
+			}
+
+			error_buffer = (c_utils_char_t *)malloc((prefix_size + error_size + 1u) * sizeof(*error_buffer));
+
+			if(!error_buffer)
+			{
+				C_UTILS_REPORT_ERROR("Error in function c_utils_thread_join, function malloc failed");
+
+				return C_UTILS_RESULT_FAILURE;
+			}
+
+			sprintf(error_buffer, "Error in function c_utils_thread_join, function CloseHandle failed, error code: %u", (c_utils_uint32_t)error);
+
+			C_UTILS_REPORT_ERROR(error_buffer);
+
+			free((c_utils_void_t *)error_buffer);
 		}
 
 		return C_UTILS_RESULT_FAILURE;
@@ -142,9 +348,31 @@ C_UTILS_API c_utils_result_t c_utils_thread_join(c_utils_thread_t thread)
 	if(!CloseHandle(thread))
 	{
 		const DWORD error = GetLastError();
+		DWORD value = error;
+		c_utils_size_t prefix_size = strlen("Error in function c_utils_thread_join, function CloseHandle failed, error code: ");
+		c_utils_size_t error_size = 1u;
+		c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
 
-		fprintf(stderr, "Error in function c_utils_thread_join, function CloseHandle (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-		fprintf(stderr, "Error code: %u\n", (c_utils_uint32_t)error);
+		while(value >= 10u)
+		{
+			value /= 10u;
+			error_size++;
+		}
+
+		error_buffer = (c_utils_char_t *)malloc((prefix_size + error_size + 1u) * sizeof(*error_buffer));
+
+		if(!error_buffer)
+		{
+			C_UTILS_REPORT_ERROR("Error in function c_utils_thread_join, function malloc failed");
+
+			return C_UTILS_RESULT_FAILURE;
+		}
+
+		sprintf(error_buffer, "Error in function c_utils_thread_join, function CloseHandle failed, error code: %u", (c_utils_uint32_t)error);
+
+		C_UTILS_REPORT_ERROR(error_buffer);
+
+		free((c_utils_void_t *)error_buffer);
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -153,8 +381,31 @@ C_UTILS_API c_utils_result_t c_utils_thread_join(c_utils_thread_t thread)
 
 	if(result)
 	{
-		fprintf(stderr, "Error in function c_utils_thread_join, function pthread_join (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-		fprintf(stderr, "Error code: %d\n", result);
+		unsigned int value = (unsigned int)(result < 0 ? -result : result);
+		c_utils_size_t prefix_size = strlen("Error in function c_utils_thread_join, function pthread_join failed, error code: ");
+		c_utils_size_t error_size = (result < 0) ? 2u : 1u;
+		c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
+
+		while(value >= 10u)
+		{
+			value /= 10u;
+			error_size++;
+		}
+
+		error_buffer = (c_utils_char_t *)malloc((prefix_size + error_size + 1u) * sizeof(*error_buffer));
+
+		if(!error_buffer)
+		{
+			C_UTILS_REPORT_ERROR("Error in function c_utils_thread_join, function malloc failed");
+
+			return C_UTILS_RESULT_FAILURE;
+		}
+
+		sprintf(error_buffer, "Error in function c_utils_thread_join, function pthread_join failed, error code: %d", result);
+
+		C_UTILS_REPORT_ERROR(error_buffer);
+
+		free((c_utils_void_t *)error_buffer);
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -171,9 +422,31 @@ C_UTILS_API c_utils_result_t c_utils_thread_detach(c_utils_thread_t thread)
 	if(!result)
 	{
 		const DWORD error = GetLastError();
+		DWORD value = error;
+		c_utils_size_t prefix_size = strlen("Error in function c_utils_thread_detach, function CloseHandle failed, error code: ");
+		c_utils_size_t error_size = 1u;
+		c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
 
-		fprintf(stderr, "Error in function c_utils_thread_detach, function CloseHandle (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-		fprintf(stderr, "Error code: %u\n", (c_utils_uint32_t)error);
+		while(value >= 10u)
+		{
+			value /= 10u;
+			error_size++;
+		}
+
+		error_buffer = (c_utils_char_t *)malloc((prefix_size + error_size + 1u) * sizeof(*error_buffer));
+
+		if(!error_buffer)
+		{
+			C_UTILS_REPORT_ERROR("Error in function c_utils_thread_detach, function malloc failed");
+
+			return C_UTILS_RESULT_FAILURE;
+		}
+
+		sprintf(error_buffer, "Error in function c_utils_thread_detach, function CloseHandle failed, error code: %u", (c_utils_uint32_t)error);
+
+		C_UTILS_REPORT_ERROR(error_buffer);
+
+		free((c_utils_void_t *)error_buffer);
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -184,8 +457,31 @@ C_UTILS_API c_utils_result_t c_utils_thread_detach(c_utils_thread_t thread)
 
 	if(result)
 	{
-		fprintf(stderr, "Error in function c_utils_thread_detach, function pthread_detach (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-		fprintf(stderr, "Error code: %d\n", result);
+		unsigned int value = (unsigned int)(result < 0 ? -result : result);
+		c_utils_size_t prefix_size = strlen("Error in function c_utils_thread_detach, function pthread_detach failed, error code: ");
+		c_utils_size_t error_size = (result < 0) ? 2u : 1u;
+		c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
+
+		while(value >= 10u)
+		{
+			value /= 10u;
+			error_size++;
+		}
+
+		error_buffer = (c_utils_char_t *)malloc((prefix_size + error_size + 1u) * sizeof(*error_buffer));
+
+		if(!error_buffer)
+		{
+			C_UTILS_REPORT_ERROR("Error in function c_utils_thread_detach, function malloc failed");
+
+			return C_UTILS_RESULT_FAILURE;
+		}
+
+		sprintf(error_buffer, "Error in function c_utils_thread_detach, function pthread_detach failed, error code: %d", result);
+
+		C_UTILS_REPORT_ERROR(error_buffer);
+
+		free((c_utils_void_t *)error_buffer);
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -198,7 +494,7 @@ C_UTILS_API c_utils_result_t c_utils_thread_get_id(c_utils_thread_id_t *const th
 {
 	if(!thread_id)
 	{
-		fprintf(stderr, "Error in function c_utils_thread_get_id, the thread is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_thread_get_id, the thread_id is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -221,8 +517,31 @@ C_UTILS_API c_utils_result_t c_utils_thread_yield(c_utils_void_t)
 
 	if(result)
 	{
-		fprintf(stderr, "Error in function c_utils_thread_yield, function sched_yield (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-		fprintf(stderr, "Error code: %d\n", result);
+		unsigned int value = (unsigned int)(result < 0 ? -result : result);
+		c_utils_size_t prefix_size = strlen("Error in function c_utils_thread_yield, function sched_yield failed, error code: ");
+		c_utils_size_t error_size = (result < 0) ? 2u : 1u;
+		c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
+
+		while(value >= 10u)
+		{
+			value /= 10u;
+			error_size++;
+		}
+
+		error_buffer = (c_utils_char_t *)malloc((prefix_size + error_size + 1u) * sizeof(*error_buffer));
+
+		if(!error_buffer)
+		{
+			C_UTILS_REPORT_ERROR("Error in function c_utils_thread_yield, function malloc failed");
+
+			return C_UTILS_RESULT_FAILURE;
+		}
+
+		sprintf(error_buffer, "Error in function c_utils_thread_yield, function sched_yield failed, error code: %d", result);
+
+		C_UTILS_REPORT_ERROR(error_buffer);
+
+		free((c_utils_void_t *)error_buffer);
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -254,7 +573,7 @@ C_UTILS_API c_utils_result_t c_utils_mutex_create(c_utils_mutex_t *const mutex)
 {
 	if(!mutex)
 	{
-		fprintf(stderr, "Error in function c_utils_mutex_create, the mutex is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_mutex_create, the mutex is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -268,8 +587,31 @@ C_UTILS_API c_utils_result_t c_utils_mutex_create(c_utils_mutex_t *const mutex)
 
 		if(result)
 		{
-			fprintf(stderr, "Error in function c_utils_mutex_create, function pthread_mutex_init (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-			fprintf(stderr, "Error code: %d\n", result);
+			unsigned int value = (unsigned int)(result < 0 ? -result : result);
+			c_utils_size_t prefix_size = strlen("Error in function c_utils_mutex_create, function pthread_mutex_init failed, error code: ");
+			c_utils_size_t error_size = (result < 0) ? 2u : 1u;
+			c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
+
+			while(value >= 10u)
+			{
+				value /= 10u;
+				error_size++;
+			}
+
+			error_buffer = (c_utils_char_t *)malloc((prefix_size + error_size + 1u) * sizeof(*error_buffer));
+
+			if(!error_buffer)
+			{
+				C_UTILS_REPORT_ERROR("Error in function c_utils_mutex_create, function malloc failed");
+
+				return C_UTILS_RESULT_FAILURE;
+			}
+
+			sprintf(error_buffer, "Error in function c_utils_mutex_create, function pthread_mutex_init failed, error code: %d", result);
+
+			C_UTILS_REPORT_ERROR(error_buffer);
+
+			free((c_utils_void_t *)error_buffer);
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -283,7 +625,7 @@ C_UTILS_API c_utils_result_t c_utils_mutex_lock(c_utils_mutex_t *const mutex)
 {
 	if(!mutex)
 	{
-		fprintf(stderr, "Error in function c_utils_mutex_lock, the mutex is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_mutex_lock, the mutex is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -297,8 +639,31 @@ C_UTILS_API c_utils_result_t c_utils_mutex_lock(c_utils_mutex_t *const mutex)
 
 		if(result)
 		{
-			fprintf(stderr, "Error in function c_utils_mutex_lock, function pthread_mutex_lock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-			fprintf(stderr, "Error code: %d\n", result);
+			unsigned int value = (unsigned int)(result < 0 ? -result : result);
+			c_utils_size_t prefix_size = strlen("Error in function c_utils_mutex_lock, function pthread_mutex_lock failed, error code: ");
+			c_utils_size_t error_size = (result < 0) ? 2u : 1u;
+			c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
+
+			while(value >= 10u)
+			{
+				value /= 10u;
+				error_size++;
+			}
+
+			error_buffer = (c_utils_char_t *)malloc((prefix_size + error_size + 1u) * sizeof(*error_buffer));
+
+			if(!error_buffer)
+			{
+				C_UTILS_REPORT_ERROR("Error in function c_utils_mutex_lock, function malloc failed");
+
+				return C_UTILS_RESULT_FAILURE;
+			}
+
+			sprintf(error_buffer, "Error in function c_utils_mutex_lock, function pthread_mutex_lock failed, error code: %d", result);
+
+			C_UTILS_REPORT_ERROR(error_buffer);
+
+			free((c_utils_void_t *)error_buffer);
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -312,14 +677,14 @@ C_UTILS_API c_utils_result_t c_utils_mutex_trylock(c_utils_mutex_t *const mutex,
 {
 	if(!mutex)
 	{
-		fprintf(stderr, "Error in function c_utils_mutex_trylock, the mutex is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_mutex_trylock, the mutex is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!is_locked)
 	{
-		fprintf(stderr, "Error in function c_utils_mutex_trylock, the is_locked is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_mutex_trylock, the is_locked is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -353,8 +718,31 @@ C_UTILS_API c_utils_result_t c_utils_mutex_trylock(c_utils_mutex_t *const mutex,
 
 		else
 		{
-			fprintf(stderr, "Error in function c_utils_mutex_trylock, function pthread_mutex_trylock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-			fprintf(stderr, "Error code: %d\n", result);
+			unsigned int value = (unsigned int)(result < 0 ? -result : result);
+			c_utils_size_t prefix_size = strlen("Error in function c_utils_mutex_trylock, function pthread_mutex_trylock failed, error code: ");
+			c_utils_size_t error_size = (result < 0) ? 2u : 1u;
+			c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
+
+			while(value >= 10u)
+			{
+				value /= 10u;
+				error_size++;
+			}
+
+			error_buffer = (c_utils_char_t *)malloc((prefix_size + error_size + 1u) * sizeof(*error_buffer));
+
+			if(!error_buffer)
+			{
+				C_UTILS_REPORT_ERROR("Error in function c_utils_mutex_trylock, function malloc failed");
+
+				return C_UTILS_RESULT_FAILURE;
+			}
+
+			sprintf(error_buffer, "Error in function c_utils_mutex_trylock, function pthread_mutex_trylock failed, error code: %d", result);
+
+			C_UTILS_REPORT_ERROR(error_buffer);
+
+			free((c_utils_void_t *)error_buffer);
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -368,7 +756,7 @@ C_UTILS_API c_utils_result_t c_utils_mutex_unlock(c_utils_mutex_t *const mutex)
 {
 	if(!mutex)
 	{
-		fprintf(stderr, "Error in function c_utils_mutex_unlock, the mutex is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_mutex_unlock, the mutex is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -382,8 +770,31 @@ C_UTILS_API c_utils_result_t c_utils_mutex_unlock(c_utils_mutex_t *const mutex)
 
 		if(result)
 		{
-			fprintf(stderr, "Error in function c_utils_mutex_unlock, function pthread_mutex_unlock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-			fprintf(stderr, "Error code: %d\n", result);
+			unsigned int value = (unsigned int)(result < 0 ? -result : result);
+			c_utils_size_t prefix_size = strlen("Error in function c_utils_mutex_unlock, function pthread_mutex_unlock failed, error code: ");
+			c_utils_size_t error_size = (result < 0) ? 2u : 1u;
+			c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
+
+			while(value >= 10u)
+			{
+				value /= 10u;
+				error_size++;
+			}
+
+			error_buffer = (c_utils_char_t *)malloc((prefix_size + error_size + 1u) * sizeof(*error_buffer));
+
+			if(!error_buffer)
+			{
+				C_UTILS_REPORT_ERROR("Error in function c_utils_mutex_unlock, function malloc failed");
+
+				return C_UTILS_RESULT_FAILURE;
+			}
+
+			sprintf(error_buffer, "Error in function c_utils_mutex_unlock, function pthread_mutex_unlock failed, error code: %d", result);
+
+			C_UTILS_REPORT_ERROR(error_buffer);
+
+			free((c_utils_void_t *)error_buffer);
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -397,7 +808,7 @@ C_UTILS_API c_utils_result_t c_utils_mutex_destroy(c_utils_mutex_t *const mutex)
 {
 	if(!mutex)
 	{
-		fprintf(stderr, "Error in function c_utils_mutex_destroy, the mutex is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_mutex_destroy, the mutex is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -411,8 +822,31 @@ C_UTILS_API c_utils_result_t c_utils_mutex_destroy(c_utils_mutex_t *const mutex)
 
 		if(result)
 		{
-			fprintf(stderr, "Error in function c_utils_mutex_destroy, function pthread_mutex_destroy (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-			fprintf(stderr, "Error code: %d\n", result);
+			unsigned int value = (unsigned int)(result < 0 ? -result : result);
+			c_utils_size_t prefix_size = strlen("Error in function c_utils_mutex_destroy, function pthread_mutex_destroy failed, error code: ");
+			c_utils_size_t error_size = (result < 0) ? 2u : 1u;
+			c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
+
+			while(value >= 10u)
+			{
+				value /= 10u;
+				error_size++;
+			}
+
+			error_buffer = (c_utils_char_t *)malloc((prefix_size + error_size + 1u) * sizeof(*error_buffer));
+
+			if(!error_buffer)
+			{
+				C_UTILS_REPORT_ERROR("Error in function c_utils_mutex_destroy, function malloc failed");
+
+				return C_UTILS_RESULT_FAILURE;
+			}
+
+			sprintf(error_buffer, "Error in function c_utils_mutex_destroy, function pthread_mutex_destroy failed, error code: %d", result);
+
+			C_UTILS_REPORT_ERROR(error_buffer);
+
+			free((c_utils_void_t *)error_buffer);
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -426,7 +860,7 @@ C_UTILS_API c_utils_result_t c_utils_condition_variable_create(c_utils_condition
 {
 	if(!condition_variable)
 	{
-		fprintf(stderr, "Error in function c_utils_condition_variable_create, the condition_variable is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_condition_variable_create, the condition_variable is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -440,8 +874,31 @@ C_UTILS_API c_utils_result_t c_utils_condition_variable_create(c_utils_condition
 
 		if(result)
 		{
-			fprintf(stderr, "Error in function c_utils_condition_variable_create, function pthread_cond_init (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-			fprintf(stderr, "Error code: %d\n", result);
+			unsigned int value = (unsigned int)(result < 0 ? -result : result);
+			c_utils_size_t prefix_size = strlen("Error in function c_utils_condition_variable_create, function pthread_cond_init failed, error code: ");
+			c_utils_size_t error_size = (result < 0) ? 2u : 1u;
+			c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
+
+			while(value >= 10u)
+			{
+				value /= 10u;
+				error_size++;
+			}
+
+			error_buffer = (c_utils_char_t *)malloc((prefix_size + error_size + 1u) * sizeof(*error_buffer));
+
+			if(!error_buffer)
+			{
+				C_UTILS_REPORT_ERROR("Error in function c_utils_condition_variable_create, function malloc failed");
+
+				return C_UTILS_RESULT_FAILURE;
+			}
+
+			sprintf(error_buffer, "Error in function c_utils_condition_variable_create, function pthread_cond_init failed, error code: %d", result);
+
+			C_UTILS_REPORT_ERROR(error_buffer);
+
+			free((c_utils_void_t *)error_buffer);
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -455,14 +912,14 @@ C_UTILS_API c_utils_result_t c_utils_condition_variable_wait(c_utils_condition_v
 {
 	if(!condition_variable)
 	{
-		fprintf(stderr, "Error in function c_utils_condition_variable_wait, the condition_variable is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_condition_variable_wait, the condition_variable is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!mutex)
 	{
-		fprintf(stderr, "Error in function c_utils_condition_variable_wait, the mutex is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_condition_variable_wait, the mutex is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -473,9 +930,31 @@ C_UTILS_API c_utils_result_t c_utils_condition_variable_wait(c_utils_condition_v
 		if(!SleepConditionVariableCS(condition_variable, mutex, INFINITE))
 		{
 			const DWORD error = GetLastError();
+			DWORD value = error;
+			c_utils_size_t prefix_size = strlen("Error in function c_utils_condition_variable_wait, function SleepConditionVariableCS failed, error code: ");
+			c_utils_size_t error_size = 1u;
+			c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
 
-			fprintf(stderr, "Error in function c_utils_condition_variable_wait, function SleepConditionVariableCS (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-			fprintf(stderr, "Error code: %u\n", (c_utils_uint32_t)error);
+			while(value >= 10u)
+			{
+				value /= 10u;
+				error_size++;
+			}
+
+			error_buffer = (c_utils_char_t *)malloc((prefix_size + error_size + 1u) * sizeof(*error_buffer));
+
+			if(!error_buffer)
+			{
+				C_UTILS_REPORT_ERROR("Error in function c_utils_condition_variable_wait, function malloc failed");
+
+				return C_UTILS_RESULT_FAILURE;
+			}
+
+			sprintf(error_buffer, "Error in function c_utils_condition_variable_wait, function SleepConditionVariableCS failed, error code: %u", (c_utils_uint32_t)error);
+
+			C_UTILS_REPORT_ERROR(error_buffer);
+
+			free((c_utils_void_t *)error_buffer);
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -484,8 +963,31 @@ C_UTILS_API c_utils_result_t c_utils_condition_variable_wait(c_utils_condition_v
 
 		if(result)
 		{
-			fprintf(stderr, "Error in function c_utils_condition_variable_wait, function pthread_cond_wait (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-			fprintf(stderr, "Error code: %d\n", result);
+			unsigned int value = (unsigned int)(result < 0 ? -result : result);
+			c_utils_size_t prefix_size = strlen("Error in function c_utils_condition_variable_wait, function pthread_cond_wait failed, error code: ");
+			c_utils_size_t error_size = (result < 0) ? 2u : 1u;
+			c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
+
+			while(value >= 10u)
+			{
+				value /= 10u;
+				error_size++;
+			}
+
+			error_buffer = (c_utils_char_t *)malloc((prefix_size + error_size + 1u) * sizeof(*error_buffer));
+
+			if(!error_buffer)
+			{
+				C_UTILS_REPORT_ERROR("Error in function c_utils_condition_variable_wait, function malloc failed");
+
+				return C_UTILS_RESULT_FAILURE;
+			}
+
+			sprintf(error_buffer, "Error in function c_utils_condition_variable_wait, function pthread_cond_wait failed, error code: %d", result);
+
+			C_UTILS_REPORT_ERROR(error_buffer);
+
+			free((c_utils_void_t *)error_buffer);
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -498,7 +1000,7 @@ C_UTILS_API c_utils_result_t c_utils_condition_variable_signal(c_utils_condition
 {
 	if(!condition_variable)
 	{
-		fprintf(stderr, "Error in function c_utils_condition_variable_signal, the condition_variable is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_condition_variable_signal, the condition_variable is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -512,8 +1014,31 @@ C_UTILS_API c_utils_result_t c_utils_condition_variable_signal(c_utils_condition
 
 		if(result)
 		{
-			fprintf(stderr, "Error in function c_utils_condition_variable_signal, function pthread_cond_signal (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-			fprintf(stderr, "Error code: %d\n", result);
+			unsigned int value = (unsigned int)(result < 0 ? -result : result);
+			c_utils_size_t prefix_size = strlen("Error in function c_utils_condition_variable_signal, function pthread_cond_signal failed, error code: ");
+			c_utils_size_t error_size = (result < 0) ? 2u : 1u;
+			c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
+
+			while(value >= 10u)
+			{
+				value /= 10u;
+				error_size++;
+			}
+
+			error_buffer = (c_utils_char_t *)malloc((prefix_size + error_size + 1u) * sizeof(*error_buffer));
+
+			if(!error_buffer)
+			{
+				C_UTILS_REPORT_ERROR("Error in function c_utils_condition_variable_signal, function malloc failed");
+
+				return C_UTILS_RESULT_FAILURE;
+			}
+
+			sprintf(error_buffer, "Error in function c_utils_condition_variable_signal, function pthread_cond_signal failed, error code: %d", result);
+
+			C_UTILS_REPORT_ERROR(error_buffer);
+
+			free((c_utils_void_t *)error_buffer);
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -527,7 +1052,7 @@ C_UTILS_API c_utils_result_t c_utils_condition_variable_broadcast(c_utils_condit
 {
 	if(!condition_variable)
 	{
-		fprintf(stderr, "Error in function c_utils_condition_variable_broadcast, the condition_variable is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_condition_variable_broadcast, the condition_variable is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -541,8 +1066,31 @@ C_UTILS_API c_utils_result_t c_utils_condition_variable_broadcast(c_utils_condit
 
 		if(result)
 		{
-			fprintf(stderr, "Error in function c_utils_condition_variable_broadcast, function pthread_cond_broadcast (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-			fprintf(stderr, "Error code: %d\n", result);
+			unsigned int value = (unsigned int)(result < 0 ? -result : result);
+			c_utils_size_t prefix_size = strlen("Error in function c_utils_condition_variable_broadcast, function pthread_cond_broadcast failed, error code: ");
+			c_utils_size_t error_size = (result < 0) ? 2u : 1u;
+			c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
+
+			while(value >= 10u)
+			{
+				value /= 10u;
+				error_size++;
+			}
+
+			error_buffer = (c_utils_char_t *)malloc((prefix_size + error_size + 1u) * sizeof(*error_buffer));
+
+			if(!error_buffer)
+			{
+				C_UTILS_REPORT_ERROR("Error in function c_utils_condition_variable_broadcast, function malloc failed");
+
+				return C_UTILS_RESULT_FAILURE;
+			}
+
+			sprintf(error_buffer, "Error in function c_utils_condition_variable_broadcast, function pthread_cond_broadcast failed, error code: %d", result);
+
+			C_UTILS_REPORT_ERROR(error_buffer);
+
+			free((c_utils_void_t *)error_buffer);
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -556,7 +1104,7 @@ C_UTILS_API c_utils_result_t c_utils_condition_variable_destroy(c_utils_conditio
 {
 	if(!condition_variable)
 	{
-		fprintf(stderr, "Error in function c_utils_condition_variable_destroy, the condition_variable is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_condition_variable_destroy, the condition_variable is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -570,8 +1118,31 @@ C_UTILS_API c_utils_result_t c_utils_condition_variable_destroy(c_utils_conditio
 
 		if(result)
 		{
-			fprintf(stderr, "Error in function c_utils_condition_variable_destroy, function pthread_cond_destroy (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-			fprintf(stderr, "Error code: %d\n", result);
+			unsigned int value = (unsigned int)(result < 0 ? -result : result);
+			c_utils_size_t prefix_size = strlen("Error in function c_utils_condition_variable_destroy, function pthread_cond_destroy failed, error code: ");
+			c_utils_size_t error_size = (result < 0) ? 2u : 1u;
+			c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
+
+			while(value >= 10u)
+			{
+				value /= 10u;
+				error_size++;
+			}
+
+			error_buffer = (c_utils_char_t *)malloc((prefix_size + error_size + 1u) * sizeof(*error_buffer));
+
+			if(!error_buffer)
+			{
+				C_UTILS_REPORT_ERROR("Error in function c_utils_condition_variable_destroy, function malloc failed");
+
+				return C_UTILS_RESULT_FAILURE;
+			}
+
+			sprintf(error_buffer, "Error in function c_utils_condition_variable_destroy, function pthread_cond_destroy failed, error code: %d", result);
+
+			C_UTILS_REPORT_ERROR(error_buffer);
+
+			free((c_utils_void_t *)error_buffer);
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -585,7 +1156,7 @@ C_UTILS_API c_utils_result_t c_utils_semaphore_create(c_utils_semaphore_t *const
 {
 	if(!semaphore)
 	{
-		fprintf(stderr, "Error in function c_utils_semaphore_create, the semaphore is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_semaphore_create, the semaphore is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -594,18 +1165,18 @@ C_UTILS_API c_utils_result_t c_utils_semaphore_create(c_utils_semaphore_t *const
 
 	if(c_utils_mutex_create(&semaphore->mutex))
 	{
-		fprintf(stderr, "Error in function c_utils_semaphore_create, function c_utils_mutex_create failed (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_semaphore_create, function c_utils_mutex_create failed");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(c_utils_condition_variable_create(&semaphore->condition_variable))
 	{
-		fprintf(stderr, "Error in function c_utils_semaphore_create, function c_utils_condition_variable_create failed (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_semaphore_create, function c_utils_condition_variable_create failed");
 
 		if(c_utils_mutex_destroy(&semaphore->mutex))
 		{
-			fprintf(stderr, "Error in function c_utils_semaphore_create, function c_utils_mutex_destroy failed (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+			C_UTILS_REPORT_ERROR("Error in function c_utils_semaphore_create, function c_utils_mutex_destroy failed");
 		}
 
 		return C_UTILS_RESULT_FAILURE;
@@ -618,14 +1189,14 @@ C_UTILS_API c_utils_result_t c_utils_semaphore_wait(c_utils_semaphore_t *const s
 {
 	if(!semaphore)
 	{
-		fprintf(stderr, "Error in function c_utils_semaphore_wait, the semaphore is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_semaphore_wait, the semaphore is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(c_utils_mutex_lock(&semaphore->mutex))
 	{
-		fprintf(stderr, "Error in function c_utils_semaphore_wait, function c_utils_mutex_lock failed (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_semaphore_wait, function c_utils_mutex_lock failed");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -634,9 +1205,11 @@ C_UTILS_API c_utils_result_t c_utils_semaphore_wait(c_utils_semaphore_t *const s
 	{
 		if(c_utils_condition_variable_wait(&semaphore->condition_variable, &semaphore->mutex))
 		{
+			C_UTILS_REPORT_ERROR("Error in function c_utils_semaphore_wait, function c_utils_condition_variable_wait failed");
+
 			if(c_utils_mutex_unlock(&semaphore->mutex))
 			{
-				fprintf(stderr, "Error in function c_utils_semaphore_wait, function c_utils_mutex_unlock failed (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+				C_UTILS_REPORT_ERROR("Error in function c_utils_semaphore_wait, function c_utils_mutex_unlock failed");
 			}
 
 			return C_UTILS_RESULT_FAILURE;
@@ -647,7 +1220,7 @@ C_UTILS_API c_utils_result_t c_utils_semaphore_wait(c_utils_semaphore_t *const s
 
 	if(c_utils_mutex_unlock(&semaphore->mutex))
 	{
-		fprintf(stderr, "Error in function c_utils_semaphore_wait, function c_utils_mutex_unlock failed (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_semaphore_wait, function c_utils_mutex_unlock failed");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -659,25 +1232,25 @@ C_UTILS_API c_utils_result_t c_utils_semaphore_post(c_utils_semaphore_t *const s
 {
 	if(!semaphore)
 	{
-		fprintf(stderr, "Error in function c_utils_semaphore_post, the semaphore is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_semaphore_post, the semaphore is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(c_utils_mutex_lock(&semaphore->mutex))
 	{
-		fprintf(stderr, "Error in function c_utils_semaphore_post, function c_utils_mutex_lock failed (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_semaphore_post, function c_utils_mutex_lock failed");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(semaphore->value == 0xFFFFFFFFu)
 	{
-		fprintf(stderr, "Error in function c_utils_semaphore_post, the semaphore value is 0xFFFFFFFF (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_semaphore_post, the semaphore value is 0xFFFFFFFF");
 
 		if(c_utils_mutex_unlock(&semaphore->mutex))
 		{
-			fprintf(stderr, "Error in function c_utils_semaphore_post, function c_utils_mutex_unlock failed (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+			C_UTILS_REPORT_ERROR("Error in function c_utils_semaphore_post, function c_utils_mutex_unlock failed");
 		}
 
 		return C_UTILS_RESULT_FAILURE;
@@ -687,9 +1260,11 @@ C_UTILS_API c_utils_result_t c_utils_semaphore_post(c_utils_semaphore_t *const s
 
 	if(c_utils_condition_variable_signal(&semaphore->condition_variable))
 	{
+		C_UTILS_REPORT_ERROR("Error in function c_utils_semaphore_post, function c_utils_condition_variable_signal failed");
+
 		if(c_utils_mutex_unlock(&semaphore->mutex))
 		{
-			fprintf(stderr, "Error in function c_utils_semaphore_post, function c_utils_mutex_unlock failed (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+			C_UTILS_REPORT_ERROR("Error in function c_utils_semaphore_post, function c_utils_mutex_unlock failed");
 		}
 
 		return C_UTILS_RESULT_FAILURE;
@@ -697,7 +1272,7 @@ C_UTILS_API c_utils_result_t c_utils_semaphore_post(c_utils_semaphore_t *const s
 
 	if(c_utils_mutex_unlock(&semaphore->mutex))
 	{
-		fprintf(stderr, "Error in function c_utils_semaphore_post, function c_utils_mutex_unlock failed (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_semaphore_post, function c_utils_mutex_unlock failed");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -709,7 +1284,7 @@ C_UTILS_API c_utils_result_t c_utils_semaphore_destroy(c_utils_semaphore_t *cons
 {
 	if(!semaphore)
 	{
-		fprintf(stderr, "Error in function c_utils_semaphore_destroy, the semaphore is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_semaphore_destroy, the semaphore is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -721,12 +1296,12 @@ C_UTILS_API c_utils_result_t c_utils_semaphore_destroy(c_utils_semaphore_t *cons
 
 		if(mutex_result)
 		{
-			fprintf(stderr, "Error in function c_utils_semaphore_destroy, function c_utils_mutex_destroy failed (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+			C_UTILS_REPORT_ERROR("Error in function c_utils_semaphore_destroy, function c_utils_mutex_destroy failed");
 		}
 
 		if(condition_variable_result)
 		{
-			fprintf(stderr, "Error in function c_utils_semaphore_destroy, function c_utils_condition_variable_destroy failed (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+			C_UTILS_REPORT_ERROR("Error in function c_utils_semaphore_destroy, function c_utils_condition_variable_destroy failed");
 		}
 
 		if(mutex_result || condition_variable_result)
@@ -742,7 +1317,7 @@ C_UTILS_API c_utils_result_t c_utils_rwlock_create(c_utils_rwlock_t *const rwloc
 {
 	if(!rwlock)
 	{
-		fprintf(stderr, "Error in function c_utils_rwlock_create, the read-write lock is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_rwlock_create, the read-write lock is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -756,8 +1331,31 @@ C_UTILS_API c_utils_result_t c_utils_rwlock_create(c_utils_rwlock_t *const rwloc
 
 		if(result)
 		{
-			fprintf(stderr, "Error in function c_utils_rwlock_create, function pthread_rwlock_init failed (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-			fprintf(stderr, "Error code: %d\n", result);
+			unsigned int value = (unsigned int)(result < 0 ? -result : result);
+			c_utils_size_t prefix_size = strlen("Error in function c_utils_rwlock_create, function pthread_rwlock_init failed, error code: ");
+			c_utils_size_t error_size = (result < 0) ? 2u : 1u;
+			c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
+
+			while(value >= 10)
+			{
+				value /= 10;
+				error_size++;
+			}
+
+			error_buffer = (c_utils_char_t *)malloc((prefix_size + error_size + 1u) * sizeof(*error_buffer));
+
+			if(!error_buffer)
+			{
+				C_UTILS_REPORT_ERROR("Error in function c_utils_rwlock_create, function malloc failed");
+
+				return C_UTILS_RESULT_FAILURE;
+			}
+
+			sprintf(error_buffer, "Error in function c_utils_rwlock_create, function pthread_rwlock_init failed, error code: %d", result);
+
+			C_UTILS_REPORT_ERROR(error_buffer);
+
+			free((c_utils_void_t *)error_buffer);
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -771,7 +1369,7 @@ C_UTILS_API c_utils_result_t c_utils_rwlock_read_lock(c_utils_rwlock_t *const rw
 {
 	if(!rwlock)
 	{
-		fprintf(stderr, "Error in function c_utils_rwlock_read_lock, the read-write lock is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_rwlock_read_lock, the read-write lock is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -785,8 +1383,31 @@ C_UTILS_API c_utils_result_t c_utils_rwlock_read_lock(c_utils_rwlock_t *const rw
 
 		if(result)
 		{
-			fprintf(stderr, "Error in function c_utils_rwlock_read_lock, function pthread_rwlock_rdlock failed (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-			fprintf(stderr, "Error code: %d\n", result);
+			unsigned int value = (unsigned int)(result < 0 ? -result : result);
+			c_utils_size_t prefix_size = strlen("Error in function c_utils_rwlock_read_lock, function pthread_rwlock_rdlock failed, error code: ");
+			c_utils_size_t error_size = (result < 0) ? 2u : 1u;
+			c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
+
+			while(value >= 10)
+			{
+				value /= 10;
+				error_size++;
+			}
+
+			error_buffer = (c_utils_char_t *)malloc((prefix_size + error_size + 1u) * sizeof(*error_buffer));
+
+			if(!error_buffer)
+			{
+				C_UTILS_REPORT_ERROR("Error in function c_utils_rwlock_read_lock, function malloc failed");
+
+				return C_UTILS_RESULT_FAILURE;
+			}
+
+			sprintf(error_buffer, "Error in function c_utils_rwlock_read_lock, function pthread_rwlock_rdlock failed, error code: %d", result);
+
+			C_UTILS_REPORT_ERROR(error_buffer);
+
+			free((c_utils_void_t *)error_buffer);
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -800,7 +1421,7 @@ C_UTILS_API c_utils_result_t c_utils_rwlock_write_lock(c_utils_rwlock_t *const r
 {
 	if(!rwlock)
 	{
-		fprintf(stderr, "Error in function c_utils_rwlock_write_lock, the read-write lock is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_rwlock_write_lock, the read-write lock is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -814,8 +1435,31 @@ C_UTILS_API c_utils_result_t c_utils_rwlock_write_lock(c_utils_rwlock_t *const r
 
 		if(result)
 		{
-			fprintf(stderr, "Error in function c_utils_rwlock_write_lock, function pthread_rwlock_wrlock failed (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-			fprintf(stderr, "Error code: %d\n", result);
+			unsigned int value = (unsigned int)(result < 0 ? -result : result);
+			c_utils_size_t prefix_size = strlen("Error in function c_utils_rwlock_write_lock, function pthread_rwlock_wrlock failed, error code: ");
+			c_utils_size_t error_size = (result < 0) ? 2u : 1u;
+			c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
+
+			while(value >= 10)
+			{
+				value /= 10;
+				error_size++;
+			}
+
+			error_buffer = (c_utils_char_t *)malloc((prefix_size + error_size + 1u) * sizeof(*error_buffer));
+
+			if(!error_buffer)
+			{
+				C_UTILS_REPORT_ERROR("Error in function c_utils_rwlock_write_lock, function malloc failed");
+
+				return C_UTILS_RESULT_FAILURE;
+			}
+
+			sprintf(error_buffer, "Error in function c_utils_rwlock_write_lock, function pthread_rwlock_wrlock failed, error code: %d", result);
+
+			C_UTILS_REPORT_ERROR(error_buffer);
+
+			free((c_utils_void_t *)error_buffer);
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -829,7 +1473,7 @@ C_UTILS_API c_utils_result_t c_utils_rwlock_unlock(c_utils_rwlock_t *const rwloc
 {
 	if(!rwlock)
 	{
-		fprintf(stderr, "Error in function c_utils_rwlock_unlock, the read-write lock is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_rwlock_unlock, the read-write lock is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -852,8 +1496,31 @@ C_UTILS_API c_utils_result_t c_utils_rwlock_unlock(c_utils_rwlock_t *const rwloc
 
 		if(result)
 		{
-			fprintf(stderr, "Error in function c_utils_rwlock_unlock, function pthread_rwlock_unlock failed (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-			fprintf(stderr, "Error code: %d\n", result);
+			unsigned int value = (unsigned int)(result < 0 ? -result : result);
+			c_utils_size_t prefix_size = strlen("Error in function c_utils_rwlock_unlock, function pthread_rwlock_unlock failed, error code: ");
+			c_utils_size_t error_size = (result < 0) ? 2u : 1u;
+			c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
+
+			while(value >= 10)
+			{
+				value /= 10;
+				error_size++;
+			}
+
+			error_buffer = (c_utils_char_t *)malloc((prefix_size + error_size + 1u) * sizeof(*error_buffer));
+
+			if(!error_buffer)
+			{
+				C_UTILS_REPORT_ERROR("Error in function c_utils_rwlock_unlock, function malloc failed");
+
+				return C_UTILS_RESULT_FAILURE;
+			}
+
+			sprintf(error_buffer, "Error in function c_utils_rwlock_unlock, function pthread_rwlock_unlock failed, error code: %d", result);
+
+			C_UTILS_REPORT_ERROR(error_buffer);
+
+			free((c_utils_void_t *)error_buffer);
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -867,7 +1534,7 @@ C_UTILS_API c_utils_result_t c_utils_rwlock_destroy(c_utils_rwlock_t *const rwlo
 {
 	if(!rwlock)
 	{
-		fprintf(stderr, "Error in function c_utils_rwlock_destroy, the read-write lock is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_rwlock_destroy, the read-write lock is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -881,8 +1548,31 @@ C_UTILS_API c_utils_result_t c_utils_rwlock_destroy(c_utils_rwlock_t *const rwlo
 
 		if(result)
 		{
-			fprintf(stderr, "Error in function c_utils_rwlock_destroy, function pthread_rwlock_destroy failed (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-			fprintf(stderr, "Error code: %d\n", result);
+			unsigned int value = (unsigned int)(result < 0 ? -result : result);
+			c_utils_size_t prefix_size = strlen("Error in function c_utils_rwlock_destroy, function pthread_rwlock_destroy failed, error code: ");
+			c_utils_size_t error_size = (result < 0) ? 2u : 1u;
+			c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
+
+			while(value >= 10)
+			{
+				value /= 10;
+				error_size++;
+			}
+
+			error_buffer = (c_utils_char_t *)malloc((prefix_size + error_size + 1u) * sizeof(*error_buffer));
+
+			if(!error_buffer)
+			{
+				C_UTILS_REPORT_ERROR("Error in function c_utils_rwlock_destroy, function malloc failed");
+
+				return C_UTILS_RESULT_FAILURE;
+			}
+
+			sprintf(error_buffer, "Error in function c_utils_rwlock_destroy, function pthread_rwlock_destroy failed, error code: %d", result);
+
+			C_UTILS_REPORT_ERROR(error_buffer);
+
+			free((c_utils_void_t *)error_buffer);
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -896,7 +1586,7 @@ C_UTILS_API c_utils_result_t c_utils_tls_create(c_utils_tls_key_t *const key)
 {
 	if(!key)
 	{
-		fprintf(stderr, "Error in function c_utils_tls_create, the key is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_tls_create, the key is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -909,9 +1599,31 @@ C_UTILS_API c_utils_result_t c_utils_tls_create(c_utils_tls_key_t *const key)
 		if(*key == TLS_OUT_OF_INDEXES)
 		{
 			const DWORD error = GetLastError();
+			DWORD value = error;
+			c_utils_size_t prefix_size = strlen("Error in function c_utils_tls_create, function TlsAlloc failed, error code: ");
+			c_utils_size_t error_size = 1u;
+			c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
 
-			fprintf(stderr, "Error in function c_utils_tls_create, function TlsAlloc failed (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-			fprintf(stderr, "Error code: %u\n", (c_utils_uint32_t)error);
+			while(value >= 10)
+			{
+				value /= 10;
+				error_size++;
+			}
+
+			error_buffer = (c_utils_char_t *)malloc((prefix_size + error_size + 1u) * sizeof(*error_buffer));
+
+			if(!error_buffer)
+			{
+				C_UTILS_REPORT_ERROR("Error in function c_utils_tls_create, function malloc failed");
+
+				return C_UTILS_RESULT_FAILURE;
+			}
+
+			sprintf(error_buffer, "Error in function c_utils_tls_create, function TlsAlloc failed, error code: %u", (c_utils_uint32_t)error);
+
+			C_UTILS_REPORT_ERROR(error_buffer);
+
+			free((c_utils_void_t *)error_buffer);
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -920,8 +1632,31 @@ C_UTILS_API c_utils_result_t c_utils_tls_create(c_utils_tls_key_t *const key)
 
 		if(result)
 		{
-			fprintf(stderr, "Error in function c_utils_tls_create, function pthread_key_create failed (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-			fprintf(stderr, "Error code: %d\n", result);
+			unsigned int value = (unsigned int)(result < 0 ? -result : result);
+			c_utils_size_t prefix_size = strlen("Error in function c_utils_tls_create, function pthread_key_create failed, error code: ");
+			c_utils_size_t error_size = (result < 0) ? 2u : 1u;
+			c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
+
+			while(value >= 10)
+			{
+				value /= 10;
+				error_size++;
+			}
+
+			error_buffer = (c_utils_char_t *)malloc((prefix_size + error_size + 1u) * sizeof(*error_buffer));
+
+			if(!error_buffer)
+			{
+				C_UTILS_REPORT_ERROR("Error in function c_utils_tls_create, function malloc failed");
+
+				return C_UTILS_RESULT_FAILURE;
+			}
+
+			sprintf(error_buffer, "Error in function c_utils_tls_create, function pthread_key_create failed, error code: %d", result);
+
+			C_UTILS_REPORT_ERROR(error_buffer);
+
+			free((c_utils_void_t *)error_buffer);
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -931,25 +1666,70 @@ C_UTILS_API c_utils_result_t c_utils_tls_create(c_utils_tls_key_t *const key)
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-C_UTILS_API c_utils_result_t c_utils_tls_set(c_utils_tls_key_t key, c_utils_void_t *const value)
+C_UTILS_API c_utils_result_t c_utils_tls_set(c_utils_tls_key_t key, c_utils_void_t *const input)
 {
 #if defined(_WIN32) || defined(_WIN64)
-	if(!TlsSetValue(key, value))
+	if(!TlsSetValue(key, input))
 	{
 		const DWORD error = GetLastError();
+		DWORD value = error;
+		c_utils_size_t prefix_size = strlen("Error in function c_utils_tls_set, function TlsSetValue failed, error code: ");
+		c_utils_size_t error_size = 1u;
+		c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
 
-		fprintf(stderr, "Error in function c_utils_tls_set, function TlsSetValue (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-		fprintf(stderr, "Error code: %u\n", (c_utils_uint32_t)error);
+		while(value >= 10u)
+		{
+			value /= 10u;
+			error_size++;
+		}
+
+		error_buffer = (c_utils_char_t *)malloc((prefix_size + error_size + 1u) * sizeof(*error_buffer));
+
+		if(!error_buffer)
+		{
+			C_UTILS_REPORT_ERROR("Error in function c_utils_tls_set, function malloc failed");
+
+			return C_UTILS_RESULT_FAILURE;
+		}
+
+		sprintf(error_buffer, "Error in function c_utils_tls_set, function TlsSetValue failed, error code: %u", (c_utils_uint32_t)error);
+
+		C_UTILS_REPORT_ERROR(error_buffer);
+
+		free((c_utils_void_t *)error_buffer);
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 #elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
-	const signed int result = pthread_setspecific(key, value);
+	const signed int result = pthread_setspecific(key, input);
 
 	if(result)
 	{
-		fprintf(stderr, "Error in function c_utils_tls_set, function pthread_setspecific (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-		fprintf(stderr, "Error code: %d\n", result);
+		unsigned int value = (unsigned int)(result < 0 ? -result : result);
+		c_utils_size_t prefix_size = strlen("Error in function c_utils_tls_set, function pthread_setspecific failed, error code: ");
+		c_utils_size_t error_size = (result < 0) ? 2u : 1u;
+		c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
+
+		while(value >= 10u)
+		{
+			value /= 10u;
+			error_size++;
+		}
+
+		error_buffer = (c_utils_char_t *)malloc((prefix_size + error_size + 1u) * sizeof(*error_buffer));
+
+		if(!error_buffer)
+		{
+			C_UTILS_REPORT_ERROR("Error in function c_utils_tls_set, function malloc failed");
+
+			return C_UTILS_RESULT_FAILURE;
+		}
+
+		sprintf(error_buffer, "Error in function c_utils_tls_set, function pthread_setspecific failed, error code: %d", result);
+
+		C_UTILS_REPORT_ERROR(error_buffer);
+
+		free((c_utils_void_t *)error_buffer);
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -962,7 +1742,7 @@ C_UTILS_API c_utils_result_t c_utils_tls_get(c_utils_tls_key_t key, c_utils_void
 {
 	if(!output)
 	{
-		fprintf(stderr, "Error in function c_utils_tls_get, the output is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_tls_get, the output is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -981,8 +1761,31 @@ C_UTILS_API c_utils_result_t c_utils_tls_get(c_utils_tls_key_t key, c_utils_void
 
 		if(value == C_UTILS_NULL_POINTER && error != ERROR_SUCCESS)
 		{
-			fprintf(stderr, "Error in function c_utils_tls_get, function TlsGetValue (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-			fprintf(stderr, "Error code: %u\n", (c_utils_uint32_t)error);
+			DWORD value = error;
+			c_utils_size_t prefix_size = strlen("Error in function c_utils_tls_get, function TlsGetValue failed, error code: ");
+			c_utils_size_t error_size = 1u;
+			c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
+
+			while(value >= 10u)
+			{
+				value /= 10u;
+				error_size++;
+			}
+
+			error_buffer = (c_utils_char_t *)malloc((prefix_size + error_size + 1u) * sizeof(*error_buffer));
+
+			if(!error_buffer)
+			{
+				C_UTILS_REPORT_ERROR("Error in function c_utils_tls_get, function malloc failed");
+
+				return C_UTILS_RESULT_FAILURE;
+			}
+
+			sprintf(error_buffer, "Error in function c_utils_tls_get, function TlsGetValue failed, error code: %u", (c_utils_uint32_t)error);
+
+			C_UTILS_REPORT_ERROR(error_buffer);
+
+			free((c_utils_void_t *)error_buffer);
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -1003,9 +1806,31 @@ C_UTILS_API c_utils_result_t c_utils_tls_destroy(c_utils_tls_key_t key)
 	if(!TlsFree(key))
 	{
 		const DWORD error = GetLastError();
+		DWORD value = error;
+		c_utils_size_t prefix_size = strlen("Error in function c_utils_tls_destroy, function TlsFree failed, error code: ");
+		c_utils_size_t error_size = 1u;
+		c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
 
-		fprintf(stderr, "Error in function c_utils_tls_destroy, function TlsFree (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-		fprintf(stderr, "Error code: %u\n", (c_utils_uint32_t)error);
+		while(value >= 10u)
+		{
+			value /= 10u;
+			error_size++;
+		}
+
+		error_buffer = (c_utils_char_t *)malloc((prefix_size + error_size + 1u) * sizeof(*error_buffer));
+
+		if(!error_buffer)
+		{
+			C_UTILS_REPORT_ERROR("Error in function c_utils_tls_destroy, function malloc failed");
+
+			return C_UTILS_RESULT_FAILURE;
+		}
+
+		sprintf(error_buffer, "Error in function c_utils_tls_destroy, function TlsFree failed, error code: %u", (c_utils_uint32_t)error);
+
+		C_UTILS_REPORT_ERROR(error_buffer);
+
+		free((c_utils_void_t *)error_buffer);
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -1014,8 +1839,31 @@ C_UTILS_API c_utils_result_t c_utils_tls_destroy(c_utils_tls_key_t key)
 
 	if(result)
 	{
-		fprintf(stderr, "Error in function c_utils_tls_destroy, function pthread_key_delete (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-		fprintf(stderr, "Error code: %d\n", result);
+		unsigned int value = (unsigned int)(result < 0 ? -result : result);
+		c_utils_size_t prefix_size = strlen("Error in function c_utils_tls_destroy, function pthread_key_delete failed, error code: ");
+		c_utils_size_t error_size = (result < 0) ? 2u : 1u;
+		c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
+
+		while(value >= 10u)
+		{
+			value /= 10u;
+			error_size++;
+		}
+
+		error_buffer = (c_utils_char_t *)malloc((prefix_size + error_size + 1u) * sizeof(*error_buffer));
+
+		if(!error_buffer)
+		{
+			C_UTILS_REPORT_ERROR("Error in function c_utils_tls_destroy, function malloc failed");
+
+			return C_UTILS_RESULT_FAILURE;
+		}
+
+		sprintf(error_buffer, "Error in function c_utils_tls_destroy, function pthread_key_delete failed, error code: %d", result);
+
+		C_UTILS_REPORT_ERROR(error_buffer);
+
+		free((c_utils_void_t *)error_buffer);
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -1028,32 +1876,32 @@ C_UTILS_API c_utils_result_t c_utils_barrier_create(c_utils_barrier_t *const bar
 {
 	if(!barrier)
 	{
-		fprintf(stderr, "Error in function c_utils_barrier_create, the barrier is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_barrier_create, the barrier is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(count == 0)
 	{
-		fprintf(stderr, "Error in function c_utils_barrier_create, the count is zero (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_barrier_create, the count is zero");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(c_utils_mutex_create(&barrier->mutex))
 	{
-		fprintf(stderr, "Error in function c_utils_barrier_create, function c_utils_mutex_create (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_barrier_create, function c_utils_mutex_create failed");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(c_utils_condition_variable_create(&barrier->condition_variable))
 	{
-		fprintf(stderr, "Error in function c_utils_barrier_create, function c_utils_condition_variable_create (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_barrier_create, function c_utils_condition_variable_create failed");
 
 		if(c_utils_mutex_destroy(&barrier->mutex))
 		{
-			fprintf(stderr, "Error in function c_utils_barrier_create, function c_utils_mutex_destroy (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+			C_UTILS_REPORT_ERROR("Error in function c_utils_barrier_create, function c_utils_mutex_destroy failed");
 		}
 
 		return C_UTILS_RESULT_FAILURE;
@@ -1070,14 +1918,14 @@ C_UTILS_API c_utils_result_t c_utils_barrier_wait(c_utils_barrier_t *const barri
 {
 	if(!barrier)
 	{
-		fprintf(stderr, "Error in function c_utils_barrier_wait, the barrier is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_barrier_wait, the barrier is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(c_utils_mutex_lock(&barrier->mutex))
 	{
-		fprintf(stderr, "Error in function c_utils_barrier_wait, function c_utils_mutex_lock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_barrier_wait, function c_utils_mutex_lock failed");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -1093,11 +1941,11 @@ C_UTILS_API c_utils_result_t c_utils_barrier_wait(c_utils_barrier_t *const barri
 
 			if(c_utils_condition_variable_broadcast(&barrier->condition_variable))
 			{
-				fprintf(stderr, "Error in function c_utils_barrier_wait, function c_utils_condition_variable_broadcast (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+				C_UTILS_REPORT_ERROR("Error in function c_utils_barrier_wait, function c_utils_condition_variable_broadcast failed");
 
 				if(c_utils_mutex_unlock(&barrier->mutex))
 				{
-					fprintf(stderr, "Error in function c_utils_barrier_wait, function c_utils_mutex_unlock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+					C_UTILS_REPORT_ERROR("Error in function c_utils_barrier_wait, function c_utils_mutex_unlock failed");
 				}
 
 				return C_UTILS_RESULT_FAILURE;
@@ -1105,7 +1953,7 @@ C_UTILS_API c_utils_result_t c_utils_barrier_wait(c_utils_barrier_t *const barri
 
 			if(c_utils_mutex_unlock(&barrier->mutex))
 			{
-				fprintf(stderr, "Error in function c_utils_barrier_wait, function c_utils_mutex_unlock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+				C_UTILS_REPORT_ERROR("Error in function c_utils_barrier_wait, function c_utils_mutex_unlock failed");
 
 				return C_UTILS_RESULT_FAILURE;
 			}
@@ -1117,11 +1965,11 @@ C_UTILS_API c_utils_result_t c_utils_barrier_wait(c_utils_barrier_t *const barri
 		{
 			if(c_utils_condition_variable_wait(&barrier->condition_variable, &barrier->mutex))
 			{
-				fprintf(stderr, "Error in function c_utils_barrier_wait, function c_utils_condition_variable_wait (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+				C_UTILS_REPORT_ERROR("Error in function c_utils_barrier_wait, function c_utils_condition_variable_wait failed");
 
 				if(c_utils_mutex_unlock(&barrier->mutex))
 				{
-					fprintf(stderr, "Error in function c_utils_barrier_wait, function c_utils_mutex_unlock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+					C_UTILS_REPORT_ERROR("Error in function c_utils_barrier_wait, function c_utils_mutex_unlock failed");
 				}
 
 				return C_UTILS_RESULT_FAILURE;
@@ -1130,7 +1978,7 @@ C_UTILS_API c_utils_result_t c_utils_barrier_wait(c_utils_barrier_t *const barri
 
 		if(c_utils_mutex_unlock(&barrier->mutex))
 		{
-			fprintf(stderr, "Error in function c_utils_barrier_wait, function c_utils_mutex_unlock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+			C_UTILS_REPORT_ERROR("Error in function c_utils_barrier_wait, function c_utils_mutex_unlock failed");
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -1143,18 +1991,18 @@ C_UTILS_API c_utils_result_t c_utils_barrier_destroy(c_utils_barrier_t *const ba
 {
 	if(!barrier)
 	{
-		fprintf(stderr, "Error in function c_utils_barrier_destroy, the barrier is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_barrier_destroy, the barrier is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(c_utils_condition_variable_destroy(&barrier->condition_variable))
 	{
-		fprintf(stderr, "Error in function c_utils_barrier_destroy, function c_utils_condition_variable_destroy (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_barrier_destroy, function c_utils_condition_variable_destroy failed");
 
 		if(c_utils_mutex_destroy(&barrier->mutex))
 		{
-			fprintf(stderr, "Error in function c_utils_barrier_destroy, function c_utils_mutex_destroy (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+			C_UTILS_REPORT_ERROR("Error in function c_utils_barrier_destroy, function c_utils_mutex_destroy failed");
 		}
 
 		return C_UTILS_RESULT_FAILURE;
@@ -1162,7 +2010,7 @@ C_UTILS_API c_utils_result_t c_utils_barrier_destroy(c_utils_barrier_t *const ba
 
 	if(c_utils_mutex_destroy(&barrier->mutex))
 	{
-		fprintf(stderr, "Error in function c_utils_barrier_destroy, function c_utils_mutex_destroy (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_barrier_destroy, function c_utils_mutex_destroy failed");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -1170,118 +2018,25 @@ C_UTILS_API c_utils_result_t c_utils_barrier_destroy(c_utils_barrier_t *const ba
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-static c_utils_thread_function_t c_utils_thread_pool_worker(c_utils_void_t *arguments)
-{
-	c_utils_thread_pool_t *const pool = (c_utils_thread_pool_t *)arguments;
-
-	while(1)
-	{
-		if(c_utils_mutex_lock(&pool->mutex))
-		{
-			fprintf(stderr, "Error in function c_utils_thread_pool_worker, function c_utils_mutex_lock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-
-			return c_utils_thread_function_return;
-		}
-
-		else
-		{
-			c_utils_task_node_t *task;
-
-			while(!pool->head && !pool->stop)
-			{
-				if(c_utils_condition_variable_wait(&pool->condition_has_tasks, &pool->mutex))
-				{
-					fprintf(stderr, "Error in function c_utils_thread_pool_worker, function c_utils_condition_variable_wait (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-
-					if(c_utils_mutex_unlock(&pool->mutex))
-					{
-						fprintf(stderr, "Error in function c_utils_thread_pool_worker, function c_utils_mutex_unlock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-					}
-
-					return c_utils_thread_function_return;
-				}
-			}
-
-			if(pool->stop && !pool->head)
-			{
-				if(c_utils_mutex_unlock(&pool->mutex))
-				{
-					fprintf(stderr, "Error in function c_utils_thread_pool_worker, function c_utils_mutex_unlock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-				}
-
-				return c_utils_thread_function_return;
-			}
-
-			task = pool->head;
-			pool->head = task->next;
-
-			if(!pool->head)
-			{
-				pool->tail = C_UTILS_NULL_POINTER;
-			}
-
-			--pool->pending_tasks;
-			++pool->active_tasks;
-
-			if(c_utils_mutex_unlock(&pool->mutex))
-			{
-				fprintf(stderr, "Error in function c_utils_thread_pool_worker, function c_utils_mutex_unlock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-
-				free((void *)task);
-
-				return c_utils_thread_function_return;
-			}
-
-			task->function(task->arguments);
-
-			free((void *)task);
-
-			if(c_utils_mutex_lock(&pool->mutex))
-			{
-				fprintf(stderr, "Error in function c_utils_thread_pool_worker, function c_utils_mutex_lock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-
-				return c_utils_thread_function_return;
-			}
-
-			--pool->active_tasks;
-
-			if(pool->pending_tasks == 0 && pool->active_tasks == 0)
-			{
-				if(c_utils_condition_variable_broadcast(&pool->condition_idle))
-				{
-					fprintf(stderr, "Error in function c_utils_thread_pool_worker, function c_utils_condition_variable_broadcast (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-				}
-			}
-
-			if(c_utils_mutex_unlock(&pool->mutex))
-			{
-				fprintf(stderr, "Error in function c_utils_thread_pool_worker, function c_utils_mutex_unlock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-			}
-		}
-	}
-
-	return c_utils_thread_function_return;
-}
-
 C_UTILS_API c_utils_result_t c_utils_thread_pool_create(c_utils_thread_pool_t *const pool, c_utils_size_t thread_count)
 {
 	if(!pool)
 	{
-		fprintf(stderr, "Error in function c_utils_thread_pool_create, the thread pool is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_create, the thread pool is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!thread_count)
 	{
-		fprintf(stderr, "Error in function c_utils_thread_pool_create, the thread count is zero (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_create, the thread count is zero");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(thread_count > ((c_utils_size_t)-1) / sizeof(c_utils_thread_t))
 	{
-		fprintf(stderr, "Error in function c_utils_thread_pool_create, the thread count causes a size overflow (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_create, the thread count causes a size overflow");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -1295,18 +2050,18 @@ C_UTILS_API c_utils_result_t c_utils_thread_pool_create(c_utils_thread_pool_t *c
 
 	if(c_utils_mutex_create(&pool->mutex))
 	{
-		fprintf(stderr, "Error in function c_utils_thread_pool_create, function c_utils_mutex_create (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_create, function c_utils_mutex_create failed");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(c_utils_condition_variable_create(&pool->condition_has_tasks))
 	{
-		fprintf(stderr, "Error in function c_utils_thread_pool_create, function c_utils_condition_variable_create (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_create, function c_utils_condition_variable_create failed");
 
 		if(c_utils_mutex_destroy(&pool->mutex))
 		{
-			fprintf(stderr, "Error in function c_utils_thread_pool_create, function c_utils_mutex_destroy (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+			C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_create, function c_utils_mutex_destroy failed");
 		}
 
 		return C_UTILS_RESULT_FAILURE;
@@ -1314,40 +2069,40 @@ C_UTILS_API c_utils_result_t c_utils_thread_pool_create(c_utils_thread_pool_t *c
 
 	if(c_utils_condition_variable_create(&pool->condition_idle))
 	{
-		fprintf(stderr, "Error in function c_utils_thread_pool_create, function c_utils_condition_variable_create (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_create, function c_utils_condition_variable_create failed");
 
 		if(c_utils_condition_variable_destroy(&pool->condition_has_tasks))
 		{
-			fprintf(stderr, "Error in function c_utils_thread_pool_create, function c_utils_condition_variable_destroy (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+			C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_create, function c_utils_condition_variable_destroy failed");
 		}
 
 		if(c_utils_mutex_destroy(&pool->mutex))
 		{
-			fprintf(stderr, "Error in function c_utils_thread_pool_create, function c_utils_mutex_destroy (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+			C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_create, function c_utils_mutex_destroy failed");
 		}
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
-	pool->threads = (c_utils_thread_t *)malloc(sizeof(c_utils_thread_t) * thread_count);
+	pool->threads = (c_utils_thread_t *)malloc(sizeof(*pool->threads) * thread_count);
 
 	if(!pool->threads)
 	{
-		fprintf(stderr, "Error in function c_utils_thread_pool_create, malloc (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_create, function malloc failed");
 
 		if(c_utils_condition_variable_destroy(&pool->condition_idle))
 		{
-			fprintf(stderr, "Error in function c_utils_thread_pool_create, function c_utils_condition_variable_destroy (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+			C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_create, function c_utils_condition_variable_destroy failed");
 		}
 
 		if(c_utils_condition_variable_destroy(&pool->condition_has_tasks))
 		{
-			fprintf(stderr, "Error in function c_utils_thread_pool_create, function c_utils_condition_variable_destroy (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+			C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_create, function c_utils_condition_variable_destroy failed");
 		}
 
 		if(c_utils_mutex_destroy(&pool->mutex))
 		{
-			fprintf(stderr, "Error in function c_utils_thread_pool_create, function c_utils_mutex_destroy (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+			C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_create, function c_utils_mutex_destroy failed");
 		}
 
 		return C_UTILS_RESULT_FAILURE;
@@ -1363,7 +2118,7 @@ C_UTILS_API c_utils_result_t c_utils_thread_pool_create(c_utils_thread_pool_t *c
 		{
 			if(c_utils_thread_create(&pool->threads[i], c_utils_thread_pool_worker, pool))
 			{
-				fprintf(stderr, "Error in function c_utils_thread_pool_create, function c_utils_thread_create (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+				C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_create, function c_utils_thread_create failed");
 
 				if(!c_utils_mutex_lock(&pool->mutex))
 				{
@@ -1371,42 +2126,42 @@ C_UTILS_API c_utils_result_t c_utils_thread_pool_create(c_utils_thread_pool_t *c
 
 					if(c_utils_condition_variable_broadcast(&pool->condition_has_tasks))
 					{
-						fprintf(stderr, "Error in function c_utils_thread_pool_create, function c_utils_condition_variable_broadcast (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+						C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_create, function c_utils_condition_variable_broadcast failed");
 					}
 
 					if(c_utils_mutex_unlock(&pool->mutex))
 					{
-						fprintf(stderr, "Error in function c_utils_thread_pool_create, function c_utils_mutex_unlock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+						C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_create, function c_utils_mutex_unlock failed");
 					}
 				}
 				else
 				{
-					fprintf(stderr, "Error in function c_utils_thread_pool_create, function c_utils_mutex_lock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+					C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_create, function c_utils_mutex_lock failed");
 				}
 
 				for(j = 0u; j < created_threads; ++j)
 				{
 					if(c_utils_thread_join(pool->threads[j]))
 					{
-						fprintf(stderr, "Error in function c_utils_thread_pool_create, function c_utils_thread_join (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+						C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_create, function c_utils_thread_join failed");
 					}
 				}
 
-				free((void *)pool->threads);
+				free((c_utils_void_t *)pool->threads);
 
 				if(c_utils_condition_variable_destroy(&pool->condition_idle))
 				{
-					fprintf(stderr, "Error in function c_utils_thread_pool_create, function c_utils_condition_variable_destroy (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+					C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_create, function c_utils_condition_variable_destroy failed");
 				}
 
 				if(c_utils_condition_variable_destroy(&pool->condition_has_tasks))
 				{
-					fprintf(stderr, "Error in function c_utils_thread_pool_create, function c_utils_condition_variable_destroy (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+					C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_create, function c_utils_condition_variable_destroy failed");
 				}
 
 				if(c_utils_mutex_destroy(&pool->mutex))
 				{
-					fprintf(stderr, "Error in function c_utils_thread_pool_create, function c_utils_mutex_destroy (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+					C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_create, function c_utils_mutex_destroy failed");
 				}
 
 				return C_UTILS_RESULT_FAILURE;
@@ -1423,25 +2178,25 @@ C_UTILS_API c_utils_result_t c_utils_thread_pool_add_task(c_utils_thread_pool_t 
 {
 	if(!pool)
 	{
-		fprintf(stderr, "Error in function c_utils_thread_pool_add_task, the thread pool is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_add_task, the thread pool is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!function)
 	{
-		fprintf(stderr, "Error in function c_utils_thread_pool_add_task, the function is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_add_task, the function is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	else
 	{
-		c_utils_task_node_t *node = (c_utils_task_node_t *)malloc(sizeof(c_utils_task_node_t));
+		c_utils_task_node_t *node = (c_utils_task_node_t *)malloc(sizeof(*node));
 
 		if(!node)
 		{
-			fprintf(stderr, "Error in function c_utils_thread_pool_add_task, malloc (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+			C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_add_task, function malloc failed");
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -1452,9 +2207,9 @@ C_UTILS_API c_utils_result_t c_utils_thread_pool_add_task(c_utils_thread_pool_t 
 
 		if(c_utils_mutex_lock(&pool->mutex))
 		{
-			fprintf(stderr, "Error in function c_utils_thread_pool_add_task, function c_utils_mutex_lock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+			C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_add_task, function c_utils_mutex_lock failed");
 
-			free((void *)node);
+			free((c_utils_void_t *)node);
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -1463,10 +2218,10 @@ C_UTILS_API c_utils_result_t c_utils_thread_pool_add_task(c_utils_thread_pool_t 
 		{
 			if(c_utils_mutex_unlock(&pool->mutex))
 			{
-				fprintf(stderr, "Error in function c_utils_thread_pool_add_task, function c_utils_mutex_unlock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+				C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_add_task, function c_utils_mutex_unlock failed");
 			}
 
-			free((void *)node);
+			free((c_utils_void_t *)node);
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -1489,7 +2244,7 @@ C_UTILS_API c_utils_result_t c_utils_thread_pool_add_task(c_utils_thread_pool_t 
 		{
 			c_utils_task_node_t *current = pool->head;
 
-			fprintf(stderr, "Error in function c_utils_thread_pool_add_task, function c_utils_condition_variable_signal (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+			C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_add_task, function c_utils_condition_variable_signal failed");
 
 			if(current == node)
 			{
@@ -1512,19 +2267,19 @@ C_UTILS_API c_utils_result_t c_utils_thread_pool_add_task(c_utils_thread_pool_t 
 
 			if(c_utils_mutex_unlock(&pool->mutex))
 			{
-				fprintf(stderr, "Error in function c_utils_thread_pool_add_task, function c_utils_mutex_unlock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+				C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_add_task, function c_utils_mutex_unlock failed");
 			}
 
-			free((void *)node);
+			free((c_utils_void_t *)node);
 
 			return C_UTILS_RESULT_FAILURE;
 		}
 
 		if(c_utils_mutex_unlock(&pool->mutex))
 		{
-			fprintf(stderr, "Error in function c_utils_thread_pool_add_task, function c_utils_mutex_unlock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+			C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_add_task, function c_utils_mutex_unlock failed");
 
-			free((void *)node);
+			free((c_utils_void_t *)node);
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -1537,14 +2292,14 @@ C_UTILS_API c_utils_result_t c_utils_thread_pool_wait(c_utils_thread_pool_t *con
 {
 	if(!pool)
 	{
-		fprintf(stderr, "Error in function c_utils_thread_pool_wait, the thread pool is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_wait, the thread pool is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(c_utils_mutex_lock(&pool->mutex))
 	{
-		fprintf(stderr, "Error in function c_utils_thread_pool_wait, function c_utils_mutex_lock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_wait, function c_utils_mutex_lock failed");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -1553,11 +2308,11 @@ C_UTILS_API c_utils_result_t c_utils_thread_pool_wait(c_utils_thread_pool_t *con
 	{
 		if(c_utils_condition_variable_wait(&pool->condition_idle, &pool->mutex))
 		{
-			fprintf(stderr, "Error in function c_utils_thread_pool_wait, function c_utils_condition_variable_wait (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+			C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_wait, function c_utils_condition_variable_wait failed");
 
 			if(c_utils_mutex_unlock(&pool->mutex))
 			{
-				fprintf(stderr, "Error in function c_utils_thread_pool_wait, function c_utils_mutex_unlock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+				C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_wait, function c_utils_mutex_unlock failed");
 			}
 
 			return C_UTILS_RESULT_FAILURE;
@@ -1566,7 +2321,7 @@ C_UTILS_API c_utils_result_t c_utils_thread_pool_wait(c_utils_thread_pool_t *con
 
 	if(c_utils_mutex_unlock(&pool->mutex))
 	{
-		fprintf(stderr, "Error in function c_utils_thread_pool_wait, function c_utils_mutex_unlock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_wait, function c_utils_mutex_unlock failed");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -1578,14 +2333,14 @@ C_UTILS_API c_utils_result_t c_utils_thread_pool_clear(c_utils_thread_pool_t *co
 {
 	if(!pool)
 	{
-		fprintf(stderr, "Error in function c_utils_thread_pool_clear, the thread pool is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_clear, the thread pool is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(c_utils_mutex_lock(&pool->mutex))
 	{
-		fprintf(stderr, "Error in function c_utils_thread_pool_clear, function c_utils_mutex_lock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_clear, function c_utils_mutex_lock failed");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -1599,7 +2354,7 @@ C_UTILS_API c_utils_result_t c_utils_thread_pool_clear(c_utils_thread_pool_t *co
 			c_utils_task_node_t *temporary = current;
 			current = current->next;
 
-			free((void *)temporary);
+			free((c_utils_void_t *)temporary);
 		}
 
 		pool->head = C_UTILS_NULL_POINTER;
@@ -1610,11 +2365,11 @@ C_UTILS_API c_utils_result_t c_utils_thread_pool_clear(c_utils_thread_pool_t *co
 		{
 			if(c_utils_condition_variable_broadcast(&pool->condition_idle))
 			{
-				fprintf(stderr, "Error in function c_utils_thread_pool_clear, function c_utils_condition_variable_broadcast (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+				C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_clear, function c_utils_condition_variable_broadcast failed");
 
 				if(c_utils_mutex_unlock(&pool->mutex))
 				{
-					fprintf(stderr, "Error in function c_utils_thread_pool_clear, function c_utils_mutex_unlock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+					C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_clear, function c_utils_mutex_unlock failed");
 				}
 
 				return C_UTILS_RESULT_FAILURE;
@@ -1623,7 +2378,7 @@ C_UTILS_API c_utils_result_t c_utils_thread_pool_clear(c_utils_thread_pool_t *co
 
 		if(c_utils_mutex_unlock(&pool->mutex))
 		{
-			fprintf(stderr, "Error in function c_utils_thread_pool_clear, function c_utils_mutex_unlock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+			C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_clear, function c_utils_mutex_unlock failed");
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -1636,21 +2391,21 @@ C_UTILS_API c_utils_result_t c_utils_thread_pool_get_pending_tasks(c_utils_threa
 {
 	if(!pool)
 	{
-		fprintf(stderr, "Error in function c_utils_thread_pool_get_pending_tasks, the thread pool is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_get_pending_tasks, the thread pool is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!output)
 	{
-		fprintf(stderr, "Error in function c_utils_thread_pool_get_pending_tasks, the output is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_get_pending_tasks, the output is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(c_utils_mutex_lock(&pool->mutex))
 	{
-		fprintf(stderr, "Error in function c_utils_thread_pool_get_pending_tasks, function c_utils_mutex_lock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_get_pending_tasks, function c_utils_mutex_lock failed");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -1659,7 +2414,7 @@ C_UTILS_API c_utils_result_t c_utils_thread_pool_get_pending_tasks(c_utils_threa
 
 	if(c_utils_mutex_unlock(&pool->mutex))
 	{
-		fprintf(stderr, "Error in function c_utils_thread_pool_get_pending_tasks, function c_utils_mutex_unlock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_get_pending_tasks, function c_utils_mutex_unlock failed");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -1671,21 +2426,21 @@ C_UTILS_API c_utils_result_t c_utils_thread_pool_get_active_tasks(c_utils_thread
 {
 	if(!pool)
 	{
-		fprintf(stderr, "Error in function c_utils_thread_pool_get_active_tasks, the thread pool is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_get_active_tasks, the thread pool is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!output)
 	{
-		fprintf(stderr, "Error in function c_utils_thread_pool_get_active_tasks, the output is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_get_active_tasks, the output is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(c_utils_mutex_lock(&pool->mutex))
 	{
-		fprintf(stderr, "Error in function c_utils_thread_pool_get_active_tasks, function c_utils_mutex_lock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_get_active_tasks, function c_utils_mutex_lock failed");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -1694,7 +2449,7 @@ C_UTILS_API c_utils_result_t c_utils_thread_pool_get_active_tasks(c_utils_thread
 
 	if(c_utils_mutex_unlock(&pool->mutex))
 	{
-		fprintf(stderr, "Error in function c_utils_thread_pool_get_active_tasks, function c_utils_mutex_unlock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_get_active_tasks, function c_utils_mutex_unlock failed");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -1706,21 +2461,21 @@ C_UTILS_API c_utils_result_t c_utils_thread_pool_get_thread_count(c_utils_thread
 {
 	if(!pool)
 	{
-		fprintf(stderr, "Error in function c_utils_thread_pool_get_thread_count, the thread pool is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_get_thread_count, the thread pool is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!output)
 	{
-		fprintf(stderr, "Error in function c_utils_thread_pool_get_thread_count, the output is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_get_thread_count, the output is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(c_utils_mutex_lock(&pool->mutex))
 	{
-		fprintf(stderr, "Error in function c_utils_thread_pool_get_thread_count, function c_utils_mutex_lock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_get_thread_count, function c_utils_mutex_lock failed");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -1729,7 +2484,7 @@ C_UTILS_API c_utils_result_t c_utils_thread_pool_get_thread_count(c_utils_thread
 
 	if(c_utils_mutex_unlock(&pool->mutex))
 	{
-		fprintf(stderr, "Error in function c_utils_thread_pool_get_thread_count, function c_utils_mutex_unlock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_get_thread_count, function c_utils_mutex_unlock failed");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -1741,14 +2496,14 @@ C_UTILS_API c_utils_result_t c_utils_thread_pool_destroy(c_utils_thread_pool_t *
 {
 	if(!pool)
 	{
-		fprintf(stderr, "Error in function c_utils_thread_pool_destroy, the thread pool is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_destroy, the thread pool is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(c_utils_mutex_lock(&pool->mutex))
 	{
-		fprintf(stderr, "Error in function c_utils_thread_pool_destroy, function c_utils_mutex_lock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_destroy, function c_utils_mutex_lock failed");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -1757,11 +2512,11 @@ C_UTILS_API c_utils_result_t c_utils_thread_pool_destroy(c_utils_thread_pool_t *
 
 	if(c_utils_condition_variable_broadcast(&pool->condition_has_tasks))
 	{
-		fprintf(stderr, "Error in function c_utils_thread_pool_destroy, function c_utils_condition_variable_broadcast (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_destroy, function c_utils_condition_variable_broadcast failed");
 
 		if(c_utils_mutex_unlock(&pool->mutex))
 		{
-			fprintf(stderr, "Error in function c_utils_thread_pool_destroy, function c_utils_mutex_unlock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+			C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_destroy, function c_utils_mutex_unlock failed");
 		}
 
 		return C_UTILS_RESULT_FAILURE;
@@ -1769,7 +2524,7 @@ C_UTILS_API c_utils_result_t c_utils_thread_pool_destroy(c_utils_thread_pool_t *
 
 	if(c_utils_mutex_unlock(&pool->mutex))
 	{
-		fprintf(stderr, "Error in function c_utils_thread_pool_destroy, function c_utils_mutex_unlock (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_destroy, function c_utils_mutex_unlock failed");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -1783,20 +2538,21 @@ C_UTILS_API c_utils_result_t c_utils_thread_pool_destroy(c_utils_thread_pool_t *
 		{
 			if(c_utils_thread_join(pool->threads[i]))
 			{
-				fprintf(stderr, "Error in function c_utils_thread_pool_destroy, function c_utils_thread_join (File: %s, Line: %d)...\n", __FILE__, __LINE__);	
+				C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_destroy, function c_utils_thread_join failed");
 			}
 		}
 
-		free((void *)pool->threads);
-		pool->threads = C_UTILS_NULL_POINTER;
+		free((c_utils_void_t *)pool->threads);
 
+		pool->threads = C_UTILS_NULL_POINTER;
 		current = pool->head;
 
 		while(current)
 		{
 			c_utils_task_node_t *temporary = current;
 			current = current->next;
-			free((void *)temporary);
+
+			free((c_utils_void_t *)temporary);
 		}
 
 		pool->head = C_UTILS_NULL_POINTER;
@@ -1806,21 +2562,21 @@ C_UTILS_API c_utils_result_t c_utils_thread_pool_destroy(c_utils_thread_pool_t *
 
 		if(c_utils_condition_variable_destroy(&pool->condition_idle))
 		{
-			fprintf(stderr, "Error in function c_utils_thread_pool_destroy, function c_utils_condition_variable_destroy (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+			C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_destroy, function c_utils_condition_variable_destroy failed");
 
 			return C_UTILS_RESULT_FAILURE;
 		}
 
 		if(c_utils_condition_variable_destroy(&pool->condition_has_tasks))
 		{
-			fprintf(stderr, "Error in function c_utils_thread_pool_destroy, function c_utils_condition_variable_destroy (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+			C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_destroy, function c_utils_condition_variable_destroy failed");
 
 			return C_UTILS_RESULT_FAILURE;
 		}
 
 		if(c_utils_mutex_destroy(&pool->mutex))
 		{
-			fprintf(stderr, "Error in function c_utils_thread_pool_destroy, function c_utils_mutex_destroy (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+			C_UTILS_REPORT_ERROR("Error in function c_utils_thread_pool_destroy, function c_utils_mutex_destroy failed");
 
 			return C_UTILS_RESULT_FAILURE;
 		}

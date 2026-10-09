@@ -4,8 +4,10 @@
 
 #ifndef C_UTILS_COMPILE
 #include "../../include/C-Utils/tmp-utls.h"
+#include "../../include/C-Utils/err-utls.h"
 #else
 #include "C-Utils/tmp-utls.h"
+#include "C-Utils/err-utls.h"
 #endif
 #include <stdio.h>
 
@@ -37,14 +39,14 @@ C_UTILS_API c_utils_result_t c_utils_generic_kelvin_to_celsius(const c_utils_voi
 {
 	if(!kelvin_value_pointer)
 	{
-		fprintf(stderr, "Error in function c_utils_generic_kelvin_to_celsius (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_generic_kelvin_to_celsius, the kelvin_value_pointer is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!celsius_value_pointer)
 	{
-		fprintf(stderr, "Error in function c_utils_generic_kelvin_to_celsius (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_generic_kelvin_to_celsius, the celsius_value_pointer is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -63,7 +65,7 @@ C_UTILS_API c_utils_result_t c_utils_generic_kelvin_to_celsius(const c_utils_voi
 
 	else
 	{
-		fprintf(stderr, "Error in function c_utils_generic_kelvin_to_celsius (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_generic_kelvin_to_celsius, the size is invalid");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -75,14 +77,14 @@ C_UTILS_API c_utils_result_t c_utils_generic_kelvin_to_fahrenheit(const c_utils_
 {
 	if(!kelvin_value_pointer)
 	{
-		fprintf(stderr, "Error in function c_utils_generic_kelvin_to_fahrenheit (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_generic_kelvin_to_fahrenheit, the kelvin_value_pointer is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!fahrenheit_value_pointer)
 	{
-		fprintf(stderr, "Error in function c_utils_generic_kelvin_to_fahrenheit (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_generic_kelvin_to_fahrenheit, the fahrenheit_value_pointer is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -101,7 +103,7 @@ C_UTILS_API c_utils_result_t c_utils_generic_kelvin_to_fahrenheit(const c_utils_
 
 	else
 	{
-		fprintf(stderr, "Error in function c_utils_generic_kelvin_to_fahrenheit (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_generic_kelvin_to_fahrenheit, the size is invalid");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -113,14 +115,14 @@ C_UTILS_API c_utils_result_t c_utils_generic_celsius_to_fahrenheit(const c_utils
 {
 	if(!celsius_value_pointer)
 	{
-		fprintf(stderr, "Error in function c_utils_generic_celsius_to_fahrenheit (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_generic_celsius_to_fahrenheit, the celsius_value_pointer is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!fahrenheit_value_pointer)
 	{
-		fprintf(stderr, "Error in function c_utils_generic_celsius_to_fahrenheit (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_generic_celsius_to_fahrenheit, the fahrenheit_value_pointer is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -139,7 +141,7 @@ C_UTILS_API c_utils_result_t c_utils_generic_celsius_to_fahrenheit(const c_utils
 
 	else
 	{
-		fprintf(stderr, "Error in function c_utils_generic_celsius_to_fahrenheit (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_generic_celsius_to_fahrenheit, the size is invalid");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -151,14 +153,14 @@ C_UTILS_API c_utils_result_t c_utils_generic_celsius_to_kelvin(const c_utils_voi
 {
 	if(!celsius_value_pointer)
 	{
-		fprintf(stderr, "Error in function c_utils_generic_celsius_to_kelvin (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_generic_celsius_to_kelvin, the celsius_value_pointer is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!kelvin_value_pointer)
 	{
-		fprintf(stderr, "Error in function c_utils_generic_celsius_to_kelvin (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_generic_celsius_to_kelvin, the kelvin_value_pointer is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -177,7 +179,7 @@ C_UTILS_API c_utils_result_t c_utils_generic_celsius_to_kelvin(const c_utils_voi
 
 	else
 	{
-		fprintf(stderr, "Error in function c_utils_generic_celsius_to_kelvin (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_generic_celsius_to_kelvin, the size is invalid");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -189,14 +191,14 @@ C_UTILS_API c_utils_result_t c_utils_generic_fahrenheit_to_celsius(const c_utils
 {
 	if(!fahrenheit_value_pointer)
 	{
-		fprintf(stderr, "Error in function c_utils_generic_fahrenheit_to_celsius (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_generic_fahrenheit_to_celsius, the fahrenheit_value_pointer is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!celsius_value_pointer)
 	{
-		fprintf(stderr, "Error in function c_utils_generic_fahrenheit_to_celsius (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_generic_fahrenheit_to_celsius, the celsius_value_pointer is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -214,8 +216,8 @@ C_UTILS_API c_utils_result_t c_utils_generic_fahrenheit_to_celsius(const c_utils
 	}
 
 	else
-	{	
-		fprintf(stderr, "Error in function c_utils_generic_fahrenheit_to_celsius (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+	{
+		C_UTILS_REPORT_ERROR("Error in function c_utils_generic_fahrenheit_to_celsius, the size is invalid");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -227,14 +229,14 @@ C_UTILS_API c_utils_result_t c_utils_generic_fahrenheit_to_kelvin(const c_utils_
 {
 	if(!fahrenheit_value_pointer)
 	{
-		fprintf(stderr, "Error in function c_utils_generic_fahrenheit_to_kelvin (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_generic_fahrenheit_to_kelvin, the fahrenheit_value_pointer is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!kelvin_value_pointer)
 	{
-		fprintf(stderr, "Error in function c_utils_generic_fahrenheit_to_kelvin (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_generic_fahrenheit_to_kelvin, the kelvin_value_pointer is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -253,7 +255,7 @@ C_UTILS_API c_utils_result_t c_utils_generic_fahrenheit_to_kelvin(const c_utils_
 
 	else
 	{
-		fprintf(stderr, "Error in function c_utils_generic_fahrenheit_to_kelvin (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_generic_fahrenheit_to_kelvin, the size is invalid");
 
 		return C_UTILS_RESULT_FAILURE;
 	}

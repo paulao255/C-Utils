@@ -4,8 +4,10 @@
 
 #ifndef C_UTILS_COMPILE
 #include "../../include/C-Utils/aud-utls.h"
+#include "../../include/C-Utils/err-utls.h"
 #else
 #include "C-Utils/aud-utls.h"
+#include "C-Utils/err-utls.h"
 #endif
 #include <stdio.h>
 #include <stdlib.h>
@@ -40,15 +42,15 @@ static c_utils_void_t c_utils_audio_capture_memory_callback(ma_device *pDevice, 
 {
 	c_utils_audio_capture_memory_t *pMem = (c_utils_audio_capture_memory_t *)pDevice->pUserData;
 
-	if(!pMem)
+	if(!pMem || !pInput)
 	{
 		return;
 	}
 
 	else
 	{
-		c_utils_size_t frames_to_copy = frameCount;
-		c_utils_size_t required_capacity = pMem->current_frames + frames_to_copy;
+		const c_utils_size_t frame_size = pMem->channels * pMem->format_size;
+		const c_utils_size_t required_capacity = pMem->current_frames + frameCount;
 
 		if(required_capacity > pMem->capacity_frames)
 		{
@@ -60,7 +62,7 @@ static c_utils_void_t c_utils_audio_capture_memory_callback(ma_device *pDevice, 
 				new_capacity *= 2;
 			}
 
-			new_data = realloc(pMem->pcm_data, new_capacity * pMem->channels * pMem->format_size);
+			new_data = realloc(pMem->pcm_data, new_capacity * frame_size);
 
 			if(new_data)
 			{
@@ -73,24 +75,26 @@ static c_utils_void_t c_utils_audio_capture_memory_callback(ma_device *pDevice, 
 				return;
 			}
 		}
+
+		memcpy((c_utils_void_t *)((unsigned char *)pMem->pcm_data + pMem->current_frames * frame_size), pInput, (c_utils_size_t)frameCount * frame_size);
+		pMem->current_frames += (c_utils_size_t)frameCount;
 	}
 
 	(c_utils_void_t)pOutput;
-	(c_utils_void_t)pInput;
 }
 
 C_UTILS_API c_utils_result_t c_utils_audio_engine_initialize(const c_utils_audio_engine_config_t *config, c_utils_audio_engine_t *engine)
 {
 	if(!config)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_engine_initialize, the config is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_engine_initialize, the config is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!engine)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_engine_initialize, the engine is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_engine_initialize, the engine is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -101,7 +105,38 @@ C_UTILS_API c_utils_result_t c_utils_audio_engine_initialize(const c_utils_audio
 
 		if(miniaudio_result != MA_SUCCESS)
 		{
-			fprintf(stderr, "Error: failed to initialize miniaudio: %s (Code: %d, File: %s, Line: %d)\n", ma_result_description(miniaudio_result), miniaudio_result, __FILE__, __LINE__);
+			const c_utils_char_t *const description = ma_result_description(miniaudio_result);
+			c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
+			c_utils_size_t prefix_size = strlen("Error in function c_utils_audio_engine_initialize, function ma_engine_init failed: ") + strlen(description) + strlen(", error code: ");
+			c_utils_size_t error_size = 1u;
+			signed int value = (signed int)miniaudio_result;
+
+			if(value < 0)
+			{
+				value = -value;
+				error_size++;
+			}
+
+			while(value >= 10)
+			{
+				value /= 10;
+				error_size++;
+			}
+
+			error_buffer = (c_utils_char_t *)malloc((prefix_size + error_size + 1u) * sizeof(*error_buffer));
+
+			if(!error_buffer)
+			{
+				C_UTILS_REPORT_ERROR("Error in function c_utils_audio_engine_initialize, function malloc failed");
+
+				return C_UTILS_RESULT_FAILURE;
+			}
+
+			sprintf(error_buffer, "Error in function c_utils_audio_engine_initialize, function ma_engine_init failed: %s, error code: %d", description, (signed int)miniaudio_result);
+
+			C_UTILS_REPORT_ERROR(error_buffer);
+
+			free((c_utils_void_t *)error_buffer);
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -114,7 +149,7 @@ C_UTILS_API c_utils_result_t c_utils_audio_engine_terminate(c_utils_audio_engine
 {
 	if(!engine)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_engine_terminate, the engine is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_engine_terminate, the engine is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -128,7 +163,7 @@ C_UTILS_API c_utils_result_t c_utils_audio_engine_config_initialize(c_utils_audi
 {
 	if(!output)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_engine_config_initialize, the output is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_engine_config_initialize, the output is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -138,25 +173,25 @@ C_UTILS_API c_utils_result_t c_utils_audio_engine_config_initialize(c_utils_audi
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-C_UTILS_API c_utils_result_t c_utils_audio_load_sound(c_utils_audio_engine_t *engine, const char *const path, c_utils_audio_sound_t *sound)
+C_UTILS_API c_utils_result_t c_utils_audio_load_sound(c_utils_audio_engine_t *engine, const c_utils_char_t *const path, c_utils_audio_sound_t *sound)
 {
 	if(!engine)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_load_sound, the engine is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_load_sound, the engine is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!path)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_load_sound, the path is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_load_sound, the path is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!sound)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_load_sound, the sound is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_load_sound, the sound is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -167,7 +202,38 @@ C_UTILS_API c_utils_result_t c_utils_audio_load_sound(c_utils_audio_engine_t *en
 
 		if(miniaudio_result != MA_SUCCESS)
 		{
-			fprintf(stderr, "Error: failed to load sound: %s (Code: %d, File: %s, Line: %d)\n", ma_result_description(miniaudio_result), miniaudio_result, __FILE__, __LINE__);
+			const c_utils_char_t *const description = ma_result_description(miniaudio_result);
+			c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
+			c_utils_size_t prefix_size = strlen("Error in function c_utils_audio_load_sound, function ma_sound_init_from_file failed: ") + strlen(description) + strlen(", error code: ");
+			c_utils_size_t error_size = 1u;
+			signed int value = (signed int)miniaudio_result;
+
+			if(value < 0)
+			{
+				value = -value;
+				error_size++;
+			}
+
+			while(value >= 10)
+			{
+				value /= 10;
+				error_size++;
+			}
+
+			error_buffer = (c_utils_char_t *)malloc((prefix_size + error_size + 1u) * sizeof(*error_buffer));
+
+			if(!error_buffer)
+			{
+				C_UTILS_REPORT_ERROR("Error in function c_utils_audio_load_sound, function malloc failed");
+
+				return C_UTILS_RESULT_FAILURE;
+			}
+
+			sprintf(error_buffer, "Error in function c_utils_audio_load_sound, function ma_sound_init_from_file failed: %s, error code: %d", description, (signed int)miniaudio_result);
+
+			C_UTILS_REPORT_ERROR(error_buffer);
+
+			free((c_utils_void_t *)error_buffer);
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -180,7 +246,7 @@ C_UTILS_API c_utils_result_t c_utils_audio_unload_sound(c_utils_audio_sound_t *s
 {
 	if(!sound)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_unload_sound, the sound is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_unload_sound, the sound is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -194,7 +260,7 @@ C_UTILS_API c_utils_result_t c_utils_audio_start_sound(c_utils_audio_sound_t *so
 {
 	if(!sound)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_start_sound, the sound is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_start_sound, the sound is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -205,7 +271,38 @@ C_UTILS_API c_utils_result_t c_utils_audio_start_sound(c_utils_audio_sound_t *so
 
 		if(miniaudio_result != MA_SUCCESS)
 		{
-			fprintf(stderr, "Error: failed to start sound: %s (Code: %d, File: %s, Line: %d)\n", ma_result_description(miniaudio_result), miniaudio_result, __FILE__, __LINE__);
+			const c_utils_char_t *const description = ma_result_description(miniaudio_result);
+			c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
+			c_utils_size_t prefix_size = strlen("Error in function c_utils_audio_start_sound, function ma_sound_start failed: ") + strlen(description) + strlen(", error code: ");
+			c_utils_size_t error_size = 1u;
+			signed int value = (signed int)miniaudio_result;
+
+			if(value < 0)
+			{
+				value = -value;
+				error_size++;
+			}
+
+			while(value >= 10)
+			{
+				value /= 10;
+				error_size++;
+			}
+
+			error_buffer = (c_utils_char_t *)malloc((prefix_size + error_size + 1u) * sizeof(*error_buffer));
+
+			if(!error_buffer)
+			{
+				C_UTILS_REPORT_ERROR("Error in function c_utils_audio_start_sound, function malloc failed");
+
+				return C_UTILS_RESULT_FAILURE;
+			}
+
+			sprintf(error_buffer, "Error in function c_utils_audio_start_sound, function ma_sound_start failed: %s, error code: %d", description, (signed int)miniaudio_result);
+
+			C_UTILS_REPORT_ERROR(error_buffer);
+
+			free((c_utils_void_t *)error_buffer);
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -218,7 +315,7 @@ C_UTILS_API c_utils_result_t c_utils_audio_stop_sound(c_utils_audio_sound_t *sou
 {
 	if(!sound)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_stop_sound, the sound is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_stop_sound, the sound is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -229,7 +326,38 @@ C_UTILS_API c_utils_result_t c_utils_audio_stop_sound(c_utils_audio_sound_t *sou
 
 		if(miniaudio_result != MA_SUCCESS)
 		{
-			fprintf(stderr, "Error: failed to stop sound: %s (Code: %d, File: %s, Line: %d)\n", ma_result_description(miniaudio_result), miniaudio_result, __FILE__, __LINE__);
+			const c_utils_char_t *const description = ma_result_description(miniaudio_result);
+			c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
+			c_utils_size_t prefix_size = strlen("Error in function c_utils_audio_stop_sound, function ma_sound_stop failed: ") + strlen(description) + strlen(", error code: ");
+			c_utils_size_t error_size = 1u;
+			signed int value = (signed int)miniaudio_result;
+
+			if(value < 0)
+			{
+				value = -value;
+				error_size++;
+			}
+
+			while(value >= 10)
+			{
+				value /= 10;
+				error_size++;
+			}
+
+			error_buffer = (c_utils_char_t *)malloc((prefix_size + error_size + 1u) * sizeof(*error_buffer));
+
+			if(!error_buffer)
+			{
+				C_UTILS_REPORT_ERROR("Error in function c_utils_audio_stop_sound, function malloc failed");
+
+				return C_UTILS_RESULT_FAILURE;
+			}
+
+			sprintf(error_buffer, "Error in function c_utils_audio_stop_sound, function ma_sound_stop failed: %s, error code: %d", description, (signed int)miniaudio_result);
+
+			C_UTILS_REPORT_ERROR(error_buffer);
+
+			free((c_utils_void_t *)error_buffer);
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -242,7 +370,7 @@ C_UTILS_API c_utils_result_t c_utils_audio_set_volume(c_utils_audio_sound_t *sou
 {
 	if(!sound)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_set_volume, the sound is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_set_volume, the sound is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -256,14 +384,14 @@ C_UTILS_API c_utils_result_t c_utils_audio_get_volume(c_utils_audio_sound_t *sou
 {
 	if(!sound)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_get_volume, the sound is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_get_volume, the sound is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!output)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_get_volume, the output is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_get_volume, the output is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -277,7 +405,7 @@ C_UTILS_API c_utils_result_t c_utils_audio_sound_seek_to_pcm_frame(c_utils_audio
 {
 	if(!sound)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_sound_seek_to_pcm_frame, the sound is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_sound_seek_to_pcm_frame, the sound is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -288,7 +416,38 @@ C_UTILS_API c_utils_result_t c_utils_audio_sound_seek_to_pcm_frame(c_utils_audio
 
 		if(miniaudio_result != MA_SUCCESS)
 		{
-			fprintf(stderr, "Error: failed to seek to pcm frame: %s (Code: %d, File: %s, Line: %d)\n", ma_result_description(miniaudio_result), miniaudio_result, __FILE__, __LINE__);
+			const c_utils_char_t *const description = ma_result_description(miniaudio_result);
+			c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
+			c_utils_size_t prefix_size = strlen("Error in function c_utils_audio_sound_seek_to_pcm_frame, function ma_sound_seek_to_pcm_frame failed: ") + strlen(description) + strlen(", error code: ");
+			c_utils_size_t error_size = 1u;
+			signed int value = (signed int)miniaudio_result;
+
+			if(value < 0)
+			{
+				value = -value;
+				error_size++;
+			}
+
+			while(value >= 10)
+			{
+				value /= 10;
+				error_size++;
+			}
+
+			error_buffer = (c_utils_char_t *)malloc((prefix_size + error_size + 1u) * sizeof(*error_buffer));
+
+			if(!error_buffer)
+			{
+				C_UTILS_REPORT_ERROR("Error in function c_utils_audio_sound_seek_to_pcm_frame, function malloc failed");
+
+				return C_UTILS_RESULT_FAILURE;
+			}
+
+			sprintf(error_buffer, "Error in function c_utils_audio_sound_seek_to_pcm_frame, function ma_sound_seek_to_pcm_frame failed: %s, error code: %d", description, (signed int)miniaudio_result);
+
+			C_UTILS_REPORT_ERROR(error_buffer);
+
+			free((c_utils_void_t *)error_buffer);
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -301,14 +460,14 @@ C_UTILS_API c_utils_result_t c_utils_audio_get_cursor_in_pcm_frames(c_utils_audi
 {
 	if(!sound)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_get_cursor_in_pcm_frames, the sound is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_get_cursor_in_pcm_frames, the sound is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!output)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_get_cursor_in_pcm_frames, the output is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_get_cursor_in_pcm_frames, the output is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -319,7 +478,38 @@ C_UTILS_API c_utils_result_t c_utils_audio_get_cursor_in_pcm_frames(c_utils_audi
 
 		if(miniaudio_result != MA_SUCCESS)
 		{
-			fprintf(stderr, "Error: failed to get cursor in pcm frames: %s (Code: %d, File: %s, Line: %d)\n", ma_result_description(miniaudio_result), miniaudio_result, __FILE__, __LINE__);
+			const c_utils_char_t *const description = ma_result_description(miniaudio_result);
+			c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
+			c_utils_size_t prefix_size = strlen("Error in function c_utils_audio_get_cursor_in_pcm_frames, function ma_sound_get_cursor_in_pcm_frames failed: ") + strlen(description) + strlen(", error code: ");
+			c_utils_size_t error_size = 1u;
+			signed int value = (signed int)miniaudio_result;
+
+			if(value < 0)
+			{
+				value = -value;
+				error_size++;
+			}
+
+			while(value >= 10)
+			{
+				value /= 10;
+				error_size++;
+			}
+
+			error_buffer = (c_utils_char_t *)malloc((prefix_size + error_size + 1u) * sizeof(*error_buffer));
+
+			if(!error_buffer)
+			{
+				C_UTILS_REPORT_ERROR("Error in function c_utils_audio_get_cursor_in_pcm_frames, function malloc failed");
+
+				return C_UTILS_RESULT_FAILURE;
+			}
+
+			sprintf(error_buffer, "Error in function c_utils_audio_get_cursor_in_pcm_frames, function ma_sound_get_cursor_in_pcm_frames failed: %s, error code: %d", description, (signed int)miniaudio_result);
+
+			C_UTILS_REPORT_ERROR(error_buffer);
+
+			free((c_utils_void_t *)error_buffer);
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -332,7 +522,7 @@ C_UTILS_API c_utils_result_t c_utils_audio_sound_set_looping(c_utils_audio_sound
 {
 	if(!sound)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_sound_set_looping, the sound is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_sound_set_looping, the sound is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -346,7 +536,7 @@ C_UTILS_API c_utils_result_t c_utils_audio_engine_listener_set_position(c_utils_
 {
 	if(!engine)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_engine_listener_set_position, the engine is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_engine_listener_set_position, the engine is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -360,7 +550,7 @@ C_UTILS_API c_utils_result_t c_utils_audio_engine_listener_set_direction(c_utils
 {
 	if(!engine)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_engine_listener_set_direction, the engine is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_engine_listener_set_direction, the engine is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -374,7 +564,7 @@ C_UTILS_API c_utils_result_t c_utils_audio_engine_listener_set_velocity(c_utils_
 {
 	if(!engine)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_engine_listener_set_velocity, the engine is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_engine_listener_set_velocity, the engine is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -388,7 +578,7 @@ C_UTILS_API c_utils_result_t c_utils_audio_sound_set_spatialization_enabled(c_ut
 {
 	if(!sound)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_sound_set_spatialization_enabled, the sound is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_sound_set_spatialization_enabled, the sound is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -402,7 +592,7 @@ C_UTILS_API c_utils_result_t c_utils_audio_sound_set_position(c_utils_audio_soun
 {
 	if(!sound)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_sound_set_position, the sound is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_sound_set_position, the sound is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -416,7 +606,7 @@ C_UTILS_API c_utils_result_t c_utils_audio_sound_set_direction(c_utils_audio_sou
 {
 	if(!sound)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_sound_set_direction, the sound is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_sound_set_direction, the sound is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -430,7 +620,7 @@ C_UTILS_API c_utils_result_t c_utils_audio_sound_set_velocity(c_utils_audio_soun
 {
 	if(!sound)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_sound_set_velocity, the sound is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_sound_set_velocity, the sound is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -444,7 +634,7 @@ C_UTILS_API c_utils_result_t c_utils_audio_sound_set_pitch(c_utils_audio_sound_t
 {
 	if(!sound)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_sound_set_pitch, the sound is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_sound_set_pitch, the sound is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -458,7 +648,7 @@ C_UTILS_API c_utils_result_t c_utils_audio_sound_set_pan(c_utils_audio_sound_t *
 {
 	if(!sound)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_sound_set_pan, the sound is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_sound_set_pan, the sound is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -472,14 +662,14 @@ C_UTILS_API c_utils_result_t c_utils_audio_sound_is_playing(c_utils_audio_sound_
 {
 	if(!sound)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_sound_is_playing, the sound is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_sound_is_playing, the sound is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!output)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_sound_is_playing, the output is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_sound_is_playing, the output is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -493,14 +683,14 @@ C_UTILS_API c_utils_result_t c_utils_audio_sound_is_at_end(c_utils_audio_sound_t
 {
 	if(!sound)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_sound_is_at_end, the sound is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_sound_is_at_end, the sound is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!output)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_sound_is_at_end, the output is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_sound_is_at_end, the output is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -514,14 +704,14 @@ C_UTILS_API c_utils_result_t c_utils_audio_sound_get_length_in_pcm_frames(c_util
 {
 	if(!sound)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_sound_get_length_in_pcm_frames, the sound is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_sound_get_length_in_pcm_frames, the sound is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!output)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_sound_get_length_in_pcm_frames, the output is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_sound_get_length_in_pcm_frames, the output is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -532,7 +722,38 @@ C_UTILS_API c_utils_result_t c_utils_audio_sound_get_length_in_pcm_frames(c_util
 
 		if(miniaudio_result != MA_SUCCESS)
 		{
-			fprintf(stderr, "Error: failed to get length in pcm frames: %s (Code: %d, File: %s, Line: %d)\n", ma_result_description(miniaudio_result), miniaudio_result, __FILE__, __LINE__);
+			const c_utils_char_t *const description = ma_result_description(miniaudio_result);
+			c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
+			c_utils_size_t prefix_size = strlen("Error in function c_utils_audio_sound_get_length_in_pcm_frames, function ma_sound_get_length_in_pcm_frames failed: ") + strlen(description) + strlen(", error code: ");
+			c_utils_size_t error_size = 1u;
+			signed int value = (signed int)miniaudio_result;
+
+			if(value < 0)
+			{
+				value = -value;
+				error_size++;
+			}
+
+			while(value >= 10)
+			{
+				value /= 10;
+				error_size++;
+			}
+
+			error_buffer = (c_utils_char_t *)malloc((prefix_size + error_size + 1u) * sizeof(*error_buffer));
+
+			if(!error_buffer)
+			{
+				C_UTILS_REPORT_ERROR("Error in function c_utils_audio_sound_get_length_in_pcm_frames, function malloc failed");
+
+				return C_UTILS_RESULT_FAILURE;
+			}
+
+			sprintf(error_buffer, "Error in function c_utils_audio_sound_get_length_in_pcm_frames, function ma_sound_get_length_in_pcm_frames failed: %s, error code: %d", description, (signed int)miniaudio_result);
+
+			C_UTILS_REPORT_ERROR(error_buffer);
+
+			free((c_utils_void_t *)error_buffer);
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -545,14 +766,14 @@ C_UTILS_API c_utils_result_t c_utils_audio_sound_group_initialize(c_utils_audio_
 {
 	if(!engine)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_sound_group_initialize, the engine is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_sound_group_initialize, the engine is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!group)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_sound_group_initialize, the group is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_sound_group_initialize, the group is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -563,7 +784,38 @@ C_UTILS_API c_utils_result_t c_utils_audio_sound_group_initialize(c_utils_audio_
 
 		if(miniaudio_result != MA_SUCCESS)
 		{
-			fprintf(stderr, "Error: failed to initialize sound group: %s (Code: %d, File: %s, Line: %d)\n", ma_result_description(miniaudio_result), miniaudio_result, __FILE__, __LINE__);
+			const c_utils_char_t *const description = ma_result_description(miniaudio_result);
+			c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
+			c_utils_size_t prefix_size = strlen("Error in function c_utils_audio_sound_group_initialize, function ma_sound_group_init failed: ") + strlen(description) + strlen(", error code: ");
+			c_utils_size_t error_size = 1u;
+			signed int value = (signed int)miniaudio_result;
+
+			if(value < 0)
+			{
+				value = -value;
+				error_size++;
+			}
+
+			while(value >= 10)
+			{
+				value /= 10;
+				error_size++;
+			}
+
+			error_buffer = (c_utils_char_t *)malloc((prefix_size + error_size + 1u) * sizeof(*error_buffer));
+
+			if(!error_buffer)
+			{
+				C_UTILS_REPORT_ERROR("Error in function c_utils_audio_sound_group_initialize, function malloc failed");
+
+				return C_UTILS_RESULT_FAILURE;
+			}
+
+			sprintf(error_buffer, "Error in function c_utils_audio_sound_group_initialize, function ma_sound_group_init failed: %s, error code: %d", description, (signed int)miniaudio_result);
+
+			C_UTILS_REPORT_ERROR(error_buffer);
+
+			free((c_utils_void_t *)error_buffer);
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -576,7 +828,7 @@ C_UTILS_API c_utils_result_t c_utils_audio_sound_group_terminate(c_utils_audio_s
 {
 	if(!group)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_sound_group_terminate, the group is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_sound_group_terminate, the group is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -590,7 +842,7 @@ C_UTILS_API c_utils_result_t c_utils_audio_sound_group_set_volume(c_utils_audio_
 {
 	if(!group)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_sound_group_set_volume, the group is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_sound_group_set_volume, the group is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -600,32 +852,32 @@ C_UTILS_API c_utils_result_t c_utils_audio_sound_group_set_volume(c_utils_audio_
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-C_UTILS_API c_utils_result_t c_utils_audio_load_sound_into_group(c_utils_audio_engine_t *engine, const char *const path, c_utils_audio_sound_group_t *group, c_utils_audio_sound_t *sound)
+C_UTILS_API c_utils_result_t c_utils_audio_load_sound_into_group(c_utils_audio_engine_t *engine, const c_utils_char_t *const path, c_utils_audio_sound_group_t *group, c_utils_audio_sound_t *sound)
 {
 	if(!engine)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_load_sound_into_group, the engine is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_load_sound_into_group, the engine is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!path)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_load_sound_into_group, the path is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_load_sound_into_group, the path is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!group)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_load_sound_into_group, the group is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_load_sound_into_group, the group is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!sound)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_load_sound_into_group, the sound is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_load_sound_into_group, the sound is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -636,7 +888,38 @@ C_UTILS_API c_utils_result_t c_utils_audio_load_sound_into_group(c_utils_audio_e
 
 		if(miniaudio_result != MA_SUCCESS)
 		{
-			fprintf(stderr, "Error: failed to load sound: %s (Code: %d, File: %s, Line: %d)\n", ma_result_description(miniaudio_result), miniaudio_result, __FILE__, __LINE__);
+			const c_utils_char_t *const description = ma_result_description(miniaudio_result);
+			c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
+			c_utils_size_t prefix_size = strlen("Error in function c_utils_audio_load_sound_into_group, function ma_sound_init_from_file failed: ") + strlen(description) + strlen(", error code: ");
+			c_utils_size_t error_size = 1u;
+			signed int value = (signed int)miniaudio_result;
+
+			if(value < 0)
+			{
+				value = -value;
+				error_size++;
+			}
+
+			while(value >= 10)
+			{
+				value /= 10;
+				error_size++;
+			}
+
+			error_buffer = (c_utils_char_t *)malloc((prefix_size + error_size + 1u) * sizeof(*error_buffer));
+
+			if(!error_buffer)
+			{
+				C_UTILS_REPORT_ERROR("Error in function c_utils_audio_load_sound_into_group, function malloc failed");
+
+				return C_UTILS_RESULT_FAILURE;
+			}
+
+			sprintf(error_buffer, "Error in function c_utils_audio_load_sound_into_group, function ma_sound_init_from_file failed: %s, error code: %d", description, (signed int)miniaudio_result);
+
+			C_UTILS_REPORT_ERROR(error_buffer);
+
+			free((c_utils_void_t *)error_buffer);
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -649,21 +932,21 @@ C_UTILS_API c_utils_result_t c_utils_audio_decoder_initialize_from_memory(const 
 {
 	if(!data)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_decoder_initialize_from_memory, the data is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_decoder_initialize_from_memory, the data is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!data_size)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_decoder_initialize_from_memory, the data_size is 0 (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_decoder_initialize_from_memory, the data_size == 0u");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!decoder)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_decoder_initialize_from_memory, the decoder is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_decoder_initialize_from_memory, the decoder is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -674,7 +957,38 @@ C_UTILS_API c_utils_result_t c_utils_audio_decoder_initialize_from_memory(const 
 
 		if(miniaudio_result != MA_SUCCESS)
 		{
-			fprintf(stderr, "Error: failed to initialize decoder: %s (Code: %d, File: %s, Line: %d)\n", ma_result_description(miniaudio_result), miniaudio_result, __FILE__, __LINE__);
+			const c_utils_char_t *const description = ma_result_description(miniaudio_result);
+			c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
+			c_utils_size_t prefix_size = strlen("Error in function c_utils_audio_decoder_initialize_from_memory, function ma_decoder_init_memory failed: ") + strlen(description) + strlen(", error code: ");
+			c_utils_size_t error_size = 1u;
+			signed int value = (signed int)miniaudio_result;
+
+			if(value < 0)
+			{
+				value = -value;
+				error_size++;
+			}
+
+			while(value >= 10)
+			{
+				value /= 10;
+				error_size++;
+			}
+
+			error_buffer = (c_utils_char_t *)malloc((prefix_size + error_size + 1u) * sizeof(*error_buffer));
+
+			if(!error_buffer)
+			{
+				C_UTILS_REPORT_ERROR("Error in function c_utils_audio_decoder_initialize_from_memory, function malloc failed");
+
+				return C_UTILS_RESULT_FAILURE;
+			}
+
+			sprintf(error_buffer, "Error in function c_utils_audio_decoder_initialize_from_memory, function ma_decoder_init_memory failed: %s, error code: %d", description, (signed int)miniaudio_result);
+
+			C_UTILS_REPORT_ERROR(error_buffer);
+
+			free((c_utils_void_t *)error_buffer);
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -687,7 +1001,7 @@ C_UTILS_API c_utils_result_t c_utils_audio_decoder_terminate(c_utils_audio_decod
 {
 	if(!decoder)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_decoder_terminate, the decoder is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_decoder_terminate, the decoder is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -701,21 +1015,21 @@ C_UTILS_API c_utils_result_t c_utils_audio_load_sound_from_decoder(c_utils_audio
 {
 	if(!engine)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_load_sound_from_decoder, the engine is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_load_sound_from_decoder, the engine is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!decoder)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_load_sound_from_decoder, the decoder is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_load_sound_from_decoder, the decoder is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!sound)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_load_sound_from_decoder, the sound is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_load_sound_from_decoder, the sound is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -726,7 +1040,38 @@ C_UTILS_API c_utils_result_t c_utils_audio_load_sound_from_decoder(c_utils_audio
 
 		if(miniaudio_result != MA_SUCCESS)
 		{
-			fprintf(stderr, "Error: failed to load sound: %s (Code: %d, File: %s, Line: %d)\n", ma_result_description(miniaudio_result), miniaudio_result, __FILE__, __LINE__);
+			const c_utils_char_t *const description = ma_result_description(miniaudio_result);
+			c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
+			c_utils_size_t prefix_size = strlen("Error in function c_utils_audio_load_sound_from_decoder, function ma_sound_init_from_data_source failed: ") + strlen(description) + strlen(", error code: ");
+			c_utils_size_t error_size = 1u;
+			signed int value = (signed int)miniaudio_result;
+
+			if(value < 0)
+			{
+				value = -value;
+				error_size++;
+			}
+
+			while(value >= 10)
+			{
+				value /= 10;
+				error_size++;
+			}
+
+			error_buffer = (c_utils_char_t *)malloc((prefix_size + error_size + 1u) * sizeof(*error_buffer));
+
+			if(!error_buffer)
+			{
+				C_UTILS_REPORT_ERROR("Error in function c_utils_audio_load_sound_from_decoder, function malloc failed");
+
+				return C_UTILS_RESULT_FAILURE;
+			}
+
+			sprintf(error_buffer, "Error in function c_utils_audio_load_sound_from_decoder, function ma_sound_init_from_data_source failed: %s, error code: %d", description, (signed int)miniaudio_result);
+
+			C_UTILS_REPORT_ERROR(error_buffer);
+
+			free((c_utils_void_t *)error_buffer);
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -739,7 +1084,7 @@ C_UTILS_API c_utils_result_t c_utils_audio_device_start(c_utils_audio_device_t *
 {
 	if(!device)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_device_start, the device is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_device_start, the device is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -750,7 +1095,38 @@ C_UTILS_API c_utils_result_t c_utils_audio_device_start(c_utils_audio_device_t *
 
 		if(miniaudio_result != MA_SUCCESS)
 		{
-			fprintf(stderr, "Error: failed to start device: %s (Code: %d, File: %s, Line: %d)\n", ma_result_description(miniaudio_result), miniaudio_result, __FILE__, __LINE__);
+			const c_utils_char_t *const description = ma_result_description(miniaudio_result);
+			c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
+			c_utils_size_t prefix_size = strlen("Error in function c_utils_audio_device_start, function ma_device_start failed: ") + strlen(description) + strlen(", error code: ");
+			c_utils_size_t error_size = 1u;
+			signed int value = (signed int)miniaudio_result;
+
+			if(value < 0)
+			{
+				value = -value;
+				error_size++;
+			}
+
+			while(value >= 10)
+			{
+				value /= 10;
+				error_size++;
+			}
+
+			error_buffer = (c_utils_char_t *)malloc((prefix_size + error_size + 1u) * sizeof(*error_buffer));
+
+			if(!error_buffer)
+			{
+				C_UTILS_REPORT_ERROR("Error in function c_utils_audio_device_start, function malloc failed");
+
+				return C_UTILS_RESULT_FAILURE;
+			}
+
+			sprintf(error_buffer, "Error in function c_utils_audio_device_start, function ma_device_start failed: %s, error code: %d", description, (signed int)miniaudio_result);
+
+			C_UTILS_REPORT_ERROR(error_buffer);
+
+			free((c_utils_void_t *)error_buffer);
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -763,7 +1139,7 @@ C_UTILS_API c_utils_result_t c_utils_audio_device_stop(c_utils_audio_device_t *d
 {
 	if(!device)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_device_stop, the device is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_device_stop, the device is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -774,7 +1150,38 @@ C_UTILS_API c_utils_result_t c_utils_audio_device_stop(c_utils_audio_device_t *d
 
 		if(miniaudio_result != MA_SUCCESS)
 		{
-			fprintf(stderr, "Error: failed to stop device: %s (Code: %d, File: %s, Line: %d)\n", ma_result_description(miniaudio_result), miniaudio_result, __FILE__, __LINE__);
+			const c_utils_char_t *const description = ma_result_description(miniaudio_result);
+			c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
+			c_utils_size_t prefix_size = strlen("Error in function c_utils_audio_device_stop, function ma_device_stop failed: ") + strlen(description) + strlen(", error code: ");
+			c_utils_size_t error_size = 1u;
+			signed int value = (signed int)miniaudio_result;
+
+			if(value < 0)
+			{
+				value = -value;
+				error_size++;
+			}
+
+			while(value >= 10)
+			{
+				value /= 10;
+				error_size++;
+			}
+
+			error_buffer = (c_utils_char_t *)malloc((prefix_size + error_size + 1u) * sizeof(*error_buffer));
+
+			if(!error_buffer)
+			{
+				C_UTILS_REPORT_ERROR("Error in function c_utils_audio_device_stop, function malloc failed");
+
+				return C_UTILS_RESULT_FAILURE;
+			}
+
+			sprintf(error_buffer, "Error in function c_utils_audio_device_stop, function ma_device_stop failed: %s, error code: %d", description, (signed int)miniaudio_result);
+
+			C_UTILS_REPORT_ERROR(error_buffer);
+
+			free((c_utils_void_t *)error_buffer);
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -787,7 +1194,7 @@ C_UTILS_API c_utils_result_t c_utils_audio_device_terminate(c_utils_audio_device
 {
 	if(!device)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_device_terminate, the device is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_device_terminate, the device is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -797,18 +1204,18 @@ C_UTILS_API c_utils_result_t c_utils_audio_device_terminate(c_utils_audio_device
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-C_UTILS_API c_utils_result_t c_utils_audio_encoder_initialize_file(const char *const path, c_utils_uint32_t sample_rate, c_utils_uint32_t channels,  c_utils_audio_encoder_t *encoder)
+C_UTILS_API c_utils_result_t c_utils_audio_encoder_initialize_file(const c_utils_char_t *const path, c_utils_uint32_t sample_rate, c_utils_uint32_t channels,  c_utils_audio_encoder_t *encoder)
 {
 	if(!path)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_encoder_initialize_file, the path is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_encoder_initialize_file, the path is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!encoder)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_encoder_initialize_file, the encoder is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_encoder_initialize_file, the encoder is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -820,7 +1227,38 @@ C_UTILS_API c_utils_result_t c_utils_audio_encoder_initialize_file(const char *c
 
 		if(miniaudio_result != MA_SUCCESS)
 		{
-			fprintf(stderr, "Error: failed to initialize encoder: %s (Code: %d, File: %s, Line: %d)\n", ma_result_description(miniaudio_result), miniaudio_result, __FILE__, __LINE__);
+			const c_utils_char_t *const description = ma_result_description(miniaudio_result);
+			c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
+			c_utils_size_t prefix_size = strlen("Error in function c_utils_audio_encoder_initialize_file, function ma_encoder_init_file failed: ") + strlen(description) + strlen(", error code: ");
+			c_utils_size_t error_size = 1u;
+			signed int value = (signed int)miniaudio_result;
+
+			if(value < 0)
+			{
+				value = -value;
+				error_size++;
+			}
+
+			while(value >= 10)
+			{
+				value /= 10;
+				error_size++;
+			}
+
+			error_buffer = (c_utils_char_t *)malloc((prefix_size + error_size + 1u) * sizeof(*error_buffer));
+
+			if(!error_buffer)
+			{
+				C_UTILS_REPORT_ERROR("Error in function c_utils_audio_encoder_initialize_file, function malloc failed");
+
+				return C_UTILS_RESULT_FAILURE;
+			}
+
+			sprintf(error_buffer, "Error in function c_utils_audio_encoder_initialize_file, function ma_encoder_init_file failed: %s, error code: %d", description, (signed int)miniaudio_result);
+
+			C_UTILS_REPORT_ERROR(error_buffer);
+
+			free((c_utils_void_t *)error_buffer);
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -833,7 +1271,7 @@ C_UTILS_API c_utils_result_t c_utils_audio_encoder_terminate(c_utils_audio_encod
 {
 	if(!encoder)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_encoder_terminate, the encoder is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_encoder_terminate, the encoder is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -847,14 +1285,14 @@ C_UTILS_API c_utils_result_t c_utils_audio_capture_device_initialize_for_encoder
 {
 	if(!encoder)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_capture_device_initialize_for_encoder, the encoder is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_capture_device_initialize_for_encoder, the encoder is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!device)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_capture_device_initialize_for_encoder, the device is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_capture_device_initialize_for_encoder, the device is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -874,7 +1312,38 @@ C_UTILS_API c_utils_result_t c_utils_audio_capture_device_initialize_for_encoder
 
 		if(miniaudio_result != MA_SUCCESS)
 		{
-			fprintf(stderr, "Error: failed to initialize device: %s (Code: %d, File: %s, Line: %d)\n", ma_result_description(miniaudio_result), miniaudio_result, __FILE__, __LINE__);
+			const c_utils_char_t *const description = ma_result_description(miniaudio_result);
+			c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
+			c_utils_size_t prefix_size = strlen("Error in function c_utils_audio_capture_device_initialize_for_encoder, function ma_device_init failed: ") + strlen(description) + strlen(", error code: ");
+			c_utils_size_t error_size = 1u;
+			signed int value = (signed int)miniaudio_result;
+
+			if(value < 0)
+			{
+				value = -value;
+				error_size++;
+			}
+
+			while(value >= 10)
+			{
+				value /= 10;
+				error_size++;
+			}
+
+			error_buffer = (c_utils_char_t *)malloc((prefix_size + error_size + 1u) * sizeof(*error_buffer));
+
+			if(!error_buffer)
+			{
+				C_UTILS_REPORT_ERROR("Error in function c_utils_audio_capture_device_initialize_for_encoder, function malloc failed");
+
+				return C_UTILS_RESULT_FAILURE;
+			}
+
+			sprintf(error_buffer, "Error in function c_utils_audio_capture_device_initialize_for_encoder, function ma_device_init failed: %s, error code: %d", description, (signed int)miniaudio_result);
+
+			C_UTILS_REPORT_ERROR(error_buffer);
+
+			free((c_utils_void_t *)error_buffer);
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -887,7 +1356,7 @@ C_UTILS_API c_utils_result_t c_utils_audio_capture_memory_initialize(c_utils_uin
 {
 	if(!memory_context)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_capture_memory_initialize, the memory context is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_capture_memory_initialize, the memory_context is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -905,7 +1374,7 @@ C_UTILS_API c_utils_result_t c_utils_audio_capture_memory_terminate(c_utils_audi
 {
 	if(!memory_context)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_capture_memory_terminate, the memory context is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_capture_memory_terminate, the memory_context is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -916,6 +1385,9 @@ C_UTILS_API c_utils_result_t c_utils_audio_capture_memory_terminate(c_utils_audi
 		memory_context->pcm_data = C_UTILS_NULL_POINTER;
 	}
 
+	memory_context->capacity_frames = 0u;
+	memory_context->current_frames = 0u;
+
 	return C_UTILS_RESULT_SUCCESS;
 }
 
@@ -923,14 +1395,14 @@ C_UTILS_API c_utils_result_t c_utils_audio_capture_device_initialize_for_memory(
 {
 	if(!memory_context)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_capture_device_initialize_for_memory, the memory context is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_capture_device_initialize_for_memory, the memory_context is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!device)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_capture_device_initialize_for_memory, the device is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_capture_device_initialize_for_memory, the device is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -950,10 +1422,45 @@ C_UTILS_API c_utils_result_t c_utils_audio_capture_device_initialize_for_memory(
 
 		if(miniaudio_result != MA_SUCCESS)
 		{
-			fprintf(stderr, "Error: failed to initialize device: %s (Code: %d, File: %s, Line: %d)\n", ma_result_description(miniaudio_result), miniaudio_result, __FILE__, __LINE__);
+			const c_utils_char_t *const description = ma_result_description(miniaudio_result);
+			c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
+			c_utils_size_t prefix_size = strlen("Error in function c_utils_audio_capture_device_initialize_for_memory, function ma_device_init failed: ") + strlen(description) + strlen(", error code: ");
+			c_utils_size_t error_size = 1u;
+			signed int value = (signed int)miniaudio_result;
+
+			if(value < 0)
+			{
+				value = -value;
+				error_size++;
+			}
+
+			while(value >= 10)
+			{
+				value /= 10;
+				error_size++;
+			}
+
+			error_buffer = (c_utils_char_t *)malloc((prefix_size + error_size + 1u) * sizeof(*error_buffer));
+
+			if(!error_buffer)
+			{
+				C_UTILS_REPORT_ERROR("Error in function c_utils_audio_capture_device_initialize_for_memory, function malloc failed");
+
+				return C_UTILS_RESULT_FAILURE;
+			}
+
+			sprintf(error_buffer, "Error in function c_utils_audio_capture_device_initialize_for_memory, function ma_device_init failed: %s, error code: %d", description, (signed int)miniaudio_result);
+
+			C_UTILS_REPORT_ERROR(error_buffer);
+
+			free((c_utils_void_t *)error_buffer);
 
 			return C_UTILS_RESULT_FAILURE;
 		}
+
+		memory_context->channels = device->capture.channels;
+		memory_context->format_size = ma_get_bytes_per_sample(device->capture.format);
+		memory_context->current_frames = 0u;
 	}
 
 	return C_UTILS_RESULT_SUCCESS;
@@ -963,7 +1470,7 @@ C_UTILS_API c_utils_result_t c_utils_audio_sound_set_fade_in_milliseconds(c_util
 {
 	if(!sound)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_sound_set_fade_in_milliseconds, the sound is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_sound_set_fade_in_milliseconds, the sound is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -977,7 +1484,7 @@ C_UTILS_API c_utils_result_t c_utils_audio_sound_set_cone(c_utils_audio_sound_t 
 {
 	if(!sound)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_sound_set_cone, the sound is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_sound_set_cone, the sound is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -991,7 +1498,7 @@ C_UTILS_API c_utils_result_t c_utils_audio_context_initialize(c_utils_audio_cont
 {
 	if(!context)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_context_initialize, the context is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_context_initialize, the context is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -1002,7 +1509,38 @@ C_UTILS_API c_utils_result_t c_utils_audio_context_initialize(c_utils_audio_cont
 
 		if(miniaudio_result != MA_SUCCESS)
 		{
-			fprintf(stderr, "Error: failed to initialize audio context: %s (Code: %d, File: %s, Line: %d)\n", ma_result_description(miniaudio_result), miniaudio_result, __FILE__, __LINE__);
+			const c_utils_char_t *const description = ma_result_description(miniaudio_result);
+			c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
+			c_utils_size_t prefix_size = strlen("Error in function c_utils_audio_context_initialize, function ma_context_init failed: ") + strlen(description) + strlen(", error code: ");
+			c_utils_size_t error_size = 1u;
+			signed int value = (signed int)miniaudio_result;
+
+			if(value < 0)
+			{
+				value = -value;
+				error_size++;
+			}
+
+			while(value >= 10)
+			{
+				value /= 10;
+				error_size++;
+			}
+
+			error_buffer = (c_utils_char_t *)malloc((prefix_size + error_size + 1u) * sizeof(*error_buffer));
+
+			if(!error_buffer)
+			{
+				C_UTILS_REPORT_ERROR("Error in function c_utils_audio_context_initialize, function malloc failed");
+
+				return C_UTILS_RESULT_FAILURE;
+			}
+
+			sprintf(error_buffer, "Error in function c_utils_audio_context_initialize, function ma_context_init failed: %s, error code: %d", description, (signed int)miniaudio_result);
+
+			C_UTILS_REPORT_ERROR(error_buffer);
+
+			free((c_utils_void_t *)error_buffer);
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -1015,7 +1553,7 @@ C_UTILS_API c_utils_result_t c_utils_audio_context_terminate(c_utils_audio_conte
 {
 	if(!context)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_context_terminate, the context is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_context_terminate, the context is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -1029,21 +1567,21 @@ C_UTILS_API c_utils_result_t c_utils_audio_get_capture_devices(c_utils_audio_con
 {
 	if(!context)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_get_capture_devices, the context is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_get_capture_devices, the context is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!devices)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_get_capture_devices, the devices is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_get_capture_devices, the devices is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!devices_count)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_get_capture_devices, the devices count is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_get_capture_devices, the devices_count is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -1062,7 +1600,38 @@ C_UTILS_API c_utils_result_t c_utils_audio_get_capture_devices(c_utils_audio_con
 
 		if(miniaudio_result != MA_SUCCESS)
 		{
-			fprintf(stderr, "Error: failed to get audio devices: %s (Code: %d, File: %s, Line: %d)\n", ma_result_description(miniaudio_result), miniaudio_result, __FILE__, __LINE__);
+			const c_utils_char_t *const description = ma_result_description(miniaudio_result);
+			c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
+			c_utils_size_t prefix_size = strlen("Error in function c_utils_audio_get_capture_devices, function ma_context_get_devices failed: ") + strlen(description) + strlen(", error code: ");
+			c_utils_size_t error_size = 1u;
+			signed int value = (signed int)miniaudio_result;
+
+			if(value < 0)
+			{
+				value = -value;
+				error_size++;
+			}
+
+			while(value >= 10)
+			{
+				value /= 10;
+				error_size++;
+			}
+
+			error_buffer = (c_utils_char_t *)malloc((prefix_size + error_size + 1u) * sizeof(*error_buffer));
+
+			if(!error_buffer)
+			{
+				C_UTILS_REPORT_ERROR("Error in function c_utils_audio_get_capture_devices, function malloc failed");
+
+				return C_UTILS_RESULT_FAILURE;
+			}
+
+			sprintf(error_buffer, "Error in function c_utils_audio_get_capture_devices, function ma_context_get_devices failed: %s, error code: %d", description, (signed int)miniaudio_result);
+
+			C_UTILS_REPORT_ERROR(error_buffer);
+
+			free((c_utils_void_t *)error_buffer);
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -1075,14 +1644,14 @@ C_UTILS_API c_utils_result_t c_utils_audio_engine_config_set_playback_device(c_u
 {
 	if(!config)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_engine_config_set_playback_device, the config is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_engine_config_set_playback_device, the config is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!device_id)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_engine_config_set_playback_device, the device id is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_engine_config_set_playback_device, the device_id is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -1096,21 +1665,21 @@ C_UTILS_API c_utils_result_t c_utils_audio_get_playback_devices(c_utils_audio_co
 {
 	if(!context)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_get_playback_devices, the context is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_get_playback_devices, the context is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!devices)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_get_playback_devices, the devices is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_get_playback_devices, the devices is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!devices_count)
 	{
-		fprintf(stderr, "Error in function c_utils_audio_get_playback_devices, the devices count is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_audio_get_playback_devices, the devices_count is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -1129,7 +1698,38 @@ C_UTILS_API c_utils_result_t c_utils_audio_get_playback_devices(c_utils_audio_co
 
 		if(miniaudio_result != MA_SUCCESS)
 		{
-			fprintf(stderr, "Error: failed to get audio devices: %s (Code: %d, File: %s, Line: %d)\n", ma_result_description(miniaudio_result), miniaudio_result, __FILE__, __LINE__);
+			const c_utils_char_t *const description = ma_result_description(miniaudio_result);
+			c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
+			c_utils_size_t prefix_size = strlen("Error in function c_utils_audio_get_playback_devices, function ma_context_get_devices failed: ") + strlen(description) + strlen(", error code: ");
+			c_utils_size_t error_size = 1u;
+			signed int value = (signed int)miniaudio_result;
+
+			if(value < 0)
+			{
+				value = -value;
+				error_size++;
+			}
+
+			while(value >= 10)
+			{
+				value /= 10;
+				error_size++;
+			}
+
+			error_buffer = (c_utils_char_t *)malloc((prefix_size + error_size + 1u) * sizeof(*error_buffer));
+
+			if(!error_buffer)
+			{
+				C_UTILS_REPORT_ERROR("Error in function c_utils_audio_get_playback_devices, function malloc failed");
+
+				return C_UTILS_RESULT_FAILURE;
+			}
+
+			sprintf(error_buffer, "Error in function c_utils_audio_get_playback_devices, function ma_context_get_devices failed: %s, error code: %d", description, (signed int)miniaudio_result);
+
+			C_UTILS_REPORT_ERROR(error_buffer);
+
+			free((c_utils_void_t *)error_buffer);
 
 			return C_UTILS_RESULT_FAILURE;
 		}

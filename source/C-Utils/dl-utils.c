@@ -4,12 +4,15 @@
 
 #ifndef C_UTILS_COMPILE
 #include "../../include/C-Utils/dl-utils.h"
+#include "../../include/C-Utils/err-utls.h"
 #else
 #include "C-Utils/dl-utils.h"
+#include "C-Utils/err-utls.h"
 #endif
 #include <stdio.h>
-#if defined(_WIN32) || defined(_WIN64)
-#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
+#include <stdlib.h>
+#include <string.h>
+#if defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
 #include <dlfcn.h>
 #endif
 
@@ -30,14 +33,14 @@ C_UTILS_API c_utils_result_t c_utils_dynamic_library_open(const c_utils_char_t *
 {
 	if(!path)
 	{
-		fprintf(stderr, "Error in function c_utils_dynamic_library_open, the path is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_dynamic_library_open, the path is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!output)
 	{
-		fprintf(stderr, "Error in function c_utils_dynamic_library_open, the output is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_dynamic_library_open, the output is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -53,8 +56,32 @@ C_UTILS_API c_utils_result_t c_utils_dynamic_library_open(const c_utils_char_t *
 
 		if(!library)
 		{
-			fprintf(stderr, "Error in function c_utils_dynamic_library_open, function LoadLibraryA (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-			fprintf(stderr, "Error code: %u\n", (c_utils_uint32_t)GetLastError());
+			const DWORD error_code = GetLastError();
+			DWORD value = error_code;
+			c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
+			c_utils_size_t prefix_size = strlen("Error in function c_utils_dynamic_library_open, function LoadLibraryA failed, error code: ");
+			c_utils_size_t error_code_size = 1u;
+
+			while(value >= 10)
+			{
+				value /= 10;
+				error_code_size++;
+			}
+
+			error_buffer = (c_utils_char_t *)malloc((prefix_size + error_code_size + 1u) * sizeof(*error_buffer));
+
+			if(!error_buffer)
+			{
+				C_UTILS_REPORT_ERROR("Error in function c_utils_dynamic_library_open, function malloc failed");
+
+				return C_UTILS_RESULT_FAILURE;
+			}
+
+			sprintf(error_buffer, "Error in function c_utils_dynamic_library_open, function LoadLibraryA failed, error code: %lu", (unsigned long)error_code);
+
+			C_UTILS_REPORT_ERROR(error_buffer);
+
+			free((c_utils_void_t *)error_buffer);
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -63,8 +90,26 @@ C_UTILS_API c_utils_result_t c_utils_dynamic_library_open(const c_utils_char_t *
 
 		if(!library)
 		{
-			fprintf(stderr, "Error in function c_utils_dynamic_library_open, function dlopen (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-			fprintf(stderr, "Error code: %s\n", dlerror());
+			const c_utils_char_t *const error = dlerror();
+			const c_utils_char_t *const safe_error = error ? error : "Unknown error";
+			c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
+			c_utils_size_t prefix_size = strlen("Error in function c_utils_dynamic_library_open, function dlopen failed, error: ");
+			c_utils_size_t error_size = strlen(safe_error);
+
+			error_buffer = (c_utils_char_t *)malloc((prefix_size + error_size + 1u) * sizeof(*error_buffer));
+
+			if(!error_buffer)
+			{
+				C_UTILS_REPORT_ERROR("Error in function c_utils_dynamic_library_open, function malloc failed");
+
+				return C_UTILS_RESULT_FAILURE;
+			}
+
+			sprintf(error_buffer, "Error in function c_utils_dynamic_library_open, function dlopen failed, error: %s", safe_error);
+
+			C_UTILS_REPORT_ERROR(error_buffer);
+
+			free((c_utils_void_t *)error_buffer);
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -80,21 +125,21 @@ C_UTILS_API c_utils_result_t c_utils_dynamic_library_load_function(const c_utils
 {
 	if(!library)
 	{
-		fprintf(stderr, "Error in function c_utils_dynamic_library_load_function, the library is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_dynamic_library_load_function, the library is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!name)
 	{
-		fprintf(stderr, "Error in function c_utils_dynamic_library_load_function, the name is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_dynamic_library_load_function, the name is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!output)
 	{
-		fprintf(stderr, "Error in function c_utils_dynamic_library_load_function, the output is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_dynamic_library_load_function, the output is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -110,23 +155,64 @@ C_UTILS_API c_utils_result_t c_utils_dynamic_library_load_function(const c_utils
 
 		if(!function)
 		{
-			fprintf(stderr, "Error in function c_utils_dynamic_library_load_function, function GetProcAddress (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-			fprintf(stderr, "Error code: %u\n", (c_utils_uint32_t)GetLastError());
+			const DWORD error_code = GetLastError();
+			DWORD value = error_code;
+			c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
+			c_utils_size_t prefix_size = strlen("Error in function c_utils_dynamic_library_load_function, function GetProcAddress failed, error code: ");
+			c_utils_size_t error_code_size = 1u;
+
+			while(value >= 10)
+			{
+				value /= 10;
+				error_code_size++;
+			}
+
+			error_buffer = (c_utils_char_t *)malloc((prefix_size + error_code_size + 1u) * sizeof(*error_buffer));
+
+			if(!error_buffer)
+			{
+				C_UTILS_REPORT_ERROR("Error in function c_utils_dynamic_library_load_function, function malloc failed");
+
+				return C_UTILS_RESULT_FAILURE;
+			}
+
+			sprintf(error_buffer, "Error in function c_utils_dynamic_library_load_function, function GetProcAddress failed, error code: %lu", (unsigned long)error_code);
+
+			C_UTILS_REPORT_ERROR(error_buffer);
+
+			free((c_utils_void_t *)error_buffer);
 
 			return C_UTILS_RESULT_FAILURE;
 		}
 #elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
-		const char *error_string;
+		const c_utils_char_t *error;
 
 		dlerror();
 
-		*(void **)&function = dlsym(library, name);
-		error_string = dlerror();
+		*(c_utils_void_t **)&function = dlsym(library, name);
+		error = dlerror();
 
-		if(error_string || !function)
+		if(error || !function)
 		{
-			fprintf(stderr, "Error in function c_utils_dynamic_library_load_function, function dlsym (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-			fprintf(stderr, "Error code: %s\n", error_string ? error_string : "Unknown error");
+			const c_utils_char_t *const safe_error = error ? error : "Unknown error";
+			c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
+			c_utils_size_t prefix_size = strlen("Error in function c_utils_dynamic_library_load_function, function dlsym failed, error: ");
+			c_utils_size_t error_size = strlen(safe_error);
+
+			error_buffer = (c_utils_char_t *)malloc((prefix_size + error_size + 1u) * sizeof(*error_buffer));
+
+			if(!error_buffer)
+			{
+				C_UTILS_REPORT_ERROR("Error in function c_utils_dynamic_library_load_function, function malloc failed");
+
+				return C_UTILS_RESULT_FAILURE;
+			}
+
+			sprintf(error_buffer, "Error in function c_utils_dynamic_library_load_function, function dlsym failed, error: %s", safe_error);
+
+			C_UTILS_REPORT_ERROR(error_buffer);
+
+			free((c_utils_void_t *)error_buffer);
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -142,7 +228,7 @@ C_UTILS_API c_utils_result_t c_utils_dynamic_library_close(const c_utils_dynamic
 {
 	if(!library)
 	{
-		fprintf(stderr, "Error in function c_utils_dynamic_library_close, the library is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_dynamic_library_close, the library is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -152,16 +238,58 @@ C_UTILS_API c_utils_result_t c_utils_dynamic_library_close(const c_utils_dynamic
 
 	if(!FreeLibrary(library))
 	{
-		fprintf(stderr, "Error in function c_utils_dynamic_library_close, function FreeLibrary (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-		fprintf(stderr, "Error code: %u\n", (c_utils_uint32_t)GetLastError());
+		const DWORD error_code = GetLastError();
+		DWORD value = error_code;
+		c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
+		c_utils_size_t prefix_size = strlen("Error in function c_utils_dynamic_library_close, function FreeLibrary failed, error code: ");
+		c_utils_size_t error_code_size = 1u;
+
+		while(value >= 10)
+		{
+			value /= 10;
+			error_code_size++;
+		}
+
+		error_buffer = (c_utils_char_t *)malloc((prefix_size + error_code_size + 1u) * sizeof(*error_buffer));
+
+		if(!error_buffer)
+		{
+			C_UTILS_REPORT_ERROR("Error in function c_utils_dynamic_library_close, function malloc failed");
+
+			return C_UTILS_RESULT_FAILURE;
+		}
+
+		sprintf(error_buffer, "Error in function c_utils_dynamic_library_close, function FreeLibrary failed, error code: %lu", (unsigned long)error_code);
+
+		C_UTILS_REPORT_ERROR(error_buffer);
+
+		free((c_utils_void_t *)error_buffer);
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 #elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
 	if(dlclose(library))
 	{
-		fprintf(stderr, "Error in function c_utils_dynamic_library_close, function dlclose (File: %s, Line: %d)...\n", __FILE__, __LINE__);
-		fprintf(stderr, "Error code: %s\n", dlerror());
+		const c_utils_char_t *const error = dlerror();
+		const c_utils_char_t *const safe_error = error ? error : "Unknown error";
+		c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
+		c_utils_size_t prefix_size = strlen("Error in function c_utils_dynamic_library_close, function dlclose failed, error: ");
+		c_utils_size_t error_size = strlen(safe_error);
+
+		error_buffer = (c_utils_char_t *)malloc((prefix_size + error_size + 1u) * sizeof(*error_buffer));
+
+		if(!error_buffer)
+		{
+			C_UTILS_REPORT_ERROR("Error in function c_utils_dynamic_library_close, function malloc failed");
+
+			return C_UTILS_RESULT_FAILURE;
+		}
+
+		sprintf(error_buffer, "Error in function c_utils_dynamic_library_close, function dlclose failed, error: %s", safe_error);
+
+		C_UTILS_REPORT_ERROR(error_buffer);
+
+		free((c_utils_void_t *)error_buffer);
 
 		return C_UTILS_RESULT_FAILURE;
 	}

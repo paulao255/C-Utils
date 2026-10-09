@@ -27,6 +27,9 @@ extern "C"
 /* Function to initialize C-Utils random. */
 C_UTILS_API c_utils_result_t c_utils_random_initialize(c_utils_void_t);
 
+/* Function to get a random buffer. */
+C_UTILS_API c_utils_result_t c_utils_random_buffer(c_utils_uint8_t *const buffer, c_utils_size_t size);
+
 /* Function to get a random 32 bits signed integer based on the minimum and maximum values. */
 C_UTILS_API c_utils_result_t c_utils_random_integer(c_utils_int32_t minimum, c_utils_int32_t maximum, c_utils_int32_t *const output);
 

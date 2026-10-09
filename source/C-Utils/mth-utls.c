@@ -4,11 +4,12 @@
 
 #ifndef C_UTILS_COMPILE
 #include "../../include/C-Utils/mth-utls.h"
+#include "../../include/C-Utils/err-utls.h"
 #else
 #include "C-Utils/mth-utls.h"
+#include "C-Utils/err-utls.h"
 #endif
 #include <math.h>
-#include <stdio.h>
 
 /********************/
 /* Import C to C++: */
@@ -32,32 +33,32 @@ const c_utils_float64_t C_UTILS_MATH_E_FLOAT64  = 2.718281828459045;
 /* Functions definitions: */
 /**************************/
 
-C_UTILS_API c_utils_result_t c_utils_generic_summation(const c_utils_void_t *const lower_bound, const c_utils_void_t *const upper_bound, const c_utils_void_t *(*const f)(const c_utils_void_t *const i, const size_t f_element_size), const size_t element_size, const c_utils_void_t *const result)
+C_UTILS_API c_utils_result_t c_utils_generic_summation(const c_utils_void_t *const lower_bound, const c_utils_void_t *const upper_bound, const c_utils_void_t *(*const f)(const c_utils_void_t *const i, const c_utils_size_t f_element_size), const c_utils_size_t element_size, const c_utils_void_t *const result)
 {
 	if(!lower_bound)
 	{
-		fprintf(stderr, "Error in function c_utils_generic_summation (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_generic_summation, the lower_bound is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!upper_bound)
 	{
-		fprintf(stderr, "Error in function c_utils_generic_summation (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_generic_summation, the upper_bound is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!f)
 	{
-		fprintf(stderr, "Error in function c_utils_generic_summation (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_generic_summation, the f is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!result)
 	{
-		fprintf(stderr, "Error in function c_utils_generic_summation (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_generic_summation, the result is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -71,7 +72,7 @@ C_UTILS_API c_utils_result_t c_utils_generic_summation(const c_utils_void_t *con
 
 		if(type_lower_bound > type_upper_bound)
 		{
-			fprintf(stderr, "Error in function c_utils_generic_summation (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+			C_UTILS_REPORT_ERROR("Error in function c_utils_generic_summation type_lower_bound is greater than type_upper_bound");
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -83,7 +84,7 @@ C_UTILS_API c_utils_result_t c_utils_generic_summation(const c_utils_void_t *con
 
 			if(!term_pointer)
 			{
-				fprintf(stderr, "Error in function c_utils_generic_summation (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+				C_UTILS_REPORT_ERROR("Error in function c_utils_generic_summation, the term_pointer is a null pointer");
 
 				return C_UTILS_RESULT_FAILURE;
 			}
@@ -96,21 +97,21 @@ C_UTILS_API c_utils_result_t c_utils_generic_summation(const c_utils_void_t *con
 
 				if(accumulator > C_UTILS_FLOAT32_MAX)
 				{
-					fprintf(stderr, "Error in function c_utils_generic_summation (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+					C_UTILS_REPORT_ERROR("Error in function c_utils_generic_summation, accumulator is greater than C_UTILS_FLOAT32_MAX");
 
 					return C_UTILS_RESULT_FAILURE;
 				}
 
 				if(accumulator < -C_UTILS_FLOAT32_MAX)
 				{
-					fprintf(stderr, "Error in function c_utils_generic_summation (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+					C_UTILS_REPORT_ERROR("Error in function c_utils_generic_summation, accumulator is less than -C_UTILS_FLOAT32_MAX");
 
 					return C_UTILS_RESULT_FAILURE;
 				}
 
 				if(previous_accumulator != 0.0f && type_term != 0.0f && accumulator == previous_accumulator && (previous_accumulator > 0.0f ? type_term > 0.0f : type_term < 0.0f))
 				{
-					fprintf(stderr, "Error in function c_utils_generic_summation (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+					C_UTILS_REPORT_ERROR("Error in function c_utils_generic_summation, overflow");
 
 					return C_UTILS_RESULT_FAILURE;
 				}
@@ -129,7 +130,7 @@ C_UTILS_API c_utils_result_t c_utils_generic_summation(const c_utils_void_t *con
 
 		if(type_lower_bound > type_upper_bound)
 		{
-			fprintf(stderr, "Error in function c_utils_generic_summation (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+			C_UTILS_REPORT_ERROR("Error in function c_utils_generic_summation type_lower_bound is greater than type_upper_bound");
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -141,7 +142,7 @@ C_UTILS_API c_utils_result_t c_utils_generic_summation(const c_utils_void_t *con
 
 			if(!term_pointer)
 			{
-				fprintf(stderr, "Error in function c_utils_generic_summation (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+				C_UTILS_REPORT_ERROR("Error in function c_utils_generic_summation, the term_pointer is a null pointer");
 
 				return C_UTILS_RESULT_FAILURE;
 			}
@@ -154,21 +155,21 @@ C_UTILS_API c_utils_result_t c_utils_generic_summation(const c_utils_void_t *con
 
 				if(accumulator > C_UTILS_FLOAT64_MAX)
 				{
-					fprintf(stderr, "Error in function c_utils_generic_summation (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+					C_UTILS_REPORT_ERROR("Error in function c_utils_generic_summation, accumulator is greater than C_UTILS_FLOAT64_MAX");
 
 					return C_UTILS_RESULT_FAILURE;
 				}
 
 				if(accumulator < -C_UTILS_FLOAT64_MAX)
 				{
-					fprintf(stderr, "Error in function c_utils_generic_summation (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+					C_UTILS_REPORT_ERROR("Error in function c_utils_generic_summation, accumulator is less than -C_UTILS_FLOAT64_MAX");
 
 					return C_UTILS_RESULT_FAILURE;
 				}
 
 				if(previous_accumulator != 0.0 && type_term != 0.0 && accumulator == previous_accumulator && (previous_accumulator > 0.0 ? type_term > 0.0 : type_term < 0.0))
 				{
-					fprintf(stderr, "Error in function c_utils_generic_summation (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+					C_UTILS_REPORT_ERROR("Error in function c_utils_generic_summation, overflow");
 
 					return C_UTILS_RESULT_FAILURE;
 				}
@@ -180,7 +181,7 @@ C_UTILS_API c_utils_result_t c_utils_generic_summation(const c_utils_void_t *con
 
 	else
 	{
-		fprintf(stderr, "Error in function c_utils_generic_summation (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_generic_summation, element_size is not supported");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -188,32 +189,32 @@ C_UTILS_API c_utils_result_t c_utils_generic_summation(const c_utils_void_t *con
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-C_UTILS_API c_utils_result_t c_utils_generic_product(const c_utils_void_t *const lower_bound, const c_utils_void_t *const upper_bound, const c_utils_void_t *(*const f)(const c_utils_void_t *const i, const size_t f_element_size), const size_t element_size, const c_utils_void_t *const result)
+C_UTILS_API c_utils_result_t c_utils_generic_product(const c_utils_void_t *const lower_bound, const c_utils_void_t *const upper_bound, const c_utils_void_t *(*const f)(const c_utils_void_t *const i, const c_utils_size_t f_element_size), const c_utils_size_t element_size, const c_utils_void_t *const result)
 {
 	if(!lower_bound)
 	{
-		fprintf(stderr, "Error in function c_utils_generic_product (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_generic_product, lower_bound is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!upper_bound)
 	{
-		fprintf(stderr, "Error in function c_utils_generic_product (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_generic_product, upper_bound is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!f)
 	{
-		fprintf(stderr, "Error in function c_utils_generic_product (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_generic_product, f is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!result)
 	{
-		fprintf(stderr, "Error in function c_utils_generic_product (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_generic_product, result is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -227,7 +228,7 @@ C_UTILS_API c_utils_result_t c_utils_generic_product(const c_utils_void_t *const
 
 		if(type_lower_bound > type_upper_bound)
 		{
-			fprintf(stderr, "Error in function c_utils_generic_product (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+			C_UTILS_REPORT_ERROR("Error in function c_utils_generic_product type_lower_bound is greater than type_upper_bound");
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -239,7 +240,7 @@ C_UTILS_API c_utils_result_t c_utils_generic_product(const c_utils_void_t *const
 
 			if(!term_pointer)
 			{
-				fprintf(stderr, "Error in function c_utils_generic_product (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+				C_UTILS_REPORT_ERROR("Error in function c_utils_generic_product, the term_pointer is a null pointer");
 
 				return C_UTILS_RESULT_FAILURE;
 			}
@@ -251,21 +252,21 @@ C_UTILS_API c_utils_result_t c_utils_generic_product(const c_utils_void_t *const
 
 				if(accumulator > C_UTILS_FLOAT32_MAX)
 				{
-					fprintf(stderr, "Error in function c_utils_generic_product (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+					C_UTILS_REPORT_ERROR("Error in function c_utils_generic_product, the accumulator is greater than C_UTILS_FLOAT32_MAX");
 
 					return C_UTILS_RESULT_FAILURE;
 				}
 
 				if(accumulator < -C_UTILS_FLOAT32_MAX)
 				{
-					fprintf(stderr, "Error in function c_utils_generic_product (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+					C_UTILS_REPORT_ERROR("Error in function c_utils_generic_product, the accumulator is less than -C_UTILS_FLOAT32_MAX");
 
 					return C_UTILS_RESULT_FAILURE;
 				}
 
 				if(type_term != 0.0f && accumulator == 0.0f)
 				{
-					fprintf(stderr, "Error in function c_utils_generic_product (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+					C_UTILS_REPORT_ERROR("Error in function c_utils_generic_product, overflow");
 
 					return C_UTILS_RESULT_FAILURE;
 				}
@@ -284,7 +285,7 @@ C_UTILS_API c_utils_result_t c_utils_generic_product(const c_utils_void_t *const
 
 		if(type_lower_bound > type_upper_bound)
 		{
-			fprintf(stderr, "Error in function c_utils_generic_product (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+			C_UTILS_REPORT_ERROR("Error in function c_utils_generic_product, type_lower_bound is greater than type_upper_bound");
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -296,7 +297,7 @@ C_UTILS_API c_utils_result_t c_utils_generic_product(const c_utils_void_t *const
 
 			if(!term_pointer)
 			{
-				fprintf(stderr, "Error in function c_utils_generic_product (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+				C_UTILS_REPORT_ERROR("Error in function c_utils_generic_product, the term_pointer is a null pointer");
 
 				return C_UTILS_RESULT_FAILURE;
 			}
@@ -308,21 +309,21 @@ C_UTILS_API c_utils_result_t c_utils_generic_product(const c_utils_void_t *const
 
 				if(accumulator > C_UTILS_FLOAT64_MAX)
 				{
-					fprintf(stderr, "Error in function c_utils_generic_product (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+					C_UTILS_REPORT_ERROR("Error in function c_utils_generic_product, the accumulator is greater than C_UTILS_FLOAT64_MAX");
 
 					return C_UTILS_RESULT_FAILURE;
 				}
 
 				if(accumulator < -C_UTILS_FLOAT64_MAX)
 				{
-					fprintf(stderr, "Error in function c_utils_generic_product (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+					C_UTILS_REPORT_ERROR("Error in function c_utils_generic_product, the accumulator is less than -C_UTILS_FLOAT64_MAX");
 
 					return C_UTILS_RESULT_FAILURE;
 				}
 
 				if(type_term != 0.0 && accumulator == 0.0)
 				{
-					fprintf(stderr, "Error in function c_utils_generic_product (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+					C_UTILS_REPORT_ERROR("Error in function c_utils_generic_product, overflow");
 
 					return C_UTILS_RESULT_FAILURE;
 				}
@@ -334,7 +335,7 @@ C_UTILS_API c_utils_result_t c_utils_generic_product(const c_utils_void_t *const
 
 	else
 	{
-		fprintf(stderr, "Error in function c_utils_generic_product (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_generic_product, the element_size is not supported");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -342,18 +343,18 @@ C_UTILS_API c_utils_result_t c_utils_generic_product(const c_utils_void_t *const
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-C_UTILS_API c_utils_result_t c_utils_generic_termial(const c_utils_void_t *const value, const size_t element_size, const c_utils_void_t *const result)
+C_UTILS_API c_utils_result_t c_utils_generic_termial(const c_utils_void_t *const value, const c_utils_size_t element_size, const c_utils_void_t *const result)
 {
 	if(!value)
 	{
-		fprintf(stderr, "Error in function c_utils_generic_termial, value is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_generic_termial, value is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!result)
 	{
-		fprintf(stderr, "Error in function c_utils_generic_termial, result is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_generic_termial, result is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -366,7 +367,7 @@ C_UTILS_API c_utils_result_t c_utils_generic_termial(const c_utils_void_t *const
 
 		if(type_value < 0.0f)
 		{
-			fprintf(stderr, "Error in function c_utils_generic_termial, value is negative (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+			C_UTILS_REPORT_ERROR("Error in function c_utils_generic_termial, value is negative");
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -377,14 +378,14 @@ C_UTILS_API c_utils_result_t c_utils_generic_termial(const c_utils_void_t *const
 
 			if(accumulator > C_UTILS_FLOAT32_MAX)
 			{
-				fprintf(stderr, "Error in function c_utils_generic_termial, accumulator is greater than C_UTILS_FLOAT32_MAX (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+				C_UTILS_REPORT_ERROR("Error in function c_utils_generic_termial, accumulator is greater than C_UTILS_FLOAT32_MAX");
 
 				return C_UTILS_RESULT_FAILURE;
 			}
 
 			if(accumulator < -C_UTILS_FLOAT32_MAX)
 			{
-				fprintf(stderr, "Error in function c_utils_generic_termial, accumulator is less than -C_UTILS_FLOAT32_MAX (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+				C_UTILS_REPORT_ERROR("Error in function c_utils_generic_termial, accumulator is less than -C_UTILS_FLOAT32_MAX");
 
 				return C_UTILS_RESULT_FAILURE;
 			}
@@ -401,7 +402,7 @@ C_UTILS_API c_utils_result_t c_utils_generic_termial(const c_utils_void_t *const
 
 		if(type_value < 0.0)
 		{
-			fprintf(stderr, "Error in function c_utils_generic_termial, value is negative (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+			C_UTILS_REPORT_ERROR("Error in function c_utils_generic_termial, value is negative");
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -412,14 +413,14 @@ C_UTILS_API c_utils_result_t c_utils_generic_termial(const c_utils_void_t *const
 
 			if(accumulator > C_UTILS_FLOAT64_MAX)
 			{
-				fprintf(stderr, "Error in function c_utils_generic_termial, accumulator is greater than C_UTILS_FLOAT64_MAX (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+				C_UTILS_REPORT_ERROR("Error in function c_utils_generic_termial, accumulator is greater than C_UTILS_FLOAT64_MAX");
 
 				return C_UTILS_RESULT_FAILURE;
 			}
 
 			if(accumulator < -C_UTILS_FLOAT64_MAX)
 			{
-				fprintf(stderr, "Error in function c_utils_generic_termial, accumulator is less than -C_UTILS_FLOAT64_MAX (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+				C_UTILS_REPORT_ERROR("Error in function c_utils_generic_termial, accumulator is less than -C_UTILS_FLOAT64_MAX");
 
 				return C_UTILS_RESULT_FAILURE;
 			}
@@ -430,7 +431,7 @@ C_UTILS_API c_utils_result_t c_utils_generic_termial(const c_utils_void_t *const
 
 	else
 	{
-		fprintf(stderr, "Error in function c_utils_generic_termial, element_size is not 4 or 8 (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_generic_termial, element_size is not supported");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -438,18 +439,18 @@ C_UTILS_API c_utils_result_t c_utils_generic_termial(const c_utils_void_t *const
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-C_UTILS_API c_utils_result_t c_utils_generic_factorial(const c_utils_void_t *const value, const size_t element_size, const c_utils_void_t *const result)
+C_UTILS_API c_utils_result_t c_utils_generic_factorial(const c_utils_void_t *const value, const c_utils_size_t element_size, const c_utils_void_t *const result)
 {
 	if(!value)
 	{
-		fprintf(stderr, "Error in function c_utils_generic_factorial, value is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_generic_factorial, the value is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!result)
 	{
-		fprintf(stderr, "Error in function c_utils_generic_factorial, result is a null pointer (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_generic_factorial, the result is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -462,7 +463,7 @@ C_UTILS_API c_utils_result_t c_utils_generic_factorial(const c_utils_void_t *con
 
 		if(type_value < 0.0f)
 		{
-			fprintf(stderr, "Error in function c_utils_generic_factorial, value is negative (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+			C_UTILS_REPORT_ERROR("Error in function c_utils_generic_factorial, the type_value is negative");
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -473,21 +474,21 @@ C_UTILS_API c_utils_result_t c_utils_generic_factorial(const c_utils_void_t *con
 
 			if(accumulator > C_UTILS_FLOAT32_MAX)
 			{
-				fprintf(stderr, "Error in function c_utils_generic_factorial, accumulator is greater than C_UTILS_FLOAT32_MAX (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+				C_UTILS_REPORT_ERROR("Error in function c_utils_generic_factorial, the accumulator is greater than C_UTILS_FLOAT32_MAX");
 
 				return C_UTILS_RESULT_FAILURE;
 			}
 
 			if(accumulator < -C_UTILS_FLOAT32_MAX)
 			{
-				fprintf(stderr, "Error in function c_utils_generic_factorial, accumulator is less than -C_UTILS_FLOAT32_MAX (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+				C_UTILS_REPORT_ERROR("Error in function c_utils_generic_factorial, the accumulator is less than -C_UTILS_FLOAT32_MAX");
 
 				return C_UTILS_RESULT_FAILURE;
 			}
 
 			if(accumulator == 0.0f)
 			{
-				fprintf(stderr, "Error in function c_utils_generic_factorial, accumulator is equal to zero (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+				C_UTILS_REPORT_ERROR("Error in function c_utils_generic_factorial, the accumulator is equal to zero");
 
 				return C_UTILS_RESULT_FAILURE;
 			}
@@ -504,7 +505,7 @@ C_UTILS_API c_utils_result_t c_utils_generic_factorial(const c_utils_void_t *con
 
 		if(type_value < 0.0)
 		{
-			fprintf(stderr, "Error in function c_utils_generic_factorial, value is negative (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+			C_UTILS_REPORT_ERROR("Error in function c_utils_generic_factorial, the type_value is negative");
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -515,21 +516,21 @@ C_UTILS_API c_utils_result_t c_utils_generic_factorial(const c_utils_void_t *con
 
 			if(accumulator > C_UTILS_FLOAT64_MAX)
 			{
-				fprintf(stderr, "Error in function c_utils_generic_factorial, accumulator is greater than C_UTILS_FLOAT64_MAX (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+				C_UTILS_REPORT_ERROR("Error in function c_utils_generic_factorial, the accumulator is greater than C_UTILS_FLOAT64_MAX");
 
 				return C_UTILS_RESULT_FAILURE;
 			}
 
 			if(accumulator < -C_UTILS_FLOAT64_MAX)
 			{
-				fprintf(stderr, "Error in function c_utils_generic_factorial, accumulator is less than -C_UTILS_FLOAT64_MAX (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+				C_UTILS_REPORT_ERROR("Error in function c_utils_generic_factorial, the accumulator is less than -C_UTILS_FLOAT64_MAX");
 
 				return C_UTILS_RESULT_FAILURE;
 			}
 
 			if(accumulator == 0.0)
 			{
-				fprintf(stderr, "Error in function c_utils_generic_factorial, accumulator is equal to zero (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+				C_UTILS_REPORT_ERROR("Error in function c_utils_generic_factorial, the accumulator is equal to zero");
 
 				return C_UTILS_RESULT_FAILURE;
 			}
@@ -540,7 +541,7 @@ C_UTILS_API c_utils_result_t c_utils_generic_factorial(const c_utils_void_t *con
 
 	else
 	{
-		fprintf(stderr, "Error in function c_utils_generic_factorial, element_size is not 4 or 8 (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_generic_factorial, the element_size is not supported");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -548,25 +549,25 @@ C_UTILS_API c_utils_result_t c_utils_generic_factorial(const c_utils_void_t *con
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-C_UTILS_API c_utils_result_t c_utils_generic_log_base(const c_utils_void_t *const base, const c_utils_void_t *const value, const size_t element_size, c_utils_void_t *const result)
+C_UTILS_API c_utils_result_t c_utils_generic_log_base(const c_utils_void_t *const base, const c_utils_void_t *const value, const c_utils_size_t element_size, c_utils_void_t *const result)
 {
 	if(!base)
 	{
-		fprintf(stderr, "Error in function c_utils_generic_log_base (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_generic_log_base, the base is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!value)
 	{
-		fprintf(stderr, "Error in function c_utils_generic_log_base (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_generic_log_base, the value is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(!result)
 	{
-		fprintf(stderr, "Error in function c_utils_generic_log_base (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_generic_log_base, the result is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -578,21 +579,21 @@ C_UTILS_API c_utils_result_t c_utils_generic_log_base(const c_utils_void_t *cons
 
 		if(type_base <= 0.0f)
 		{
-			fprintf(stderr, "Error in function c_utils_generic_log_base (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+			C_UTILS_REPORT_ERROR("Error in function c_utils_generic_log_base, the type_base is less than or equal to zero");
 
 			return C_UTILS_RESULT_FAILURE;
 		}
 
 		if(type_base == 1.0f)
 		{
-			fprintf(stderr, "Error in function c_utils_generic_log_base (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+			C_UTILS_REPORT_ERROR("Error in function c_utils_generic_log_base, the type_base is equal to one");
 
 			return C_UTILS_RESULT_FAILURE;
 		}
 
 		if(type_value <= 0.0f)
 		{
-			fprintf(stderr, "Error in function c_utils_generic_log_base (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+			C_UTILS_REPORT_ERROR("Error in function c_utils_generic_log_base, the type_value is less than or equal to zero");
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -607,21 +608,21 @@ C_UTILS_API c_utils_result_t c_utils_generic_log_base(const c_utils_void_t *cons
 
 		if(type_base <= 0.0)
 		{
-			fprintf(stderr, "Error in function c_utils_generic_log_base (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+			C_UTILS_REPORT_ERROR("Error in function c_utils_generic_log_base, the type_base is less than or equal to zero");
 
 			return C_UTILS_RESULT_FAILURE;
 		}
 
 		if(type_base == 1.0)
 		{
-			fprintf(stderr, "Error in function c_utils_generic_log_base (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+			C_UTILS_REPORT_ERROR("Error in function c_utils_generic_log_base, the type_base is equal to one");
 
 			return C_UTILS_RESULT_FAILURE;
 		}
 
 		if(type_value <= 0.0)
 		{
-			fprintf(stderr, "Error in function c_utils_generic_log_base (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+			C_UTILS_REPORT_ERROR("Error in function c_utils_generic_log_base, the type_value is less than or equal to zero");
 
 			return C_UTILS_RESULT_FAILURE;
 		}
@@ -631,7 +632,7 @@ C_UTILS_API c_utils_result_t c_utils_generic_log_base(const c_utils_void_t *cons
 
 	else
 	{
-		fprintf(stderr, "Error in function c_utils_generic_log_base (File: %s, Line: %d)...\n", __FILE__, __LINE__);
+		C_UTILS_REPORT_ERROR("Error in function c_utils_generic_log_base, the element_size is not supported");
 
 		return C_UTILS_RESULT_FAILURE;
 	}

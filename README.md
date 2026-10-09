@@ -6,12 +6,12 @@ Compatible with:
 
 - [x] Windows.
 - [x] Linux.
-- [x] Mac OS (not tested yet, if you can test it, send an e-mail to **contactpaulao\@gmail.com**).
-- [x] Android NDK/Termux (x86-64, Not tested yet, if you can test it, send an e-mail to **contactpaulao\@gmail.com**).
-- [x] IOS (not tested yet, if you can test it, send an e-mail to **contactpaulao\@gmail.com**).
-- [x] ESP family (Not tested yet, if you can test it, send an e-mail to **contactpaulao\@gmail.com**).
+- [x] Mac OS.
+- [x] Android (NDK/Termux).
+- [x] IOS.
 
 ## Credits
 
 **Entire C-Utils created by: @paulao255 (Paulo Renato)**.
-**Cryptorand (cryptrnd) created by: @mackron (Mackron)**.
+**Miniaudio (audio library) created by: @mackron (Mackron)**.
+**Volk (Vulkan dynamic loader) created by: @zeux (Zeux)**.

@@ -15,9 +15,9 @@
 #define C_UTILS_ENABLE_INT64
 #include "defs.h"
 #ifndef C_UTILS_COMPILE
-#include "../../include/Mackron/miniaudi.h"
+#include "../../include/Mackron/miniaudio.h"
 #else
-#include "Mackron/miniaudi.h"
+#include "Mackron/miniaudio.h"
 #endif
 
 /*********************/
@@ -90,7 +90,7 @@ C_UTILS_API c_utils_result_t c_utils_audio_engine_terminate(c_utils_audio_engine
 C_UTILS_API c_utils_result_t c_utils_audio_engine_config_initialize(c_utils_audio_engine_config_t *const output);
 
 /* C-Utils audio load sound. */
-C_UTILS_API c_utils_result_t c_utils_audio_load_sound(c_utils_audio_engine_t *engine, const char *const path, c_utils_audio_sound_t *sound);
+C_UTILS_API c_utils_result_t c_utils_audio_load_sound(c_utils_audio_engine_t *engine, const c_utils_char_t *const path, c_utils_audio_sound_t *sound);
 
 /* C-Utils audio unload sound. */
 C_UTILS_API c_utils_result_t c_utils_audio_unload_sound(c_utils_audio_sound_t *sound);
@@ -162,7 +162,7 @@ C_UTILS_API c_utils_result_t c_utils_audio_sound_group_terminate(c_utils_audio_s
 C_UTILS_API c_utils_result_t c_utils_audio_sound_group_set_volume(c_utils_audio_sound_group_t *group, c_utils_float32_t volume);
 
 /* C-Utils audio load sound into group. */
-C_UTILS_API c_utils_result_t c_utils_audio_load_sound_into_group(c_utils_audio_engine_t *engine, const char *const path, c_utils_audio_sound_group_t *group, c_utils_audio_sound_t *sound);
+C_UTILS_API c_utils_result_t c_utils_audio_load_sound_into_group(c_utils_audio_engine_t *engine, const c_utils_char_t *const path, c_utils_audio_sound_group_t *group, c_utils_audio_sound_t *sound);
 
 /* C-Utils audio decoder initialize from memory. */
 C_UTILS_API c_utils_result_t c_utils_audio_decoder_initialize_from_memory(const c_utils_void_t *data, c_utils_size_t data_size, c_utils_audio_decoder_t *decoder);
@@ -183,7 +183,7 @@ C_UTILS_API c_utils_result_t c_utils_audio_device_stop(c_utils_audio_device_t *d
 C_UTILS_API c_utils_result_t c_utils_audio_device_terminate(c_utils_audio_device_t *device);
 
 /* C-Utils audio encoder initialize file. */
-C_UTILS_API c_utils_result_t c_utils_audio_encoder_initialize_file(const char *const path, c_utils_uint32_t sample_rate, c_utils_uint32_t channels,  c_utils_audio_encoder_t *encoder);
+C_UTILS_API c_utils_result_t c_utils_audio_encoder_initialize_file(const c_utils_char_t *const path, c_utils_uint32_t sample_rate, c_utils_uint32_t channels,  c_utils_audio_encoder_t *encoder);
 
 /* C-Utils audio encoder terminate. */
 C_UTILS_API c_utils_result_t c_utils_audio_encoder_terminate(c_utils_audio_encoder_t *encoder);
