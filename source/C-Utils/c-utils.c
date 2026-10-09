@@ -561,7 +561,7 @@ C_UTILS_API c_utils_result_t c_utils_url_open(const c_utils_char_t *const url)
 			unsigned long int code = (unsigned long int)(error < 0 ? -error : error);
 			c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
 			c_utils_size_t prefix_size = strlen("Error in function c_utils_url_open, function ShellExecuteA failed, error code: ");
-			c_utils_size_t error_size = (result < 0) ? 2u : 1u;
+			c_utils_size_t error_size = (error < 0) ? 2u : 1u;
 
 			while(code >= 10u)
 			{

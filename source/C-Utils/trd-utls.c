@@ -1761,14 +1761,14 @@ C_UTILS_API c_utils_result_t c_utils_tls_get(c_utils_tls_key_t key, c_utils_void
 
 		if(value == C_UTILS_NULL_POINTER && error != ERROR_SUCCESS)
 		{
-			DWORD value = error;
+			DWORD error_value = error;
 			c_utils_size_t prefix_size = strlen("Error in function c_utils_tls_get, function TlsGetValue failed, error code: ");
 			c_utils_size_t error_size = 1u;
 			c_utils_char_t *error_buffer = C_UTILS_NULL_POINTER;
 
-			while(value >= 10u)
+			while(error_value >= 10u)
 			{
-				value /= 10u;
+				error_value /= 10u;
 				error_size++;
 			}
 
