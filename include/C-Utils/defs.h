@@ -89,7 +89,7 @@ typedef unsigned char c_utils_uint8_t;
 /* C-Utils 8 bit unsigned integer maximum value. */
 #define C_UTILS_UINT8_MAX UCHAR_MAX
 
-/* C-Utils 1 byte boolean type (7 bit for numbers and 1 bit for signal). */
+/* C-Utils 1 byte boolean type (8 bits for numbers). */
 typedef c_utils_uint8_t c_utils_bool_t;
 
 /******************/

@@ -21,3 +21,5 @@ To test the library, you will need [Lua-Utils](https://github.com/paulao255/Lua-
 **Miniaudio (audio library) created by: @mackron (Mackron)**.
 
 **Volk (Vulkan dynamic loader) created by: @zeux (Zeux)**.
+
+**Vulkan (A low level graphics and compute API) created by: @KhronosGroup (The Khronos Group)**.

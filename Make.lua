@@ -1,7 +1,7 @@
 local lua_utils = require("Lua-Utils.Lua-Utils");
 
 local application_name = "C-Utils";
-local application_version = "2026-10-09.3";
+local application_version = "2026-10-10.1";
 local application_standards =
 {
 	"c90",
@@ -83,7 +83,9 @@ local function main()
 				"source/C-Utils/rnd-utls.c",
 				"source/C-Utils/aud-utls.c",
 				"source/C-Utils/err-utls.c",
-				"source/Mackron/miniaudio.c"
+				"source/C-Utils/gpu-utls.c",
+				"source/Mackron/miniaudio.c",
+				"source/Zeux/volk.c"
 			};
 
 			local sys = lua_utils.get_os();

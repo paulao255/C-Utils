@@ -415,7 +415,22 @@ C_UTILS_API c_utils_result_t c_utils_validate_date(const c_utils_int32_t year, c
 			31u
 		};
 
-		if(!is_future_date_valid)
+		if(is_future_date_valid)
+		{
+			if((year % 4L == 0L && year % 100L != 0L) || (year % 400L == 0L))
+			{
+				days_in_month[1] = 29u;
+			}
+
+			if(day > days_in_month[month - 1u])
+			{
+				C_UTILS_REPORT_ERROR("Error in function c_utils_validate_date, day is greater than days in month");
+
+				return C_UTILS_RESULT_FAILURE;
+			}
+		}
+
+		else
 		{
 			struct tm current_date;
 
@@ -441,21 +456,6 @@ C_UTILS_API c_utils_result_t c_utils_validate_date(const c_utils_int32_t year, c
 			if(year > (c_utils_int32_t)(current_date.tm_year) || (year == (c_utils_int32_t)(current_date.tm_year) && month > (c_utils_uint8_t)(current_date.tm_mon)) || (year == (c_utils_int32_t)(current_date.tm_year) && month == (c_utils_uint8_t)(current_date.tm_mon) && day > (c_utils_uint8_t)current_date.tm_mday))
 			{
 				C_UTILS_REPORT_ERROR("Error in function c_utils_validate_date, date is greater than current date");
-
-				return C_UTILS_RESULT_FAILURE;
-			}
-		}
-
-		else
-		{
-			if((year % 4L == 0L && year % 100L != 0L) || (year % 400L == 0L))
-			{
-				days_in_month[1] = 29u;
-			}
-
-			if(day > days_in_month[month - 1u])
-			{
-				C_UTILS_REPORT_ERROR("Error in function c_utils_validate_date, day is greater than days in month");
 
 				return C_UTILS_RESULT_FAILURE;
 			}
