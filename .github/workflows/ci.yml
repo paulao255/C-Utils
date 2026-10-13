@@ -91,7 +91,8 @@ jobs:
         shell: bash
         run: |
           eval "$(luarocks --lua-version=5.1 path)"
-          luajit Make.lua test
+          luajit Make.lua test c
+          luajit Make.lua test cpp
 
       # Run Lua Script (Windows)
       - name: Run Lua Test (Windows)
@@ -99,7 +100,8 @@ jobs:
         shell: msys2 {0}
         run: |
           export LUA_PATH="$(luarocks --lua-version=5.1 path --lr-path);;"
-          luajit Make.lua test
+          luajit Make.lua test c
+          luajit Make.lua test cpp
 
   # ============================================================
   # Android - ARM64
@@ -146,7 +148,8 @@ jobs:
           CC: ${{ steps.setup-ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android35-clang -I${{ github.workspace }}/vcpkg_installed/arm64-android/include
         run: |
           eval "$(luarocks --lua-version=5.1 path)"
-          luajit Make.lua test
+          luajit Make.lua test c
+          luajit Make.lua test cpp
 
   # ============================================================
   # iOS - ARM64
@@ -187,4 +190,5 @@ jobs:
           CC: clang -target arm64-apple-ios26.0 -isysroot ${{ env.IOS_SDK_PATH }}
         run: |
           eval "$(luarocks --lua-version=5.1 path)"
-          luajit Make.lua test
+          luajit Make.lua test c
+          luajit Make.lua test cpp

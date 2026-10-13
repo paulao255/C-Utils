@@ -42,7 +42,9 @@ extern "C"
 
 static c_utils_result_t c_utils_gpu_init_vulkan_instance(c_utils_void_t)
 {
-	if(volkInitialize() != VK_SUCCESS)
+	VkResult vk_result = volkInitialize();
+
+	if(vk_result != VK_SUCCESS)
 	{
 		C_UTILS_REPORT_ERROR("Error in function c_utils_gpu_init_vulkan_instance, function volkInitialize failed");
 
@@ -63,7 +65,9 @@ static c_utils_result_t c_utils_gpu_init_vulkan_instance(c_utils_void_t)
 		instance_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 		instance_info.pApplicationInfo = &app_info;
 
-		if(vkCreateInstance(&instance_info, C_UTILS_NULL_POINTER, &vk_instance) != VK_SUCCESS)
+		vk_result = vkCreateInstance(&instance_info, C_UTILS_NULL_POINTER, &vk_instance);
+
+		if(vk_result != VK_SUCCESS)
 		{
 			C_UTILS_REPORT_ERROR("Error in function c_utils_gpu_init_vulkan_instance, function vkCreateInstance failed");
 
@@ -79,12 +83,18 @@ static c_utils_result_t c_utils_gpu_init_vulkan_instance(c_utils_void_t)
 static c_utils_result_t c_utils_gpu_select_physical_device_and_queue(c_utils_void_t)
 {
 	c_utils_uint32_t device_count = 0;
+	VkResult vk_result;
 
-	vkEnumeratePhysicalDevices(vk_instance, &device_count, C_UTILS_NULL_POINTER);
+	vk_result = vkEnumeratePhysicalDevices
+	(
+	 vk_instance,
+	 &device_count,
+	 C_UTILS_NULL_POINTER
+	);
 
-	if(!device_count)
+	if(vk_result != VK_SUCCESS && vk_result != VK_INCOMPLETE)
 	{
-		C_UTILS_REPORT_ERROR("Error in function c_utils_gpu_select_physical_device_and_queue, the device_count == 0");
+		C_UTILS_REPORT_ERROR("Error in function c_utils_gpu_select_physical_device_and_queue, function vkEnumeratePhysicalDevices failed or zero devices found");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
@@ -105,14 +115,30 @@ static c_utils_result_t c_utils_gpu_select_physical_device_and_queue(c_utils_voi
 			c_utils_uint32_t i;
 			c_utils_bool_t device_found = C_UTILS_FALSE;
 
-			vkEnumeratePhysicalDevices(vk_instance, &device_count, devices);
+			vk_result = vkEnumeratePhysicalDevices
+			(
+			 vk_instance,
+			 &device_count,
+			 devices
+			);
+
+			if(vk_result != VK_SUCCESS)
+			{
+				C_UTILS_REPORT_ERROR("Error in function c_utils_gpu_select_physical_device_and_queue, function vkEnumeratePhysicalDevices failed");
+
+				free((c_utils_void_t *)devices);
+
+				return C_UTILS_RESULT_FAILURE;
+			}
+
 			vk_physical_device = C_UTILS_NULL_POINTER;
 
 			for(i = 0u; (i < device_count) && (!device_found); i++)
 			{
 				c_utils_uint32_t queue_family_count = 0u;
 
-				vkGetPhysicalDeviceQueueFamilyProperties(
+				vkGetPhysicalDeviceQueueFamilyProperties
+				(
 					devices[i],
 					&queue_family_count,
 					C_UTILS_NULL_POINTER
@@ -135,7 +161,8 @@ static c_utils_result_t c_utils_gpu_select_physical_device_and_queue(c_utils_voi
 					{
 						c_utils_uint32_t j;
 
-						vkGetPhysicalDeviceQueueFamilyProperties(
+						vkGetPhysicalDeviceQueueFamilyProperties
+						(
 							devices[i],
 							&queue_family_count,
 							queue_families
@@ -172,9 +199,14 @@ static c_utils_result_t c_utils_gpu_select_physical_device_and_queue(c_utils_voi
 
 static c_utils_result_t c_utils_gpu_create_logical_device_and_queue(c_utils_void_t)
 {
+	VkResult vk_result;
 	c_utils_float32_t queue_priority = 1.0f;
 	VkDeviceQueueCreateInfo queue_create_info;
 	VkDeviceCreateInfo device_create_info;
+	const c_utils_char_t *const device_extensions[] =
+	{
+		VK_KHR_SWAPCHAIN_EXTENSION_NAME
+	};
 
 	memset(&queue_create_info, 0, sizeof(queue_create_info));
 	queue_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
@@ -186,8 +218,18 @@ static c_utils_result_t c_utils_gpu_create_logical_device_and_queue(c_utils_void
 	device_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 	device_create_info.queueCreateInfoCount = 1u;
 	device_create_info.pQueueCreateInfos = &queue_create_info;
+	device_create_info.enabledExtensionCount = 1u;
+	device_create_info.ppEnabledExtensionNames = device_extensions;
 
-	if(vkCreateDevice(vk_physical_device, &device_create_info, C_UTILS_NULL_POINTER, &vk_device) != VK_SUCCESS)
+	vk_result = vkCreateDevice
+	(
+		vk_physical_device,
+		&device_create_info,
+		C_UTILS_NULL_POINTER,
+		&vk_device
+	);
+
+	if(vk_result != VK_SUCCESS)
 	{
 		C_UTILS_REPORT_ERROR("Error in function c_utils_gpu_create_logical_device_and_queue, function vkCreateDevice failed");
 
@@ -205,6 +247,7 @@ static c_utils_result_t c_utils_gpu_create_logical_device_and_queue(c_utils_void
 
 static c_utils_result_t c_utils_gpu_create_command_pool(c_utils_void_t)
 {
+	VkResult vk_result;
 	VkCommandPoolCreateInfo pool_info;
 
 	memset(&pool_info, 0, sizeof(pool_info));
@@ -212,7 +255,15 @@ static c_utils_result_t c_utils_gpu_create_command_pool(c_utils_void_t)
 	pool_info.queueFamilyIndex = vk_queue_family_index;
 	pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
-	if(vkCreateCommandPool(vk_device, &pool_info, C_UTILS_NULL_POINTER, &vk_command_pool) != VK_SUCCESS)
+	vk_result = vkCreateCommandPool
+	(
+		vk_device,
+		&pool_info,
+		C_UTILS_NULL_POINTER,
+		&vk_command_pool
+	);
+
+	if(vk_result != VK_SUCCESS)
 	{
 		C_UTILS_REPORT_ERROR("Error in function c_utils_gpu_create_command_pool, function vkCreateCommandPool failed");
 
@@ -224,9 +275,9 @@ static c_utils_result_t c_utils_gpu_create_command_pool(c_utils_void_t)
 
 static c_utils_uint32_t c_utils_gpu_find_memory_type(c_utils_uint32_t type_filter, VkMemoryPropertyFlags properties)
 {
-	if(vk_physical_device == C_UTILS_NULL_POINTER)
+	if(!vk_physical_device)
 	{
-		C_UTILS_REPORT_ERROR("Error in function c_utils_gpu_find_memory_type, the vk_physical_device == C_UTILS_NULL_POINTER");
+		C_UTILS_REPORT_ERROR("Error in function c_utils_gpu_find_memory_type, the vk_physical_device is a null pointer");
 
 		return ~0u;
 	}
@@ -236,7 +287,11 @@ static c_utils_uint32_t c_utils_gpu_find_memory_type(c_utils_uint32_t type_filte
 		c_utils_uint32_t i;
 		VkPhysicalDeviceMemoryProperties memory_properties;
 
-		vkGetPhysicalDeviceMemoryProperties(vk_physical_device, &memory_properties);
+		vkGetPhysicalDeviceMemoryProperties
+		(
+		 vk_physical_device,
+		 &memory_properties
+		);
 
 		for(i = 0u; i < memory_properties.memoryTypeCount; i++)
 		{
@@ -250,6 +305,179 @@ static c_utils_uint32_t c_utils_gpu_find_memory_type(c_utils_uint32_t type_filte
 	}
 
 	return ~0u;
+}
+
+static c_utils_result_t c_utils_gpu_compute_compile(c_utils_gpu_compute_t *compute)
+{
+	if(compute->is_compiled)
+	{
+		C_UTILS_REPORT_ERROR("Error in function c_utils_gpu_compute_compile, the compute is already compiled");
+
+		return C_UTILS_RESULT_FAILURE;
+	}
+
+	else
+	{
+		VkDescriptorSetLayoutBinding *bindings = C_UTILS_NULL_POINTER;
+		VkDescriptorSetLayoutCreateInfo layout_info;
+		VkDescriptorPoolSize pool_size;
+		VkDescriptorPoolCreateInfo pool_info;
+		VkDescriptorSetAllocateInfo allocate_info;
+		VkPipelineLayoutCreateInfo pipeline_layout_info;
+		VkComputePipelineCreateInfo pipeline_info;
+		VkResult vk_result;
+
+		if(compute->bound_count > 0u)
+		{
+			bindings = (VkDescriptorSetLayoutBinding *)malloc(sizeof(*bindings) * compute->bound_count);
+
+			if(!bindings)
+			{
+				C_UTILS_REPORT_ERROR("Error in function c_utils_gpu_compute_compile, function malloc failed");
+
+				return C_UTILS_RESULT_FAILURE;
+			}
+
+			else
+			{
+				c_utils_uint32_t i;
+
+				for(i = 0u; i < compute->bound_count; i++)
+				{
+					bindings[i].binding = i;
+					bindings[i].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+					bindings[i].descriptorCount = 1u;
+					bindings[i].stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
+					bindings[i].pImmutableSamplers = C_UTILS_NULL_POINTER;
+				}
+			}
+		}
+
+		memset(&layout_info, 0, sizeof(layout_info));
+		layout_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+		layout_info.bindingCount = compute->bound_count;
+		layout_info.pBindings = bindings;
+
+		vk_result = vkCreateDescriptorSetLayout
+		(
+			vk_device,
+			&layout_info,
+			C_UTILS_NULL_POINTER,
+			&compute->descriptor_layout
+		);
+
+		if(vk_result != VK_SUCCESS)
+		{
+			C_UTILS_REPORT_ERROR("Error in function c_utils_gpu_compute_compile, function vkCreateDescriptorSetLayout failed");
+
+			if(bindings)
+			{
+				free((c_utils_void_t *)bindings);
+			}
+
+			return C_UTILS_RESULT_FAILURE;
+		}
+
+		if(bindings)
+		{
+			free((c_utils_void_t *)bindings);
+			bindings = C_UTILS_NULL_POINTER;
+		}
+
+		memset(&pool_size, 0, sizeof(pool_size));
+		pool_size.type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+		pool_size.descriptorCount = compute->bound_count > 0u ? compute->bound_count : 1u;
+
+		memset(&pool_info, 0, sizeof(pool_info));
+		pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+		pool_info.maxSets = 1u;
+		pool_info.poolSizeCount = 1u;
+		pool_info.pPoolSizes = &pool_size;
+
+		vk_result = vkCreateDescriptorPool
+		(
+			vk_device,
+			&pool_info,
+			C_UTILS_NULL_POINTER,
+			&compute->descriptor_pool
+		);
+
+		if(vk_result != VK_SUCCESS)
+		{
+			C_UTILS_REPORT_ERROR("Error in function c_utils_gpu_compute_compile, function vkCreateDescriptorPool failed");
+
+			return C_UTILS_RESULT_FAILURE;
+		}
+
+		memset(&allocate_info, 0, sizeof(allocate_info));
+		allocate_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+		allocate_info.descriptorPool = compute->descriptor_pool;
+		allocate_info.descriptorSetCount = 1u;
+		allocate_info.pSetLayouts = &compute->descriptor_layout;
+
+		vk_result = vkAllocateDescriptorSets
+		(
+			vk_device,
+			&allocate_info,
+			&compute->descriptor_set
+		);
+
+		if(vk_result != VK_SUCCESS)
+		{
+			C_UTILS_REPORT_ERROR("Error in function c_utils_gpu_compute_compile, function vkAllocateDescriptorSets failed");
+
+			return C_UTILS_RESULT_FAILURE;
+		}
+
+		memset(&pipeline_layout_info, 0, sizeof(pipeline_layout_info));
+		pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+		pipeline_layout_info.setLayoutCount = 1u;
+		pipeline_layout_info.pSetLayouts = &compute->descriptor_layout;
+
+		vk_result = vkCreatePipelineLayout
+		(
+			vk_device,
+			&pipeline_layout_info,
+			C_UTILS_NULL_POINTER,
+			&compute->pipeline_layout
+		);
+
+		if(vk_result != VK_SUCCESS)
+		{
+			C_UTILS_REPORT_ERROR("Error in function c_utils_gpu_compute_compile, function vkCreatePipelineLayout failed");
+
+			return C_UTILS_RESULT_FAILURE;
+		}
+
+		memset(&pipeline_info, 0, sizeof(pipeline_info));
+		pipeline_info.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
+		pipeline_info.stage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+		pipeline_info.stage.stage = VK_SHADER_STAGE_COMPUTE_BIT;
+		pipeline_info.stage.module = compute->shader_module;
+		pipeline_info.stage.pName = "main";
+		pipeline_info.layout = compute->pipeline_layout;
+
+		vk_result = vkCreateComputePipelines
+		(
+			vk_device,
+			C_UTILS_NULL_POINTER,
+			1u,
+			&pipeline_info,
+			C_UTILS_NULL_POINTER,
+			&compute->pipeline
+		);
+
+		if(vk_result != VK_SUCCESS)
+		{
+			C_UTILS_REPORT_ERROR("Error in function c_utils_gpu_compute_compile, function vkCreateComputePipelines failed");
+
+			return C_UTILS_RESULT_FAILURE;
+		}
+	}
+
+	compute->is_compiled = C_UTILS_TRUE;
+
+	return C_UTILS_RESULT_SUCCESS;
 }
 
 C_UTILS_API c_utils_result_t c_utils_gpu_load_spir_v(const c_utils_char_t *const path, c_utils_memory_handle_t *output_handle, c_utils_size_t *output_size)
@@ -364,42 +592,67 @@ C_UTILS_API c_utils_result_t c_utils_gpu_load_spir_v(const c_utils_char_t *const
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-C_UTILS_API c_utils_result_t c_utils_gpu_compute_initialize(c_utils_void_t)
+C_UTILS_API c_utils_result_t c_utils_gpu_initialize(const c_utils_uint8_t mode)
 {
 	if(c_utils_gpu_is_initialized)
 	{
-		C_UTILS_REPORT_ERROR("Error in function c_utils_gpu_compute_initialize, C-Utils GPU is already initialized");
+		C_UTILS_REPORT_ERROR("Error in function c_utils_gpu_initialize, C-Utils GPU is already initialized");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
-	if(c_utils_gpu_init_vulkan_instance() != C_UTILS_RESULT_SUCCESS)
+	c_utils_gpu_current_mode = mode;
+
+	if(c_utils_gpu_init_vulkan_instance())
 	{
-		C_UTILS_REPORT_ERROR("Error in function c_utils_gpu_compute_initialize, function c_utils_gpu_init_vulkan_instance failed");
+		C_UTILS_REPORT_ERROR("Error in function c_utils_gpu_initialize, function c_utils_gpu_init_vulkan_instance failed");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
-	if(c_utils_gpu_select_physical_device_and_queue() != C_UTILS_RESULT_SUCCESS)
+	if(c_utils_gpu_select_physical_device_and_queue())
 	{
-		C_UTILS_REPORT_ERROR("Error in function c_utils_gpu_compute_initialize, function c_utils_gpu_select_physical_device_and_queue failed");
+		C_UTILS_REPORT_ERROR("Error in function c_utils_gpu_initialize, function c_utils_gpu_select_physical_device_and_queue failed");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
-	if(c_utils_gpu_create_logical_device_and_queue() != C_UTILS_RESULT_SUCCESS)
+	if(c_utils_gpu_create_logical_device_and_queue())
 	{
-		C_UTILS_REPORT_ERROR("Error in function c_utils_gpu_compute_initialize, function c_utils_gpu_create_logical_device_and_queue failed");
+		C_UTILS_REPORT_ERROR("Error in function c_utils_gpu_initialize, function c_utils_gpu_create_logical_device_and_queue failed");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
-	if(c_utils_gpu_create_command_pool() != C_UTILS_RESULT_SUCCESS)
+	if(c_utils_gpu_create_command_pool())
 	{
-		C_UTILS_REPORT_ERROR("Error in function c_utils_gpu_compute_initialize, function c_utils_gpu_create_command_pool failed");
+		C_UTILS_REPORT_ERROR("Error in function c_utils_gpu_initialize, function c_utils_gpu_create_command_pool failed");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
+
+	c_utils_gpu_is_initialized = C_UTILS_TRUE;
+
+	return C_UTILS_RESULT_SUCCESS;
+}
+
+C_UTILS_API c_utils_result_t c_utils_gpu_enable_graphics(c_utils_void_t)
+{
+	if(!c_utils_gpu_is_initialized)
+	{
+		C_UTILS_REPORT_ERROR("Error in function c_utils_gpu_enable_graphics, C-Utils GPU is not initialized");
+
+		return C_UTILS_RESULT_FAILURE;
+	}
+
+	if(c_utils_gpu_current_mode == C_UTILS_GPU_MODE_GRAPHICS)
+	{
+		C_UTILS_REPORT_ERROR("Error in function c_utils_gpu_enable_graphics, C-Utils GPU is already in graphics mode");
+
+		return C_UTILS_RESULT_FAILURE;
+	}
+
+	c_utils_gpu_current_mode = C_UTILS_GPU_MODE_GRAPHICS;
 
 	return C_UTILS_RESULT_SUCCESS;
 }
@@ -436,15 +689,25 @@ C_UTILS_API c_utils_result_t c_utils_gpu_compute_create(const c_utils_uint32_t *
 
 	else
 	{
+		VkResult vk_result;
 		VkShaderModuleCreateInfo shader_info;
 
 		memset(output_compute, 0, sizeof(*output_compute));
+
 		memset(&shader_info, 0, sizeof(shader_info));
 		shader_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 		shader_info.codeSize = spir_v_size;
 		shader_info.pCode = spir_v_code;
 
-		if(vkCreateShaderModule(vk_device, &shader_info, C_UTILS_NULL_POINTER, &output_compute->shader_module) != VK_SUCCESS)
+		vk_result = vkCreateShaderModule
+		(
+			vk_device,
+			&shader_info,
+			C_UTILS_NULL_POINTER,
+			&output_compute->shader_module
+		);
+
+		if(vk_result != VK_SUCCESS)
 		{
 			C_UTILS_REPORT_ERROR("Error in function c_utils_gpu_compute_create, function vkCreateShaderModule failed");
 
@@ -481,23 +744,25 @@ C_UTILS_API c_utils_result_t c_utils_gpu_compute_buffer_create(c_utils_size_t si
 	else
 	{
 		VkBufferCreateInfo buffer_info;
+		VkResult vk_result;
 
 		memset(output_buffer, 0, sizeof(*output_buffer));
 
 		memset(&buffer_info, 0, sizeof(buffer_info));
-
 		buffer_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 		buffer_info.size = (VkDeviceSize)size;
 		buffer_info.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
 		buffer_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-		if(vkCreateBuffer(
+		vk_result = vkCreateBuffer
+		(
 			vk_device,
 			&buffer_info,
 			C_UTILS_NULL_POINTER,
 			&output_buffer->buffer
-			) != VK_SUCCESS
-		)
+		);
+
+		if(vk_result != VK_SUCCESS)
 		{
 			C_UTILS_REPORT_ERROR("Error in function c_utils_gpu_compute_buffer_create, function vkCreateBuffer failed");
 
@@ -511,13 +776,22 @@ C_UTILS_API c_utils_result_t c_utils_gpu_compute_buffer_create(c_utils_size_t si
 
 			vkGetBufferMemoryRequirements(vk_device, output_buffer->buffer, &memory_requirements);
 
-			memory_type_index = c_utils_gpu_find_memory_type(memory_requirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+			memory_type_index = c_utils_gpu_find_memory_type
+			(
+				memory_requirements.memoryTypeBits,
+				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+			);
 
 			if(memory_type_index == ~0u)
 			{
 				C_UTILS_REPORT_ERROR("Error in function c_utils_gpu_compute_buffer_create, function c_utils_gpu_find_memory_type failed");
 
-				vkDestroyBuffer(vk_device, output_buffer->buffer, C_UTILS_NULL_POINTER);
+				vkDestroyBuffer
+				(
+					vk_device,
+					output_buffer->buffer,
+					C_UTILS_NULL_POINTER
+				);
 				output_buffer->buffer = C_UTILS_NULL_POINTER;
 
 				return C_UTILS_RESULT_FAILURE;
@@ -525,50 +799,69 @@ C_UTILS_API c_utils_result_t c_utils_gpu_compute_buffer_create(c_utils_size_t si
 
 			else
 			{
-				VkMemoryAllocateInfo alloc_info;
+				VkMemoryAllocateInfo allocate_info;
 
-				memset(&alloc_info, 0, sizeof(alloc_info));
+				memset(&allocate_info, 0, sizeof(allocate_info));
+				allocate_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+				allocate_info.allocationSize = memory_requirements.size;
+				allocate_info.memoryTypeIndex = memory_type_index;
 
-				alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-				alloc_info.allocationSize = memory_requirements.size;
-				alloc_info.memoryTypeIndex = memory_type_index;
-
-				if(vkAllocateMemory(
+				vk_result = vkAllocateMemory
+				(
 					vk_device,
-					&alloc_info,
+					&allocate_info,
 					C_UTILS_NULL_POINTER,
 					&output_buffer->memory
-					) != VK_SUCCESS
-				)
+				);
+
+				if(vk_result != VK_SUCCESS)
 				{
 					C_UTILS_REPORT_ERROR("Error in function c_utils_gpu_compute_buffer_create, function vkAllocateMemory failed");
 
-					vkDestroyBuffer(vk_device, output_buffer->buffer, C_UTILS_NULL_POINTER);
+					vkDestroyBuffer
+					(
+						vk_device,
+						output_buffer->buffer,
+						C_UTILS_NULL_POINTER
+					);
 					output_buffer->buffer = C_UTILS_NULL_POINTER;
 
 					return C_UTILS_RESULT_FAILURE;
 				}
 
-				if(vkBindBufferMemory(
+				vk_result = vkBindBufferMemory
+				(
 					vk_device,
 					output_buffer->buffer,
 					output_buffer->memory,
 					0u
-					) != VK_SUCCESS
-				)
+				);
+
+				if(vk_result != VK_SUCCESS)
 				{
 					C_UTILS_REPORT_ERROR("Error in function c_utils_gpu_compute_buffer_create, function vkBindBufferMemory failed");
 
-					vkFreeMemory(vk_device, output_buffer->memory, C_UTILS_NULL_POINTER);
+					vkFreeMemory
+					(
+						vk_device,
+						output_buffer->memory,
+						C_UTILS_NULL_POINTER
+					);
 					output_buffer->memory = C_UTILS_NULL_POINTER;
 
-					vkDestroyBuffer(vk_device, output_buffer->buffer, C_UTILS_NULL_POINTER);
+					vkDestroyBuffer
+					(
+						vk_device,
+						output_buffer->buffer,
+						C_UTILS_NULL_POINTER
+					);
 					output_buffer->buffer = C_UTILS_NULL_POINTER;
 
 					return C_UTILS_RESULT_FAILURE;
 				}
 
 				output_buffer->size = size;
+				output_buffer->is_host_visible = C_UTILS_TRUE;
 			}
 		}
 	}
@@ -611,18 +904,28 @@ C_UTILS_API c_utils_result_t c_utils_gpu_compute_buffer_write(c_utils_gpu_buffer
 	else
 	{
 		c_utils_void_t *mapped_ptr = C_UTILS_NULL_POINTER;
+		VkResult vk_result;
 
-		vkQueueWaitIdle(vk_queue);
+		vk_result = vkQueueWaitIdle(vk_queue);
 
-		if(vkMapMemory(
+		if(vk_result != VK_SUCCESS)
+		{
+			C_UTILS_REPORT_ERROR("Error in function c_utils_gpu_compute_buffer_write, function vkQueueWaitIdle failed");
+
+			return C_UTILS_RESULT_FAILURE;
+		}
+
+		vk_result = vkMapMemory
+		(
 			vk_device,
 			buffer->memory,
 			0u,
 			(VkDeviceSize)size,
 			0u,
 			&mapped_ptr
-			) != VK_SUCCESS
-		)
+		);
+
+		if(vk_result != VK_SUCCESS)
 		{
 			C_UTILS_REPORT_ERROR("Error in function c_utils_gpu_compute_buffer_write, function vkMapMemory failed");
 
@@ -662,18 +965,28 @@ C_UTILS_API c_utils_result_t c_utils_gpu_compute_buffer_read(c_utils_gpu_buffer_
 	else
 	{
 		c_utils_void_t *mapped_ptr = C_UTILS_NULL_POINTER;
+		VkResult vk_result;
 
-		vkQueueWaitIdle(vk_queue);
+		vk_result = vkQueueWaitIdle(vk_queue);
 
-		if(vkMapMemory(
+		if(vk_result != VK_SUCCESS)
+		{
+			C_UTILS_REPORT_ERROR("Error in function c_utils_gpu_compute_buffer_read, function vkQueueWaitIdle failed");
+
+			return C_UTILS_RESULT_FAILURE;
+		}
+
+		vk_result = vkMapMemory
+		(
 			vk_device,
 			buffer->memory,
 			0u,
 			(VkDeviceSize)buffer->size,
 			0u,
 			&mapped_ptr
-			) != VK_SUCCESS
-		)
+		);
+
+		if(vk_result != VK_SUCCESS)
 		{
 			C_UTILS_REPORT_ERROR("Error in function c_utils_gpu_compute_buffer_read, function vkMapMemory failed");
 
@@ -705,7 +1018,8 @@ C_UTILS_API c_utils_result_t c_utils_gpu_compute_buffer_destroy(c_utils_gpu_buff
 
 	if(buffer->buffer != C_UTILS_NULL_POINTER)
 	{
-		vkDestroyBuffer(
+		vkDestroyBuffer
+		(
 			vk_device,
 			buffer->buffer,
 			C_UTILS_NULL_POINTER
@@ -716,7 +1030,8 @@ C_UTILS_API c_utils_result_t c_utils_gpu_compute_buffer_destroy(c_utils_gpu_buff
 
 	if(buffer->memory != C_UTILS_NULL_POINTER)
 	{
-		vkFreeMemory(
+		vkFreeMemory
+		(
 			vk_device,
 			buffer->memory,
 			C_UTILS_NULL_POINTER
@@ -798,133 +1113,17 @@ C_UTILS_API c_utils_result_t c_utils_gpu_compute_dispatch(c_utils_gpu_compute_t 
 
 	else
 	{
-		VkCommandBufferAllocateInfo cmd_alloc_info;
-		VkCommandBuffer cmd_buffer;
-		VkCommandBufferBeginInfo begin_info;
-		VkSubmitInfo submit_info;
+		VkResult vk_result;
+		VkCommandBufferAllocateInfo command_allocate_info;
+		VkCommandBuffer command_buffer;
 
 		if(!compute->is_compiled)
 		{
-			VkDescriptorSetLayoutBinding *bindings;
-
-			if(compute->bound_count > 0u)
+			if(c_utils_gpu_compute_compile(compute))
 			{
-				bindings = (VkDescriptorSetLayoutBinding *)malloc(sizeof(*bindings) * compute->bound_count);
+				C_UTILS_REPORT_ERROR("Error in function c_utils_gpu_compute_dispatch, function c_utils_gpu_compute_compile failed");
 
-				if(!bindings)
-				{
-					C_UTILS_REPORT_ERROR("Error in function c_utils_gpu_compute_dispatch, function malloc failed");
-
-					return C_UTILS_RESULT_FAILURE;
-				}
-
-				else
-				{
-					c_utils_uint32_t i;
-
-					memset(bindings, 0, sizeof(*bindings) * compute->bound_count);
-
-					for(i = 0u; i < compute->bound_count; i++)
-					{
-						bindings[i].binding = i;
-						bindings[i].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-						bindings[i].descriptorCount = 1u;
-						bindings[i].stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
-					}
-				}
-			}
-
-			else
-			{
-				VkDescriptorSetLayoutCreateInfo layout_info;
-
-				memset(&layout_info, 0, sizeof(layout_info));
-
-				layout_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-				layout_info.bindingCount = compute->bound_count;
-				layout_info.pBindings = bindings;
-
-				vkCreateDescriptorSetLayout(
-					vk_device,
-					&layout_info,
-					C_UTILS_NULL_POINTER,
-					&compute->descriptor_layout
-				);
-
-				if(bindings)
-				{
-					free((c_utils_void_t *)bindings);
-					bindings = C_UTILS_NULL_POINTER;
-				}
-
-				else
-				{
-					VkDescriptorPoolSize pool_size;
-					VkDescriptorPoolCreateInfo pool_info;
-					VkDescriptorSetAllocateInfo alloc_info;
-					VkPipelineLayoutCreateInfo pipeline_layout_info;
-					VkComputePipelineCreateInfo pipeline_info;
-
-					memset(&pool_info, 0, sizeof(pool_info));
-
-					pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-					pool_info.maxSets = 1u;
-					pool_info.poolSizeCount = 1u;
-					pool_info.pPoolSizes = &pool_size;
-
-					vkCreateDescriptorPool(
-						vk_device,
-						&pool_info,
-						C_UTILS_NULL_POINTER,
-						&compute->descriptor_pool
-					);
-
-					memset(&alloc_info, 0, sizeof(alloc_info));
-
-					alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-					alloc_info.descriptorPool = compute->descriptor_pool;
-					alloc_info.descriptorSetCount = 1u;
-					alloc_info.pSetLayouts = &compute->descriptor_layout;
-
-					vkAllocateDescriptorSets(
-						vk_device,
-						&alloc_info,
-						&compute->descriptor_set
-					);
-
-					memset(&pipeline_layout_info, 0, sizeof(pipeline_layout_info));
-
-					pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-					pipeline_layout_info.setLayoutCount = 1u;
-					pipeline_layout_info.pSetLayouts = &compute->descriptor_layout;
-
-					vkCreatePipelineLayout(
-						vk_device,
-						&pipeline_layout_info,
-						C_UTILS_NULL_POINTER,
-						&compute->pipeline_layout
-					);
-
-					memset(&pipeline_info, 0, sizeof(pipeline_info));
-
-					pipeline_info.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
-					pipeline_info.stage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-					pipeline_info.stage.stage = VK_SHADER_STAGE_COMPUTE_BIT;
-					pipeline_info.stage.module = compute->shader_module;
-					pipeline_info.stage.pName = "main";
-					pipeline_info.layout = compute->pipeline_layout;
-
-					vkCreateComputePipelines(
-						vk_device,
-						C_UTILS_NULL_POINTER,
-						1u,
-						&pipeline_info,
-						C_UTILS_NULL_POINTER,
-						&compute->pipeline
-					);
-
-					compute->is_compiled = 1u;
-				}
+				return C_UTILS_RESULT_FAILURE;
 			}
 		}
 
@@ -976,7 +1175,8 @@ C_UTILS_API c_utils_result_t c_utils_gpu_compute_dispatch(c_utils_gpu_compute_t 
 						}
 					}
 
-					vkUpdateDescriptorSets(
+					vkUpdateDescriptorSets
+					(
 						vk_device,
 						compute->bound_count,
 						writes,
@@ -984,44 +1184,152 @@ C_UTILS_API c_utils_result_t c_utils_gpu_compute_dispatch(c_utils_gpu_compute_t 
 						C_UTILS_NULL_POINTER
 					);
 
-					free(writes);
-					free(buffer_infos);
+					free((c_utils_void_t *)writes);
+					free((c_utils_void_t *)buffer_infos);
 				}
 			}
 		}
 
-		memset(&cmd_alloc_info, 0, sizeof(cmd_alloc_info));
+		memset(&command_allocate_info, 0, sizeof(command_allocate_info));
+		command_allocate_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		command_allocate_info.commandPool = vk_command_pool;
+		command_allocate_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+		command_allocate_info.commandBufferCount = 1u;
 
-		cmd_alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		cmd_alloc_info.commandPool = vk_command_pool;
-		cmd_alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		cmd_alloc_info.commandBufferCount = 1u;
-		vkAllocateCommandBuffers(vk_device, &cmd_alloc_info, &cmd_buffer);
+		vk_result = vkAllocateCommandBuffers(vk_device, &command_allocate_info, &command_buffer);
 
-		memset(&begin_info, 0, sizeof(begin_info));
-		begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-
-		vkBeginCommandBuffer(cmd_buffer, &begin_info);
-		vkCmdBindPipeline(cmd_buffer, VK_PIPELINE_BIND_POINT_COMPUTE, compute->pipeline);
-
-		if(compute->bound_count > 0u)
+		if(vk_result != VK_SUCCESS)
 		{
-			vkCmdBindDescriptorSets(cmd_buffer, VK_PIPELINE_BIND_POINT_COMPUTE, compute->pipeline_layout, 0u, 1u, &compute->descriptor_set, 0u, C_UTILS_NULL_POINTER);
+			C_UTILS_REPORT_ERROR("Error in function c_utils_gpu_compute_dispatch, function vkAllocateCommandBuffers failed");
+
+			return C_UTILS_RESULT_FAILURE;
 		}
 
-		vkCmdDispatch(cmd_buffer, group_x > 0u ? group_x : 1u, group_y > 0u ? group_y : 1u, group_z > 0u ? group_z : 1u);
-		vkEndCommandBuffer(cmd_buffer);
+		else
+		{
+			VkCommandBufferBeginInfo command_buffer_begin_info;
 
-		memset(&submit_info, 0, sizeof(submit_info));
-		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		submit_info.commandBufferCount = 1u;
-		submit_info.pCommandBuffers = &cmd_buffer;
+			memset(&command_buffer_begin_info, 0, sizeof(command_buffer_begin_info));
+			command_buffer_begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+			command_buffer_begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
-		vkQueueSubmit(vk_queue, 1u, &submit_info, C_UTILS_NULL_POINTER);
-		vkQueueWaitIdle(vk_queue);
+			vk_result = vkBeginCommandBuffer(command_buffer, &command_buffer_begin_info);
 
-		vkFreeCommandBuffers(vk_device, vk_command_pool, 1u, &cmd_buffer);
+			if(vk_result != VK_SUCCESS)
+			{
+				C_UTILS_REPORT_ERROR("Error in function c_utils_gpu_compute_dispatch, function vkBeginCommandBuffer failed");
+
+				vkFreeCommandBuffers
+				(
+					vk_device,
+					vk_command_pool,
+					1u,
+					&command_buffer
+				);
+
+				return C_UTILS_RESULT_FAILURE;
+			}
+
+			vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_COMPUTE, compute->pipeline);
+
+			if(compute->bound_count > 0u)
+			{
+				vkCmdBindDescriptorSets
+				(
+					command_buffer,
+					VK_PIPELINE_BIND_POINT_COMPUTE,
+					compute->pipeline_layout,
+					0u,
+					1u,
+					&compute->descriptor_set,
+					0u,
+					C_UTILS_NULL_POINTER
+				);
+			}
+
+			vkCmdDispatch
+			(
+				command_buffer,
+				group_x > 0u ? group_x : 1u,
+				group_y > 0u ? group_y : 1u,
+				group_z > 0u ? group_z : 1u
+			);
+
+			vk_result = vkEndCommandBuffer(command_buffer);
+
+			if(vk_result != VK_SUCCESS)
+			{
+				C_UTILS_REPORT_ERROR("Error in function c_utils_gpu_compute_dispatch, function vkEndCommandBuffer failed");
+
+				vkFreeCommandBuffers
+				(
+					vk_device,
+					vk_command_pool,
+					1u,
+					&command_buffer
+				);
+
+				return C_UTILS_RESULT_FAILURE;
+			}
+
+			else
+			{
+				VkSubmitInfo submit_info;
+
+				memset(&submit_info, 0, sizeof(submit_info));
+				submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+				submit_info.commandBufferCount = 1u;
+				submit_info.pCommandBuffers = &command_buffer;
+
+				vk_result = vkQueueSubmit
+				(
+					vk_queue,
+					1u,
+					&submit_info,
+					C_UTILS_NULL_POINTER
+				);
+
+				if(vk_result != VK_SUCCESS)
+				{
+					C_UTILS_REPORT_ERROR("Error in function c_utils_gpu_compute_dispatch, function vkQueueSubmit failed");
+
+					vkFreeCommandBuffers
+					(
+						vk_device,
+						vk_command_pool,
+						1u,
+						&command_buffer
+					);
+
+					return C_UTILS_RESULT_FAILURE;
+				}
+
+				vk_result = vkQueueWaitIdle(vk_queue);
+
+				if(vk_result != VK_SUCCESS)
+				{
+					C_UTILS_REPORT_ERROR("Error in function c_utils_gpu_compute_dispatch, function vkQueueWaitIdle failed");
+
+					vkFreeCommandBuffers
+					(
+						vk_device,
+						vk_command_pool,
+						1u,
+						&command_buffer
+					);
+
+					return C_UTILS_RESULT_FAILURE;
+				}
+
+				vkFreeCommandBuffers
+				(
+					vk_device,
+					vk_command_pool,
+					1u,
+					&command_buffer
+				);
+			}
+		}
 	}
 
 	return C_UTILS_RESULT_SUCCESS;
@@ -1031,38 +1339,63 @@ C_UTILS_API c_utils_result_t c_utils_gpu_compute_destroy(c_utils_gpu_compute_t *
 {
 	if(!compute || vk_device == C_UTILS_NULL_POINTER)
 	{
-		C_UTILS_REPORT_ERROR("Error in function c_utils_gpu_compute_destroy, compute == NULL or vk_device == C_UTILS_NULL_POINTER");
+		C_UTILS_REPORT_ERROR("Error in function c_utils_gpu_compute_destroy, the compute is a null pointer or vk_device is a null pointer");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(compute->pipeline != C_UTILS_NULL_POINTER)
 	{
-		vkDestroyPipeline(vk_device, compute->pipeline, C_UTILS_NULL_POINTER);
+		vkDestroyPipeline
+		(
+			vk_device,
+			compute->pipeline,
+			C_UTILS_NULL_POINTER
+		);
 		compute->pipeline = C_UTILS_NULL_POINTER;
 	}
 
 	if(compute->pipeline_layout != C_UTILS_NULL_POINTER)
 	{
-		vkDestroyPipelineLayout(vk_device, compute->pipeline_layout, C_UTILS_NULL_POINTER);
+		vkDestroyPipelineLayout
+		(
+			vk_device,
+			compute->pipeline_layout,
+			C_UTILS_NULL_POINTER
+		);
 		compute->pipeline_layout = C_UTILS_NULL_POINTER;
 	}
 
 	if(compute->descriptor_pool != C_UTILS_NULL_POINTER)
 	{
-		vkDestroyDescriptorPool(vk_device, compute->descriptor_pool, C_UTILS_NULL_POINTER);
+		vkDestroyDescriptorPool
+		(
+			vk_device,
+			compute->descriptor_pool,
+			C_UTILS_NULL_POINTER
+		);
 		compute->descriptor_pool = C_UTILS_NULL_POINTER;
 	}
 
 	if(compute->descriptor_layout != C_UTILS_NULL_POINTER)
 	{
-		vkDestroyDescriptorSetLayout(vk_device, compute->descriptor_layout, C_UTILS_NULL_POINTER);
+		vkDestroyDescriptorSetLayout
+		(
+			vk_device,
+			compute->descriptor_layout,
+			C_UTILS_NULL_POINTER
+		);
 		compute->descriptor_layout = C_UTILS_NULL_POINTER;
 	}
 
 	if(compute->shader_module != C_UTILS_NULL_POINTER)
 	{
-		vkDestroyShaderModule(vk_device, compute->shader_module, C_UTILS_NULL_POINTER);
+		vkDestroyShaderModule
+		(
+			vk_device,
+			compute->shader_module,
+			C_UTILS_NULL_POINTER
+		);
 		compute->shader_module = C_UTILS_NULL_POINTER;
 	}
 
@@ -1079,23 +1412,35 @@ C_UTILS_API c_utils_result_t c_utils_gpu_compute_destroy(c_utils_gpu_compute_t *
 	return C_UTILS_RESULT_SUCCESS;
 }
 
-C_UTILS_API c_utils_result_t c_utils_gpu_compute_terminate(c_utils_void_t)
+C_UTILS_API c_utils_result_t c_utils_gpu_terminate(c_utils_void_t)
 {
 	if(!c_utils_gpu_is_initialized)
 	{
-		C_UTILS_REPORT_ERROR("Error in function c_utils_gpu_compute_terminate, C-Utils GPU is not initialized");
+		C_UTILS_REPORT_ERROR("Error in function c_utils_gpu_terminate, C-Utils GPU is not initialized");
 
 		return C_UTILS_RESULT_FAILURE;
 	}
 
 	if(vk_device != C_UTILS_NULL_POINTER)
 	{
-		vkDeviceWaitIdle(vk_device);
+		const VkResult vk_result = vkDeviceWaitIdle(vk_device);
+
+		if(vk_result != VK_SUCCESS)
+		{
+			C_UTILS_REPORT_ERROR("Error in function c_utils_gpu_terminate, function vkDeviceWaitIdle failed");
+
+			return C_UTILS_RESULT_FAILURE;
+		}
 	}
 
 	if(vk_command_pool != C_UTILS_NULL_POINTER && vk_device != C_UTILS_NULL_POINTER)
 	{
-		vkDestroyCommandPool(vk_device, vk_command_pool, C_UTILS_NULL_POINTER);
+		vkDestroyCommandPool
+		(
+			vk_device,
+			vk_command_pool,
+			C_UTILS_NULL_POINTER
+		);
 		vk_command_pool = C_UTILS_NULL_POINTER;
 	}
 

@@ -91,8 +91,11 @@ typedef struct c_utils_gpu_compute_t c_utils_gpu_compute_t;
 /* C-Utils gpu load spir v function: */
 C_UTILS_API c_utils_result_t c_utils_gpu_load_spir_v(const c_utils_char_t *const path, c_utils_memory_handle_t *output_handle, c_utils_size_t *output_size);
 
-/* C-Utils gpu compute initialize function: */
-C_UTILS_API c_utils_result_t c_utils_gpu_compute_initialize(c_utils_void_t);
+/* C-Utils gpu initialize function: */
+C_UTILS_API c_utils_result_t c_utils_gpu_initialize(const c_utils_uint8_t mode);
+
+/* C-Utils gpu enable graphics function: */
+C_UTILS_API c_utils_result_t c_utils_gpu_enable_graphics(c_utils_void_t);
 
 /* C-Utils gpu compute create function: */
 C_UTILS_API c_utils_result_t c_utils_gpu_compute_create(const c_utils_uint32_t *spir_v_code, c_utils_size_t spir_v_size, c_utils_gpu_compute_t *output_compute);
@@ -118,8 +121,8 @@ C_UTILS_API c_utils_result_t c_utils_gpu_compute_dispatch(c_utils_gpu_compute_t 
 /* C-Utils gpu compute destroy function: */
 C_UTILS_API c_utils_result_t c_utils_gpu_compute_destroy(c_utils_gpu_compute_t *compute);
 
-/* C-Utils gpu compute terminate function: */
-C_UTILS_API c_utils_result_t c_utils_gpu_compute_terminate(c_utils_void_t);
+/* C-Utils gpu terminate function: */
+C_UTILS_API c_utils_result_t c_utils_gpu_terminate(c_utils_void_t);
 
 /*****************************/
 /* End C to C++ importation: */

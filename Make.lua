@@ -1,7 +1,7 @@
 local lua_utils = require("Lua-Utils.Lua-Utils");
 
 local application_name = "C-Utils";
-local application_version = "2026-10-10.1";
+local application_version = "2026-10-13.1";
 local application_standards =
 {
 	"c90",
@@ -12,6 +12,63 @@ local commands =
 	"help",
 	"test",
 	"clean"
+};
+local compilers =
+{
+	os.getenv("CC") or "clang",
+	os.getenv("CXX") or os.getenv("CC") or "clang++"
+};
+local include = "-Iinclude -I/usr/include/libpng16 -I/opt/homebrew/include -I/ucrt64/include/libpng16 -I/ucrt64/include";
+local flags =
+{
+	{},
+	{
+		"-fdiagnostics-color=always",
+		"-std=" .. application_standards[2],
+		"-Wall",
+		"-Wextra",
+		"-Wpedantic",
+		"-Wshadow",
+		"-Wconversion",
+		"-Wsign-conversion",
+		"-Wformat=2",
+		"-Wnull-dereference",
+		"-Wcast-align",
+		"-Wpointer-arith",
+		"-Wundef",
+		"-Wno-long-long",
+		"-Oz",
+		"-funroll-loops",
+		"-fstack-protector-strong",
+		"-DC_UTILS_COMPILE"
+	}
+};
+
+for i = 1, #flags[2] do
+	table.insert(flags[1], flags[2][i]);
+end
+
+flags[1][2] = "-std=" .. application_standards[1];
+
+table.insert(flags[1], "-Wstrict-prototypes");
+table.insert(flags[1], "-Wmissing-prototypes");
+
+local sources =
+{
+	"source/C-Utils/consts.c",
+	"source/C-Utils/c-utils.c",
+	"source/C-Utils/big-data.c",
+	"source/C-Utils/img-utls.c",
+	"source/C-Utils/mth-utls.c",
+	"source/C-Utils/tmp-utls.c",
+	"source/C-Utils/trd-utls.c",
+	"source/C-Utils/dl-utils.c",
+	"source/C-Utils/rnd-utls.c",
+	"source/C-Utils/aud-utls.c",
+	"source/C-Utils/err-utls.c",
+	"source/C-Utils/gpu-utls.c",
+	"source/Mackron/miniaudio.c",
+	"source/Zeux/volk.c"
 };
 
 local function help()
@@ -28,88 +85,40 @@ local function main()
 		if arg[1] == "help" then
 			help();
 		elseif arg[1] == "test" then
-			local compilers =
-			{
-				os.getenv("CC") or "clang",
-				os.getenv("CXX") or os.getenv("CC") or "clang++"
-			};
+			if #arg == 2 then
+				if arg[2] == "c" or arg[2] == "C" then
+					local sys = lua_utils.get_os();
 
-			local include = "-Iinclude -I/usr/include/libpng16 -I/opt/homebrew/include -I/ucrt64/include/libpng16 -I/ucrt64/include";
+					if sys == "Windows" then
+						os.execute("if not exist build mkdir build");
 
-			local flags =
-			{
-				{},
-				{
-					"-fdiagnostics-color=always",
-					"-std=" .. application_standards[2],
-					"-Wall",
-					"-Wextra",
-					"-Wpedantic",
-					"-Wshadow",
-					"-Wconversion",
-					"-Wsign-conversion",
-					"-Wformat=2",
-					"-Wnull-dereference",
-					"-Wcast-align",
-					"-Wpointer-arith",
-					"-Wundef",
-					"-Wno-long-long",
-					"-Oz",
-					"-funroll-loops",
-					"-fstack-protector-strong",
-					"-DC_UTILS_COMPILE"
-				}
-			};
+						os.execute(compilers[1] .. " " .. table.concat(sources, " ") .. " " .. table.concat(flags[1], " ") .. " " .. include .. " -c");
+						os.execute("move *.o build\\ 2>nul");
+						os.execute("dir build");
+					else
+						os.execute("mkdir -p build");
 
-			for i = 1, #flags[2] do
-				table.insert(flags[1], flags[2][i]);
-			end
+						os.execute(compilers[1] .. " " .. table.concat(sources, " ") .. " " .. table.concat(flags[1], " ") .. " " .. include .. " -c");
+						os.execute("mv *.o build/ 2>/dev/null");
+						os.execute("ls -la build");
+					end
+				elseif arg[2] == "c++" or arg[2] == "C++" or arg[2] == "cpp" or arg[2] == "CPP" then
+					local sys = lua_utils.get_os();
 
-			flags[1][2] = "-std=" .. application_standards[1];
+					if sys == "Windows" then
+						os.execute("if not exist build mkdir build");
 
-			table.insert(flags[1], "-Wstrict-prototypes");
-			table.insert(flags[1], "-Wmissing-prototypes");
+						os.execute(compilers[2] .. " -x c++ " .. table.concat(sources, " ") .. " " .. table.concat(flags[2], " ") .. " " .. include .. " -c");
+						os.execute("move *.o build\\ 2>nul");
+						os.execute("dir build");
+					else
+						os.execute("mkdir -p build");
 
-			local sources =
-			{
-				"source/C-Utils/consts.c",
-				"source/C-Utils/c-utils.c",
-				"source/C-Utils/big-data.c",
-				"source/C-Utils/img-utls.c",
-				"source/C-Utils/mth-utls.c",
-				"source/C-Utils/tmp-utls.c",
-				"source/C-Utils/trd-utls.c",
-				"source/C-Utils/dl-utils.c",
-				"source/C-Utils/rnd-utls.c",
-				"source/C-Utils/aud-utls.c",
-				"source/C-Utils/err-utls.c",
-				"source/C-Utils/gpu-utls.c",
-				"source/Mackron/miniaudio.c",
-				"source/Zeux/volk.c"
-			};
-
-			local sys = lua_utils.get_os();
-
-			if sys == "Windows" then
-				os.execute("if not exist build mkdir build");
-
-				os.execute(compilers[1] .. " " .. table.concat(sources, " ") .. " " .. table.concat(flags[1], " ") .. " " .. include .. " -c");
-				os.execute("move *.o build\\ 2>nul");
-				os.execute("dir build");
-
-				os.execute(compilers[2] .. " -x c++ " .. table.concat(sources, " ") .. " " .. table.concat(flags[2], " ") .. " " .. include .. " -c");
-				os.execute("move *.o build\\ 2>nul");
-				os.execute("dir build");
-			else
-				os.execute("mkdir -p build");
-
-				os.execute(compilers[1] .. " " .. table.concat(sources, " ") .. " " .. table.concat(flags[1], " ") .. " " .. include .. " -c");
-				os.execute("mv *.o build/ 2>/dev/null");
-				os.execute("ls -la build");
-
-				os.execute(compilers[2] .. " -x c++ " .. table.concat(sources, " ") .. " " .. table.concat(flags[2], " ") .. " " .. include .. " -c");
-				os.execute("mv *.o build/ 2>/dev/null");
-				os.execute("ls -la build");
+						os.execute(compilers[2] .. " -x c++ " .. table.concat(sources, " ") .. " " .. table.concat(flags[2], " ") .. " " .. include .. " -c");
+						os.execute("mv *.o build/ 2>/dev/null");
+						os.execute("ls -la build");
+					end
+				end
 			end
 		elseif arg[1] == "clean" then
 			local sys = os.getenv("OS");
